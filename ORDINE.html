@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MiniAgricola — Ordina</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+:root{--g:#4a7a2e;--gl:#f0f7eb;--d:#1a1a1a;--m:#888;--b:#e8e8e8;--bg:#fafaf8}
+body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding-bottom:100px}
+.hdr{background:#fff;border-bottom:1px solid var(--b);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.hlogo{font-weight:700;font-size:16px}
+.hlogo span{font-weight:300;font-size:13px;color:var(--m)}
+.cbtn{background:var(--g);color:#fff;border:none;border-radius:99px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
+.cbadge{background:#fff;color:var(--g);border-radius:99px;font-size:11px;font-weight:800;padding:1px 6px;min-width:18px;text-align:center}
+.lscr{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:var(--bg)}
+.lbox{background:#fff;border-radius:16px;padding:32px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.linp{width:100%;padding:12px 14px;border-radius:10px;border:2px solid var(--b);font-size:15px;outline:none;text-align:center;margin-bottom:12px;transition:border .2s}
+.linp:focus{border-color:var(--g)}
+.lbtn{width:100%;padding:13px;background:var(--g);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+.body{padding:0 12px;max-width:700px;margin:0 auto}
+.catsec{margin-top:24px}
+.cattl{font-size:11px;font-weight:800;color:var(--m);text-transform:uppercase;letter-spacing:1.5px;padding:0 4px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.cattl::after{content:'';flex:1;height:1px;background:var(--b)}
+.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:500px){.pgrid{grid-template-columns:repeat(3,1fr)}}
+.pcard{background:#fff;border-radius:12px;border:1px solid var(--b);overflow:hidden;display:flex;flex-direction:column}
+.pcard.na{opacity:.5}
+.pimg{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:48px;background:var(--gl)}
+.pinfo{padding:10px 10px 6px}
+.pname{font-weight:700;font-size:13px;line-height:1.3;margin-bottom:3px}
+.pprice{font-size:13px;font-weight:800;color:var(--g)}
+.punit{font-size:11px;color:var(--m)}
+.pdesc{font-size:11px;color:var(--m);margin-top:3px;line-height:1.4;min-height:16px}
+.nalbl{font-size:11px;color:var(--m);padding:8px 10px;text-align:center;font-style:italic}
+.qctrl{display:flex;align-items:center;border:1.5px solid var(--b);border-radius:8px;margin:8px 10px 10px;overflow:hidden}
+.qbtn{width:36px;height:34px;border:none;background:#f5f5f5;font-size:18px;cursor:pointer;font-weight:700;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.qbtn:active{background:#e5e5e5}
+.qinp{flex:1;border:none;text-align:center;font-size:14px;font-weight:700;outline:none;background:#fff;min-width:0;height:34px}
+.abtn{margin:0 10px 10px;padding:9px;background:var(--g);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;width:calc(100% - 20px)}
+.abtn.added{background:#2d5219}
+.cbar{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:12px 16px;background:rgba(250,250,248,.95);backdrop-filter:blur(8px);border-top:1px solid var(--b)}
+.cbar-in{max-width:700px;margin:0 auto}
+.cbarbtn{width:100%;padding:14px;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+.cbarbtn:disabled{opacity:.4;cursor:not-allowed}
+.rscr{display:none;position:fixed;inset:0;background:var(--bg);z-index:150;overflow-y:auto}
+.rscr.open{display:block}
+.rhdr{background:#fff;border-bottom:1px solid var(--b);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0}
+.rback{background:none;border:none;font-size:22px;cursor:pointer;color:var(--d)}
+.rbody{padding:16px;max-width:700px;margin:0 auto}
+.rsec{font-size:11px;font-weight:800;color:var(--m);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;margin-top:20px}
+.ritem{background:#fff;border-radius:10px;border:1px solid var(--b);padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.rtot{background:var(--gl);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;margin-top:4px;margin-bottom:20px}
+.ninp{width:100%;padding:12px;border-radius:10px;border:1.5px solid var(--b);font-size:14px;resize:none;outline:none;font-family:inherit;line-height:1.5}
+.ninp:focus{border-color:var(--g)}
+.cfbtn{width:100%;padding:15px;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px}
+.cfbtn:disabled{opacity:.5;cursor:not-allowed}
+/* Schermata successo */
+.sscr{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px}
+.sscr.open{display:flex}
+/* Animazione microgreen */
+@keyframes fadeUp{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes drawStem{0%{stroke-dashoffset:100}100%{stroke-dashoffset:0}}
+@keyframes showLeaf{0%{opacity:0}100%{opacity:1}}
+@keyframes showCheck{0%{opacity:0}50%{opacity:1;transform:scale(1.15)}100%{opacity:1;transform:scale(1)}}
+.mganim{width:130px;height:160px;margin-bottom:4px;display:flex;align-items:center;justify-content:center}
+.stxt{animation:fadeUp .5s ease 1.6s both}
+.gbar{background:var(--gl);padding:10px 16px;font-size:13px;color:var(--g);font-weight:600;text-align:center;border-bottom:1px solid #d4eac4}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="lscr" id="lscr">
+  <div class="lbox">
+    <div style="font-size:40px;margin-bottom:12px">🌱</div>
+    <div style="font-size:20px;font-weight:700;margin-bottom:6px">MiniAgricola</div>
+    <div style="font-size:13px;color:var(--m);margin-bottom:24px;line-height:1.5">Microgreens freschi per la tua cucina.<br>Inserisci il nome del tuo ristorante per continuare.</div>
+    <input class="linp" id="linp" type="text" placeholder="Nome ristorante" autocomplete="off"/>
+    <button class="lbtn" onclick="doLogin()">Accedi al catalogo →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="gbar" id="gbar"></div>
+  <div class="hdr">
+    <div class="hlogo">🌱 <span style="font-weight:700">Mini</span>Agricola <span>· ordina</span></div>
+    <button class="cbtn" onclick="openR()">🛒 <span id="ccount" class="cbadge">0</span></button>
+  </div>
+  <div class="body" id="cat"></div>
+</div>
+
+<!-- CARRELLO FISSO -->
+<div class="cbar" id="cbar" style="display:none">
+  <div class="cbar-in">
+    <button class="cbarbtn" id="cbarbtn" onclick="openR()" disabled>
+      <span id="cbarlbl">Carrello vuoto</span>
+      <span id="cbartot">€0.00</span>
+    </button>
+  </div>
+</div>
+
+<!-- RIEPILOGO -->
+<div class="rscr" id="rscr">
+  <div class="rhdr">
+    <button class="rback" onclick="closeR()">←</button>
+    <div style="font-weight:700;font-size:16px">Riepilogo ordine</div>
+  </div>
+  <div class="rbody">
+    <div class="rsec">Prodotti ordinati</div>
+    <div id="ritems"></div>
+    <div class="rtot">
+      <span style="font-weight:600;font-size:15px">Totale</span>
+      <span style="font-weight:800;font-size:20px;color:var(--g)" id="rtot">€0.00</span>
+    </div>
+    <div class="rsec">Note per la consegna</div>
+    <textarea class="ninp" id="note" rows="3" placeholder="Es. consegna mercoledì mattina..."></textarea>
+    <button class="cfbtn" id="cfbtn" onclick="confirm_()">Conferma ordine</button>
+  </div>
+</div>
+
+<!-- SUCCESSO -->
+<div class="sscr" id="sscr">
+  <div class="mganim" id="mganim">
+    <svg viewBox="0 0 120 155" xmlns="http://www.w3.org/2000/svg" width="120" height="155">
+      <!-- Terreno -->
+      <rect x="22" y="136" width="76" height="13" rx="5" fill="#b8944a" opacity=".75"/>
+      <ellipse cx="60" cy="136" rx="38" ry="5" fill="#c8a96e" opacity=".5"/>
+      <!-- Stelo: stroke-dasharray per crescita dal basso -->
+      <line x1="60" y1="136" x2="60" y2="42"
+            stroke="#5c8a3c" stroke-width="5" stroke-linecap="round"
+            stroke-dasharray="94" stroke-dashoffset="94"
+            style="animation:drawStem .65s cubic-bezier(.4,0,.2,1) .1s forwards"/>
+      <!-- Foglia sinistra: fade in, posizionata correttamente sullo stelo -->
+      <g opacity="0" style="animation:showLeaf .5s ease .75s forwards">
+        <ellipse cx="36" cy="105" rx="24" ry="10" fill="#7ab648" transform="rotate(-28,60,110)"/>
+        <line x1="60" y1="110" x2="24" y2="102" stroke="#5c8a3c" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <!-- Foglia destra: fade in, leggermente più in alto -->
+      <g opacity="0" style="animation:showLeaf .5s ease .95s forwards">
+        <ellipse cx="84" cy="88" rx="24" ry="10" fill="#8dc63f" transform="rotate(28,60,93)"/>
+        <line x1="60" y1="93" x2="96" y2="85" stroke="#6a9e30" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <!-- Foglia apicale: fade in, in cima allo stelo -->
+      <g opacity="0" style="animation:showLeaf .45s ease 1.15s forwards">
+        <ellipse cx="60" cy="54" rx="13" ry="20" fill="#a8d84a"/>
+        <line x1="60" y1="70" x2="60" y2="38" stroke="#7ab648" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <!-- Check badge -->
+      <g opacity="0" style="animation:showCheck .4s cubic-bezier(.34,1.56,.64,1) 1.5s forwards">
+        <circle cx="94" cy="30" r="15" fill="#5c8a3c"/>
+        <path d="M87,30 L92,36 L102,22" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </g>
+    </svg>
+  </div>
+  <div class="stxt">
+    <div style="font-size:22px;font-weight:700;margin-bottom:8px">Ordine inviato!</div>
+    <div style="font-size:15px;color:var(--m);margin-bottom:32px;line-height:1.6;max-width:280px" id="stxt"></div>
+    <button style="padding:14px 32px;background:var(--g);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer" onclick="resetS()">Torna al catalogo</button>
+  </div>
+</div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbz5jt_DB2DBRwrkEsY1efzx8J-t_aDH66HKfbl0Q0KVWqNQgN-4jy9tsFKydvu5-sXejQ/exec';
+
+const CATS=[
+  {name:'I più richiesti',ids:['MG-0001','MG-0002'],emoji:'⭐'},
+  {name:'Senape',ids:['MG-0003','MG-0004','MG-0005'],emoji:'🌿'},
+  {name:'Basilico',ids:['MG-0007','MG-0008','MG-0009','MG-0010'],emoji:'🌱'},
+  {name:'Ravanello',ids:['MG-0013','MG-0014','MG-0015','MG-0016'],emoji:'🔴'},
+  {name:'Cavolo',ids:['MG-0018','MG-0019','MG-0020','MG-0021'],emoji:'🥬'},
+  {name:'Bieta',ids:['MG-0011','MG-0012'],emoji:'🟣'},
+  {name:'Altri',ids:['MG-0006','MG-0017','MG-0022','MG-0023','MG-0024','MG-0025','MG-0026','MG-0027','MG-0028','MG-0029','MG-0030','MG-0031','MG-0032','MG-0033','MG-0034'],emoji:'🌾'},
+];
+const EMO={'MG-0001':'🌿','MG-0002':'🌱','MG-0003':'🌿','MG-0004':'🌿','MG-0005':'🌿','MG-0006':'🌿','MG-0007':'🌱','MG-0008':'🍋','MG-0009':'🌿','MG-0010':'🟣','MG-0011':'🔴','MG-0012':'🟡','MG-0013':'🔴','MG-0014':'🔴','MG-0015':'⚫','MG-0016':'🔴','MG-0017':'💚','MG-0018':'🟣','MG-0019':'🩷','MG-0020':'🖤','MG-0021':'🟣','MG-0022':'💜','MG-0023':'🟠','MG-0024':'🔴','MG-0025':'💜','MG-0026':'🟡','MG-0027':'🤍','MG-0028':'🤍','MG-0029':'🌿','MG-0030':'🟠','MG-0031':'🟢','MG-0032':'🟤','MG-0033':'🟤','MG-0034':'🌿'};
+
+let products=[],cart={},client=null,token=null;
+
+function pp(v){return typeof v==='number'?v:parseFloat(String(v||0).replace(',','.'))||0;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function get_(a){const r=await fetch(`${API}?action=${a}&t=${Date.now()}`);return r.json();}
+async function post_(a,d){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:a,data:d})});return r.json();}
+
+async function init(){
+  token=new URLSearchParams(window.location.search).get('id');
+
+  // Carica prodotti
+  try{
+    const rows=await get_('getProducts');
+    if(rows&&rows.length>1){
+      const H=rows[0].map(h=>String(h).trim());
+      products=rows.slice(1).filter(r=>r[0]).map(row=>{
+        const o={};H.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});
+        return {id:String(o.id),name:String(o.name),desc:String(o.desc||''),price:pp(o.price),avail:String(o.avail).toLowerCase()==='true',unit:String(o.unit||'vassoio'),qty:parseInt(o.qty)||0};
+      });
+    }
+  }catch(e){console.error('Errore caricamento prodotti:',e);}
+
+  // Se ho un token, cerca il cliente nel DB
+  if(token){
+    const sk='ma_s_'+token;
+    const saved=localStorage.getItem(sk);
+    if(saved){
+      // Sessione locale valida
+      client=JSON.parse(saved);
+      showApp(client.restaurant);
+      return;
+    }
+    // Cerca nel DB
+    try{
+      const rows=await get_('getClients');
+      if(rows&&rows.length>1){
+        const H=rows[0].map(h=>String(h).trim());
+        const iToken=H.indexOf('token');
+        const iId=H.indexOf('id');
+        const iRest=H.indexOf('restaurant');
+        const iEmail=H.indexOf('email');
+        if(iToken>=0){
+          const found=rows.slice(1).find(r=>String(r[iToken]).trim()===token.trim());
+          if(found){
+            client={id:String(found[iId]||''),restaurant:String(found[iRest]||''),email:iEmail>=0?String(found[iEmail]||''):'',token};
+            localStorage.setItem(sk,JSON.stringify(client));
+            showApp(client.restaurant);
+            return;
+          }
+        }
+      }
+    }catch(e){console.error('Errore caricamento clienti:',e);}
+  }
+
+  // Mostra login manuale
+  showLogin();
+}
+
+function showLogin(){
+  document.getElementById('lscr').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('linp').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+}
+
+function doLogin(){
+  const name=document.getElementById('linp').value.trim();
+  if(!name||name.length<2){alert('Inserisci il nome del ristorante per continuare.');return;}
+  client={id:'',restaurant:name,email:'',token:token||''};
+  if(token)localStorage.setItem('ma_s_'+token,JSON.stringify(client));
+  showApp(name);
+}
+
+function showApp(name){
+  document.getElementById('lscr').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('gbar').textContent='Ciao, '+name+' 👋';
+  document.getElementById('cbar').style.display='block';
+  renderCat();updateCart();
+}
+
+function renderCat(){
+  const pm={};products.forEach(p=>pm[p.id]=p);
+  let h='';
+  CATS.forEach(cat=>{
+    const cp=cat.ids.map(id=>pm[id]).filter(Boolean);
+    if(!cp.length)return;
+    h+=`<div class="catsec"><div class="cattl">${cat.emoji} ${cat.name}</div><div class="pgrid">`;
+    cp.forEach(p=>{
+      const q=cart[p.id]||0,em=EMO[p.id]||'🌱';
+      if(p.avail){
+        h+=`<div class="pcard">
+          <div class="pimg">${em}</div>
+          <div class="pinfo">
+            <div class="pname">${esc(p.name)}</div>
+            <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
+            <div class="pdesc">${esc(p.desc)}</div>
+          </div>
+          <div class="qctrl">
+            <button class="qbtn" onclick="chQ('${p.id}',-1)">−</button>
+            <input class="qinp" id="q-${p.id}" type="number" min="0" value="${q}" readonly>
+            <button class="qbtn" onclick="chQ('${p.id}',1)">+</button>
+          </div>
+          <button class="abtn ${q>0?'added':''}" id="ab-${p.id}" onclick="addC('${p.id}')">
+            ${q>0?`✓ Nel carrello (${q})`:'Aggiungi al carrello'}
+          </button>
+        </div>`;
+      }else{
+        h+=`<div class="pcard na">
+          <div class="pimg">${em}</div>
+          <div class="pinfo">
+            <div class="pname">${esc(p.name)}</div>
+            <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
+          </div>
+          <div class="nalbl">Non disponibile</div>
+        </div>`;
+      }
+    });
+    h+=`</div></div>`;
+  });
+  document.getElementById('cat').innerHTML=h;
+}
+
+function chQ(id,d){const el=document.getElementById('q-'+id);if(!el)return;el.value=Math.max(0,(parseInt(el.value)||0)+d);}
+function addC(id){
+  const el=document.getElementById('q-'+id);
+  const requested=Math.max(0,parseInt(el?.value)||0);
+  if(requested===0){alert('Inserisci almeno 1 vaschetta.');return;}
+  const product=products.find(p=>p.id===id);
+  const available=product?.qty||0;
+  let qty=requested;
+  let msg='';
+  if(available>0&&requested>available){
+    qty=available;
+    if(el)el.value=available;
+    msg='Abbiamo solo '+available+' vaschett'+(available===1?'a':'e')+' disponibil'+(available===1?'e':'i')+' per il momento. Ci scusiamo per il disagio.';
+  }
+  cart[id]=qty;updateCart();
+  const btn=document.getElementById('ab-'+id);
+  if(btn){btn.textContent='✓ Nel carrello ('+qty+')';btn.className='abtn added';}
+  if(msg)setTimeout(()=>alert(msg),100);
+}
+
+function cartItems(){return Object.entries(cart).map(([id,q])=>{const p=products.find(x=>x.id===id);return p?{id,name:p.name,qty:q,price:p.price}:null;}).filter(Boolean);}
+function cartTotal(){return cartItems().reduce((s,i)=>s+i.qty*i.price,0);}
+
+function updateCart(){
+  const items=cartItems(),count=items.reduce((s,i)=>s+i.qty,0),tot=cartTotal();
+  document.getElementById('ccount').textContent=count;
+  document.getElementById('cbarlbl').textContent=count>0?`Vai all'ordine · ${count} prod.`:'Carrello vuoto';
+  document.getElementById('cbartot').textContent=`€${tot.toFixed(2)}`;
+  document.getElementById('cbarbtn').disabled=count===0;
+}
+
+function openR(){
+  const items=cartItems();if(!items.length)return;
+  document.getElementById('ritems').innerHTML=items.map(it=>`
+    <div class="ritem">
+      <div style="flex:1;font-weight:600;font-size:14px">${esc(it.name)}</div>
+      <div style="font-size:13px;color:var(--m)">${it.qty} × €${it.price}</div>
+      <div style="font-weight:700;font-size:14px">€${(it.qty*it.price).toFixed(2)}</div>
+    </div>`).join('');
+  document.getElementById('rtot').textContent=`€${cartTotal().toFixed(2)}`;
+  document.getElementById('note').value='';
+  // Sempre resetta il bottone quando si apre il riepilogo
+  const btn=document.getElementById('cfbtn');
+  if(btn){btn.disabled=false;btn.textContent='Conferma ordine';}
+  document.getElementById('rscr').classList.add('open');
+}
+function closeR(){document.getElementById('rscr').classList.remove('open');}
+
+async function confirm_(){
+  const btn=document.getElementById('cfbtn');
+  btn.disabled=true;btn.textContent='Invio in corso...';
+  const items=cartItems(),total=cartTotal(),note=document.getElementById('note').value.trim();
+  const ORDI_H=['id','clientId','restaurant','itemsJson','total','note','status','createdAt'];
+  const order={
+    id:'ORD-'+Date.now(),
+    clientId:client?.id||'',
+    restaurant:client?.restaurant||'Sconosciuto',
+    itemsJson:JSON.stringify(items.map(i=>({name:i.name,qty:i.qty,price:i.price}))),
+    total:String(total),
+    note:note,
+    status:'pending',
+    createdAt:new Date().toISOString()
+  };
+  try{
+    // Leggi ordini esistenti, aggiungi nuovo, salva tutto
+    const existing=await get_('getOrders');
+    const existingRows=(existing&&existing.length>1)?existing:[ORDI_H];
+    const newRow=ORDI_H.map(h=>order[h]!==undefined?String(order[h]):'');
+    const allRows=[...existingRows,newRow];
+    const res=await post_('saveOrders',allRows);
+    if(res&&res.error) throw new Error(res.error);
+    // Email via GET (non blocca l'ordine se fallisce)
+    try{
+      const d=encodeURIComponent(JSON.stringify({
+        restaurant:order.restaurant,total:order.total,
+        note:order.note,clientEmail:client?.email||'',
+        orderId:order.id,items:items.map(i=>i.name+' x'+i.qty)
+      }));
+      fetch(API+'?action=notify&d='+d+'&t='+Date.now()).catch(()=>{});
+    }catch(_){}
+    // Successo
+    closeR();
+    // Reset bottone per prossimo ordine
+    const cfb=document.getElementById('cfbtn');
+    if(cfb){cfb.disabled=false;cfb.textContent='Conferma ordine';}
+    cart={};renderCat();updateCart();
+    document.getElementById('stxt').textContent='Grazie '+(client?.restaurant||'')+'! Il tuo ordine è stato ricevuto e verrà confermato a breve.';
+    const ma=document.getElementById('mganim');
+    const svg=ma.querySelector('svg');if(svg){const c=svg.cloneNode(true);ma.replaceChild(c,svg);}
+    document.getElementById('sscr').classList.add('open');
+  }catch(e){
+    console.error('Errore ordine:',e);
+    alert('Errore durante l\'invio: '+e.message+'\n\nRiprova o contatta MiniAgricola.');
+    btn.disabled=false;btn.textContent='Conferma ordine';
+  }
+}
+
+function resetS(){
+  const sc=document.getElementById('sscr');
+  sc.classList.remove('open');
+  const ma=document.getElementById('mganim');
+  const svg=ma.querySelector('svg');
+  if(svg){const cl=svg.cloneNode(true);ma.replaceChild(cl,svg);}
+}
+
+init();
+</script>
+</body>
+</html>

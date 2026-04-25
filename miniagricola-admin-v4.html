@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniAgricola — Admin</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:#f5f5f0;color:#1a1a1a;font-size:14px;min-height:100vh}
+.header{background:#1a1a1a;color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-weight:700;font-size:15px}
+.badge{background:#5c8a3c;color:#fff;font-size:11px;padding:2px 10px;border-radius:99px;font-weight:700}
+.nav{display:flex;background:#fff;border-bottom:1px solid #e0e0e0;overflow-x:auto}
+.nav-btn{padding:11px 18px;border:none;background:none;cursor:pointer;font-size:13px;white-space:nowrap;border-bottom:2px solid transparent;color:#555;font-weight:400}
+.nav-btn.active{border-bottom-color:#5c8a3c;color:#5c8a3c;font-weight:700}
+.body{padding:18px 16px;max-width:860px;margin:0 auto}
+.card{background:#fff;border-radius:10px;border:1px solid #e0e0e0;margin-bottom:10px;padding:13px 15px}
+.row{display:flex;align-items:center;gap:10px}
+.btn{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600}
+.btn:hover{opacity:.85}
+.btn-p{background:#5c8a3c;color:#fff}
+.btn-d{background:#e53935;color:#fff}
+.btn-s{background:#eee;color:#333}
+.btn-g{background:transparent;color:#555;border:1px solid #ddd}
+.input{width:100%;padding:8px 11px;border-radius:7px;border:1px solid #ddd;font-size:13px;outline:none}
+.input:focus{border-color:#5c8a3c}
+.label{display:block;font-size:11px;font-weight:700;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.toggle{width:38px;height:22px;border-radius:99px;border:none;cursor:pointer;position:relative;flex-shrink:0}
+.knob{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s;pointer-events:none}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:22px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.field{margin-bottom:12px}
+.tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+.sh{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.empty{text-align:center;color:#bbb;padding:50px 20px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">🌱 MINIAGRICOLA <span style="font-weight:300;font-size:13px">admin</span></div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="ss" style="font-size:12px;color:#a0d080"></span>
+    <span class="badge">GESTIONALE</span>
+  </div>
+</div>
+<div class="nav">
+  <button class="nav-btn active" id="tab-c" onclick="sw('c')">Catalogo</button>
+  <button class="nav-btn" id="tab-cl" onclick="sw('cl')">Clienti</button>
+  <button class="nav-btn" id="tab-o" onclick="sw('o')">Ordini</button>
+  <button class="nav-btn" id="tab-g" onclick="sw('g')">Gestionale</button>
+</div>
+<div class="body">
+  <div id="v-c"></div>
+  <div id="v-cl" style="display:none"></div>
+  <div id="v-o" style="display:none"></div>
+  <div id="v-g" style="display:none"></div>
+</div>
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="mhead">
+      <strong id="mtitle" style="font-size:15px"></strong>
+      <button class="btn btn-g" onclick="cm()" style="font-size:20px;padding:0 8px;border:none">×</button>
+    </div>
+    <div id="mbody"></div>
+  </div>
+</div>
+<script>
+const API='https://script.google.com/macros/s/AKfycbz5jt_DB2DBRwrkEsY1efzx8J-t_aDH66HKfbl0Q0KVWqNQgN-4jy9tsFKydvu5-sXejQ/exec';
+// Schema Sheet (deve corrispondere esattamente alle intestazioni su Google Sheet)
+const PROD_H=['id','name','desc','price','avail','unit','qty'];
+const CLIE_H=['id','restaurant','contact','phone','email','address','token','createdAt'];
+const ORDI_H=['id','clientId','restaurant','itemsJson','total','note','status','createdAt'];
+
+let products=[],clients=[],orders=[],ricette=[],materiePrime=[],editing=null,pfAvail=true;
+
+function pp(v){return typeof v==='number'?v:parseFloat(String(v||0).replace(',','.'))||0;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function gid(pre,list){const n=list.map(x=>parseInt((x.id||'').split('-')[1]||0)).filter(Boolean);return `${pre}-${String(n.length?Math.max(...n)+1:1).padStart(4,'0')}`;}
+function gtok(){return Math.random().toString(36).substr(2,9).toUpperCase();}
+function maps(a){return a?.trim()?`https://maps.google.com/?q=${encodeURIComponent(a)}`:'';} 
+
+// Converte righe Sheet → oggetti usando headers fissi
+function rows2obj(rows,headers){
+  if(!rows||rows.length<2)return[];
+  return rows.slice(1).filter(r=>r[0]!==''&&r[0]!==null&&r[0]!==undefined).map(row=>{
+    const o={};headers.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return o;
+  });
+}
+// Converte oggetti → righe usando headers fissi
+function obj2rows(objects,headers){
+  return [headers,...objects.map(o=>headers.map(h=>{const v=o[h];return v===undefined||v===null?'':v;}))];
+}
+
+async function get(action){const r=await fetch(`${API}?action=${action}&t=${Date.now()}`);return r.json();}
+async function post(action,data){
+  const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action,data})});
+  return r.json();
+}
+
+function ss(s,t){const e=document.getElementById('ss');e.style.color={ok:'#a0d080',loading:'#f59e0b',err:'#e53935'}[s]||'#888';e.textContent=t;}
+
+async function loadAll(){
+  ss('loading','⟳ Connessione...');
+  try{
+    const[pr,cl,or]=await Promise.all([get('getProducts'),get('getClients'),get('getOrders')]);
+    products=rows2obj(pr,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0}));
+    clients=rows2obj(cl,CLIE_H);
+    orders=rows2obj(or,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));
+    // Ricette e Materie Prime per Gestionale
+    try{
+      const ric=await get('getRicette');
+      if(ric&&ric.length>1){const rH=ric[0].map(h=>String(h).trim());ricette=ric.slice(1).filter(r=>r[0]).map(row=>{const o={};rH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtyPerVassoio:pp(o.qtyPerVassoio)};});}
+    }catch(e){}
+    try{
+      const mp=await get('getMateriePrime');
+      if(mp&&mp.length>1){const mH=mp[0].map(h=>String(h).trim());materiePrime=mp.slice(1).filter(r=>r[0]).map(row=>{const o={};mH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtaAcquistata:pp(o.qtaAcquistata),prezzoTotale:pp(o.prezzoTotale),costoPerUnita:pp(o.costoPerUnita),qtaUsata:pp(o.qtaUsata),stockResiduo:pp(o.stockResiduo),valoreStock:pp(o.valoreStock)};});}
+    }catch(e){}
+    ss('ok','✓ Sincronizzato');renderAll();
+  }catch(e){ss('err','⚠ Errore connessione');renderAll();}
+}
+
+async function saveProd(){
+  ss('loading','⟳ Salvataggio...');
+  try{
+    const rows=obj2rows(products.map(p=>({...p,avail:String(p.avail),price:String(p.price),qty:String(p.qty||0)})),PROD_H);
+    await post('saveProducts',rows);ss('ok','✓ Salvato');
+  }catch{ss('err','⚠ Errore');}
+}
+async function saveClie(){
+  ss('loading','⟳ Salvataggio...');
+  try{await post('saveClients',obj2rows(clients,CLIE_H));ss('ok','✓ Salvato');}catch{ss('err','⚠ Errore');}
+}
+async function saveOrd(){
+  ss('loading','⟳ Salvataggio...');
+  try{
+    const rows=obj2rows(orders.map(o=>({...o,itemsJson:JSON.stringify(o.items||[])})),ORDI_H);
+    await post('saveOrders',rows);ss('ok','✓ Salvato');
+  }catch{ss('err','⚠ Errore');}
+}
+
+function sw(tab){
+  ['c','cl','o','g'].forEach(t=>{
+    document.getElementById('v-'+t).style.display=t===tab?'block':'none';
+    document.getElementById('tab-'+t).classList.toggle('active',t===tab);
+  });renderAll();
+}
+function utl(){
+  const a=products.filter(p=>p.avail).length,pend=orders.filter(o=>o.status==='pending').length;
+  document.getElementById('tab-c').textContent=`Catalogo (${a}/${products.length})`;
+  document.getElementById('tab-cl').textContent=`Clienti (${clients.length})`;
+  document.getElementById('tab-o').textContent=pend>0?`Ordini ⚠ ${pend}`:`Ordini (${orders.length})`;
+  document.getElementById('tab-g').textContent='Gestionale';
+}
+function renderAll(){utl();renderC();renderCl();renderO();renderG();}
+
+function renderC(){
+  const s=(document.getElementById('cs')||{}).value||'';
+  const f=(document.getElementById('cf')||{}).value||'all';
+  const fil=products.filter(p=>p.name.toLowerCase().includes(s.toLowerCase())&&(f==='all'||(f==='si'?p.avail:!p.avail)));
+  const a=products.filter(p=>p.avail).length;
+  document.getElementById('v-c').innerHTML=`
+    <div class="topbar">
+      <div><div class="sh">Catalogo Prodotti</div><div style="font-size:13px;color:#888"><strong style="color:#5c8a3c">${a}</strong> attivi · ${products.length} totali</div></div>
+      <button class="btn btn-p" onclick="newP()">+ Nuovo</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input class="input" id="cs" placeholder="🔍 Cerca..." value="${esc(s)}" oninput="renderC()" style="flex:1">
+      <select class="input" id="cf" onchange="renderC()" style="width:auto">
+        <option value="all" ${f==='all'?'selected':''}>Tutti</option>
+        <option value="si" ${f==='si'?'selected':''}>Disponibili</option>
+        <option value="no" ${f==='no'?'selected':''}>Non disp.</option>
+      </select>
+    </div>
+    ${fil.length===0?`<div class="card empty">Nessun prodotto trovato</div>`:''}
+    ${fil.map(p=>`
+      <div class="card row" style="opacity:${p.avail?1:.6}">
+        <button class="toggle" style="background:${p.avail?'#5c8a3c':'#ccc'}" onclick="togP('${esc(p.id)}')">
+          <span class="knob" style="left:${p.avail?19:3}px"></span>
+        </button>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600">${esc(p.name)}</div>
+          ${p.desc?`<div style="font-size:12px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.desc)}</div>`:''}
+        </div>
+        <div style="text-align:right;min-width:70px">
+          <div style="font-size:15px;font-weight:700">€${p.price}</div>
+          <div style="font-size:11px;color:#888">/${esc(p.unit)}</div>
+          <div style="font-size:11px;font-weight:700;color:${(p.qty||0)>0?'#5c8a3c':'#e53935'}">${(p.qty||0)>0?p.qty+' disp.':'esaurito'}</div>
+        </div>
+        <span style="font-size:10px;font-family:monospace;background:#eee;padding:2px 7px;border-radius:99px;color:#555;white-space:nowrap">${esc(p.id)}</span>
+        <button class="btn btn-s" onclick="editP('${esc(p.id)}')" style="padding:6px 10px">✏️</button>
+        <button class="btn btn-d" onclick="delP('${esc(p.id)}')" style="padding:6px 10px">🗑</button>
+      </div>`).join('')}`;
+}
+
+function renderCl(){
+  document.getElementById('v-cl').innerHTML=`
+    <div class="topbar">
+      <div><div class="sh">Clienti</div><div style="font-size:13px;color:#888">${clients.length} registrati</div></div>
+      <button class="btn btn-p" onclick="newCl()">+ Nuovo cliente</button>
+    </div>
+    ${clients.length===0?`<div class="card empty"><div style="font-size:32px;margin-bottom:8px">👥</div>Nessun cliente ancora.</div>`:''}
+    ${clients.map(c=>{
+      const n=orders.filter(o=>o.clientId===c.id).length,m=maps(c.address);
+      return `<div class="card">
+        <div class="row" style="margin-bottom:${c.address||c.phone?8:0}px">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px">${esc(c.restaurant)}</div>
+            ${c.contact?`<div style="font-size:13px;color:#666">${esc(c.contact)}</div>`:''}
+          </div>
+          <span class="tag" style="background:#5c8a3c22;color:#5c8a3c">${n} ordini</span>
+          <button class="btn btn-g" onclick="detCl('${esc(c.id)}')" style="padding:5px 9px;font-size:16px">👁</button>
+          <button class="btn btn-s" onclick="editCl('${esc(c.id)}')" style="padding:5px 9px">✏️</button>
+          <button class="btn btn-d" onclick="delCl('${esc(c.id)}')" style="padding:5px 9px">🗑</button>
+        </div>
+        ${c.address||c.phone?`<div style="font-size:13px;color:#666;margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap">
+          ${c.address?`<span>📍 ${esc(c.address)} ${m?`<a href="${esc(m)}" target="_blank" style="color:#5c8a3c;font-weight:700">→ Maps</a>`:''}</span>`:''}
+          ${c.phone?`<span>📞 ${esc(c.phone)}</span>`:''}
+        </div>`:''}
+        <div style="background:#f5f5f5;border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:12px">
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888">
+            🔗 miniagricola.netlify.app/ordine.html?id=<strong style="color:#333">${esc(c.token)}</strong>
+          </span>
+          <button class="btn btn-g" onclick="cpL('${esc(c.token)}',this)" style="font-size:12px;padding:2px 8px">Copia</button>
+        </div>
+      </div>`;
+    }).join('')}`;
+}
+
+function renderO(){
+  const f=(document.getElementById('of')||{}).value||'all';
+  const pend=orders.filter(o=>o.status==='pending').length;
+  const sorted=[...orders].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  const fil=f==='all'?sorted:sorted.filter(o=>o.status===f);
+  const SL={pending:'In attesa',confirmed:'Confermato',delivered:'Consegnato',cancelled:'Annullato'};
+  const SC={pending:'#f59e0b',confirmed:'#5c8a3c',delivered:'#888',cancelled:'#e53935'};
+  document.getElementById('v-o').innerHTML=`
+    <div class="topbar">
+      <div><div class="sh">Ordini</div>
+        <div style="font-size:13px;color:${pend>0?'#f59e0b':'#888'};font-weight:${pend>0?700:400}">
+          ${pend>0?`⚠ ${pend} in attesa`:'Nessun ordine in attesa'}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn btn-g" onclick="loadAll()" style="font-size:12px;padding:5px 10px">⟳</button>
+        <select class="input" id="of" onchange="renderO()" style="width:auto">
+          <option value="all" ${f==='all'?'selected':''}>Tutti (${orders.length})</option>
+          <option value="pending" ${f==='pending'?'selected':''}>In attesa (${pend})</option>
+          <option value="confirmed" ${f==='confirmed'?'selected':''}>Confermati</option>
+          <option value="delivered" ${f==='delivered'?'selected':''}>Consegnati</option>
+          <option value="cancelled" ${f==='cancelled'?'selected':''}>Annullati</option>
+        </select>
+      </div>
+    </div>
+    ${fil.length===0?`<div class="card empty"><div style="font-size:32px;margin-bottom:8px">📋</div>${orders.length===0?'Nessun ordine ancora.':'Nessun ordine per questo filtro.'}</div>`:''}
+    ${fil.map(o=>{
+      const cl=clients.find(x=>x.id===o.clientId),m=maps(cl?.address),sc=SC[o.status]||'#888';
+      return `<div class="card">
+        <div class="row" style="margin-bottom:10px">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px">${esc(o.restaurant||cl?.restaurant||'Sconosciuto')}</div>
+            <div style="font-size:12px;color:#888">${esc(o.id)} · ${new Date(o.createdAt).toLocaleString('it-IT')}</div>
+          </div>
+          <span class="tag" style="background:${sc}22;color:${sc}">● ${SL[o.status]||o.status}</span>
+          <strong style="font-size:16px;min-width:60px;text-align:right">€${pp(o.total).toFixed(2)}</strong>
+        </div>
+        <div style="background:#f9f9f9;border-radius:8px;padding:8px 12px;margin-bottom:8px">
+          ${(o.items||[]).map((it,i)=>`
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;${i<(o.items.length-1)?'border-bottom:1px solid #eee':''}">
+              <span>${esc(it.name)}</span>
+              <span style="color:#888">${it.qty} × €${it.price} → <strong>€${(it.qty*it.price).toFixed(2)}</strong></span>
+            </div>`).join('')}
+        </div>
+        ${o.note?`<div style="font-size:13px;color:#666;font-style:italic;margin-bottom:8px">📝 ${esc(o.note)}</div>`:''}
+        ${cl?.address?`<div style="font-size:13px;margin-bottom:10px">📍 ${esc(cl.address)} ${m?`<a href="${esc(m)}" target="_blank" style="color:#5c8a3c;font-weight:700">→ Maps</a>`:''}</div>`:''}
+        ${o.status==='pending'?`<div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-p" onclick="updS('${esc(o.id)}','confirmed')">✓ Conferma</button>
+          <button class="btn btn-s" onclick="updS('${esc(o.id)}','delivered')">📦 Consegnato</button>
+          <button class="btn btn-d" onclick="updS('${esc(o.id)}','cancelled')">✕ Annulla</button>
+        </div>`:''}
+        ${o.status==='confirmed'?`<button class="btn btn-s" onclick="updS('${esc(o.id)}','delivered')">📦 Segna consegnato</button>`:''}
+      </div>`;
+    }).join('')}`;
+}
+
+// MODAL
+function om(title,html){document.getElementById('mtitle').textContent=title;document.getElementById('mbody').innerHTML=html;document.getElementById('overlay').classList.add('open');}
+function cm(){document.getElementById('overlay').classList.remove('open');}
+
+// PRODOTTI
+function newP(){editing=null;pfAvail=true;om('Nuovo prodotto',pForm({id:gid('MG',products),name:'',desc:'',price:10,avail:true,unit:'vassoio',qty:0}));}
+function editP(id){editing=products.find(p=>p.id===id);if(!editing)return;pfAvail=editing.avail;om('Modifica prodotto',pForm(editing));}
+function pForm(p){return `
+  <div class="field"><label class="label">Codice</label><input class="input" value="${esc(p.id)}" id="pi" readonly style="background:#f5f5f5"></div>
+  <div class="field"><label class="label">Nome *</label><input class="input" value="${esc(p.name)}" id="pn" placeholder="Es. Crescione" autofocus></div>
+  <div class="field"><label class="label">Descrizione</label><input class="input" value="${esc(p.desc)}" id="pd" placeholder="Breve nota per il cliente"></div>
+  <div style="display:flex;gap:10px;margin-bottom:12px">
+    <div style="flex:1"><label class="label">Prezzo (€)</label><input class="input" type="number" min="0" step="0.1" value="${p.price}" id="ppr"></div>
+    <div style="flex:1"><label class="label">Unità</label>
+      <select class="input" id="pu" style="width:100%">
+        <option value="vassoio" ${p.unit==='vassoio'?'selected':''}>vassoio</option>
+        <option value="kg" ${p.unit==='kg'?'selected':''}>kg</option>
+        <option value="g" ${p.unit==='g'?'selected':''}>g</option>
+      </select>
+    </div>
+  </div>
+  <div class="field"><label class="label">Quantità disponibile (vaschette)</label><input class="input" type="number" min="0" step="1" value="${p.qty||0}" id="pq"></div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+    <button class="toggle" id="ptog" style="background:${p.avail?'#5c8a3c':'#ccc'}" onclick="tpA()" type="button">
+      <span class="knob" id="pknob" style="left:${p.avail?19:3}px"></span>
+    </button>
+    <span id="palbl" style="font-size:13px;color:#888">${p.avail?'Visibile ai clienti':'Non visibile ai clienti'}</span>
+  </div>
+  <div style="display:flex;gap:10px">
+    <button class="btn btn-p" onclick="saveP()" style="flex:1">Salva</button>
+    <button class="btn btn-s" onclick="cm()" style="flex:1">Annulla</button>
+  </div>`;}
+function tpA(){pfAvail=!pfAvail;document.getElementById('ptog').style.background=pfAvail?'#5c8a3c':'#ccc';document.getElementById('pknob').style.left=pfAvail?'19px':'3px';document.getElementById('palbl').textContent=pfAvail?'Visibile ai clienti':'Non visibile ai clienti';}
+async function saveP(){
+  const name=document.getElementById('pn').value.trim();if(!name){alert('Inserisci il nome');return;}
+  const obj={id:document.getElementById('pi').value,name,desc:document.getElementById('pd').value,price:parseFloat(document.getElementById('ppr').value)||0,unit:document.getElementById('pu').value,qty:parseInt(document.getElementById('pq').value)||0,avail:pfAvail};
+  products=editing?products.map(p=>p.id===obj.id?obj:p):[...products,obj];
+  cm();renderAll();await saveProd();
+}
+async function togP(id){products=products.map(p=>p.id===id?{...p,avail:!p.avail}:p);renderAll();await saveProd();}
+async function delP(id){const p=products.find(x=>x.id===id);if(!p||!confirm(`Eliminare "${p.name}"?`))return;products=products.filter(x=>x.id!==id);renderAll();await saveProd();}
+
+// CLIENTI
+function newCl(){editing=null;om('Nuovo cliente',clForm({id:gid('CLI',clients),restaurant:'',contact:'',phone:'',email:'',address:'',token:gtok(),createdAt:''}));}
+function editCl(id){editing=clients.find(c=>c.id===id);if(!editing)return;om('Modifica cliente',clForm(editing));setTimeout(upMP,50);}
+function detCl(id){
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  const n=orders.filter(o=>o.clientId===c.id).length,m=maps(c.address);
+  om(c.restaurant,`<div style="display:flex;flex-direction:column;gap:14px;font-size:14px">
+    ${c.contact?`<div><strong>Referente:</strong> ${esc(c.contact)}</div>`:''}
+    ${c.phone?`<div><strong>Tel:</strong> ${esc(c.phone)}</div>`:''}
+    ${c.email?`<div><strong>Email:</strong> ${esc(c.email)}</div>`:''}
+    ${c.address?`<div><strong>Indirizzo:</strong> ${esc(c.address)}<br><a href="${esc(maps(c.address))}" target="_blank" style="color:#5c8a3c">→ Google Maps</a></div>`:''}
+    <div><strong>Ordini totali:</strong> ${n}</div>
+    <div style="font-size:12px;color:#aaa">Token: ${esc(c.token)}</div>
+  </div>`);}
+function clForm(c){return `
+  <div style="display:flex;gap:10px;margin-bottom:12px">
+    <div style="flex:2"><label class="label">Ristorante *</label><input class="input" id="cr" value="${esc(c.restaurant||'')}" placeholder="Es. Da Mario" autofocus></div>
+    <div style="flex:1"><label class="label">ID</label><input class="input" id="cid" value="${esc(c.id)}" readonly style="background:#f5f5f5"></div>
+  </div>
+  <div class="field"><label class="label">Referente</label><input class="input" id="cc" value="${esc(c.contact||'')}" placeholder="Nome chef"></div>
+  <div class="field"><label class="label">Email cliente</label><input class="input" type="email" id="ce" value="${esc(c.email||'')}" placeholder="chef@ristorante.it"></div>
+  <div class="field"><label class="label">Telefono</label><input class="input" id="cph" value="${esc(c.phone||'')}" placeholder="+39 ..."></div>
+  <div class="field"><label class="label">Indirizzo</label>
+    <input class="input" id="ca" value="${esc(c.address||'')}" placeholder="Via Roma 1, Napoli" oninput="upMP()">
+    <div id="mp" style="font-size:12px;margin-top:4px"></div>
+  </div>
+  <div class="field"><label class="label">Token link ordine</label>
+    <div style="display:flex;gap:8px">
+      <input class="input" id="ct" value="${esc(c.token)}" readonly style="background:#f5f5f5;font-family:monospace;flex:1">
+      <button class="btn btn-s" onclick="document.getElementById('ct').value=gtok()" type="button">↻</button>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:8px">
+    <button class="btn btn-p" onclick="saveCl()" style="flex:1">Salva</button>
+    <button class="btn btn-s" onclick="cm()" style="flex:1">Annulla</button>
+  </div>`;}
+function upMP(){const a=(document.getElementById('ca')||{}).value||'';const e=document.getElementById('mp');if(e)e.innerHTML=a?`<a href="${esc(maps(a))}" target="_blank" style="color:#5c8a3c">→ Anteprima Maps</a>`:'';}
+async function saveCl(){
+  const restaurant=document.getElementById('cr').value.trim();if(!restaurant){alert('Inserisci il ristorante');return;}
+  const obj={id:document.getElementById('cid').value,restaurant,contact:document.getElementById('cc').value,phone:document.getElementById('cph').value,email:document.getElementById('ce').value||'',address:document.getElementById('ca').value,token:document.getElementById('ct').value,createdAt:editing?.createdAt||new Date().toISOString().split('T')[0]};
+  clients=editing?clients.map(c=>c.id===obj.id?obj:c):[...clients,obj];
+  cm();renderAll();await saveClie();
+}
+async function delCl(id){const c=clients.find(x=>x.id===id);if(!c||!confirm(`Eliminare "${c.restaurant}"?`))return;clients=clients.filter(x=>x.id!==id);renderAll();await saveClie();}
+function cpL(tok,btn){try{navigator.clipboard.writeText(`https://miniagricola.netlify.app/ordine.html?id=${tok}`);}catch(e){}if(btn){const old=btn.textContent;btn.textContent='✓';btn.style.color='#5c8a3c';setTimeout(()=>{btn.textContent=old;btn.style.color=''},1500);}}
+
+// ORDINI
+async function updS(id,status){orders=orders.map(o=>o.id===id?{...o,status}:o);renderAll();await saveOrd();}
+
+// ── GESTIONALE ───────────────────────────────────────────────
+function renderG(){
+  const v=document.getElementById('v-g');
+  if(!v)return;
+  const prodConRicetta=products.filter(p=>ricette.find(r=>r.nomeApp===p.name));
+
+  v.innerHTML=`
+    <div class="sh" style="margin-top:4px">Produci</div>
+    <div class="card">
+      <div class="field"><label class="label">Prodotto</label>
+        <select class="input" id="g-prod" onchange="onGProdChange()" style="width:100%">
+          <option value="">— seleziona prodotto —</option>
+          ${prodConRicetta.map(p=>`<option value="${esc(p.name)}">${esc(p.name)} (${p.qty} disp.)</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label class="label">Numero vassoi da produrre</label>
+        <input class="input" type="number" id="g-vassoi" min="1" step="1" value="1" oninput="onGProdChange()">
+      </div>
+      <div id="g-preview" style="background:#f9f9f9;border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;display:none"></div>
+      <button class="btn btn-p" id="g-confirm" onclick="confermaProduzione()" disabled style="width:100%">Conferma produzione</button>
+    </div>
+
+    <div class="sh" style="margin-top:20px">Magazzino Materie Prime</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input class="input" id="mp-search" placeholder="🔍 Cerca..." oninput="renderG()" style="flex:1">
+      <select class="input" id="mp-cat" onchange="renderG()" style="width:auto">
+        <option value="all">Tutte</option>
+        <option value="Semi">Semi</option>
+        <option value="Vaschette">Vaschette</option>
+        <option value="Substrato">Substrato</option>
+        <option value="Fertilizzante">Fertilizzante</option>
+        <option value="Altro">Altro</option>
+      </select>
+    </div>
+    ${renderMPTable()}
+  `;
+}
+
+function renderMPTable(){
+  const s=(document.getElementById('mp-search')||{}).value||'';
+  const cat=(document.getElementById('mp-cat')||{}).value||'all';
+  const fil=materiePrime.filter(m=>
+    m.nome.toLowerCase().includes(s.toLowerCase())&&
+    (cat==='all'||m.categoria===cat)
+  );
+  if(!fil.length)return`<div class="card empty">Nessuna materia prima trovata</div>`;
+  return fil.map(m=>{
+    const res=m.stockResiduo,acq=m.qtaAcquistata;
+    const pct=acq>0?res/acq:0;
+    const col=pct>0.3?'#5c8a3c':pct>0.1?'#f59e0b':'#e53935';
+    const bg=pct>0.3?'#f0f7eb':pct>0.1?'#fff8e6':'#fdf0f0';
+    return`<div class="card" style="background:${bg};margin-bottom:8px">
+      <div class="row">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:13px">${esc(m.nome)}</div>
+          <div style="font-size:11px;color:#888">${esc(m.codice)} · ${esc(m.categoria)}</div>
+        </div>
+        <div style="text-align:right;min-width:80px">
+          <div style="font-size:15px;font-weight:700;color:${col}">${res}${esc(m.unita)}</div>
+          <div style="font-size:11px;color:#888">di ${acq}${esc(m.unita)}</div>
+        </div>
+        <button class="btn btn-s" onclick="openAcquisto('${esc(m.codice)}','${esc(m.nome)}','${esc(m.unita)}')" style="padding:5px 10px;font-size:12px">+ Acquisto</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function onGProdChange(){
+  const nome=document.getElementById('g-prod')?.value;
+  const nStr=document.getElementById('g-vassoi')?.value;
+  const n=parseInt(nStr)||0;
+  const prev=document.getElementById('g-preview');
+  const btn=document.getElementById('g-confirm');
+  if(!nome||n<=0){if(prev)prev.style.display='none';if(btn)btn.disabled=true;return;}
+  const ric=ricette.find(r=>r.nomeApp===nome);
+  if(!ric){if(prev)prev.style.display='none';if(btn)btn.disabled=true;return;}
+  const semeQty=(ric.qtyPerVassoio*n).toFixed(1);
+  const terrenoQty=(400*n);
+  const vaschetteQty=n;
+  // Trova stock MP
+  const mpSeme=materiePrime.find(m=>m.codice===ric.semeMP);
+  const mpVasch=materiePrime.find(m=>m.codice==='MA042642');
+  const mpTerr=materiePrime.find(m=>m.codice==='MA042644');
+  const okSeme=!mpSeme||(mpSeme.stockResiduo>=parseFloat(semeQty));
+  const okVasch=!mpVasch||(mpVasch.stockResiduo>=vaschetteQty);
+  const okTerr=!mpTerr||(mpTerr.stockResiduo>=terrenoQty);
+  const allOk=okSeme&&okVasch&&okTerr;
+  if(prev){
+    prev.style.display='block';
+    prev.innerHTML=`<div style="margin-bottom:8px;font-weight:600">Preview produzione — ${n} vasoio${n>1?'i':''}:</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <div style="color:${okVasch?'#1a1a1a':'#e53935'}">🪣 Vaschetta FREE (MA042642): −${vaschetteQty} pz ${mpVasch?`(stock: ${mpVasch.stockResiduo})`:''} ${okVasch?'✓':'⚠ insufficiente'}</div>
+        <div style="color:${okTerr?'#1a1a1a':'#e53935'}">🌱 Terreno Completo (MA042644): −${terrenoQty}g ${mpTerr?`(stock: ${mpTerr.stockResiduo}g)`:''} ${okTerr?'✓':'⚠ insufficiente'}</div>
+        <div style="color:${okSeme?'#1a1a1a':'#e53935'}">🌿 ${esc(mpSeme?.nome||ric.semeMP)} (${ric.semeMP}): −${semeQty}g ${mpSeme?`(stock: ${mpSeme.stockResiduo}g)`:''} ${okSeme?'✓':'⚠ insufficiente'}</div>
+        <div style="margin-top:8px;color:#5c8a3c;font-weight:600">→ ${esc(nome)}: +${n} vasoio${n>1?'i':''} disponibil${n>1?'i':'e'}</div>
+      </div>`;
+  }
+  if(btn)btn.disabled=!allOk;
+}
+
+async function confermaProduzione(){
+  const nome=document.getElementById('g-prod')?.value;
+  const n=parseInt(document.getElementById('g-vassoi')?.value)||0;
+  if(!nome||n<=0)return;
+  const btn=document.getElementById('g-confirm');
+  btn.disabled=true;btn.textContent='Produzione in corso...';
+  try{
+    const res=await post('produci',{nomeProdotto:nome,nVassoi:n});
+    if(res&&res.error)throw new Error(res.error);
+    ss('ok','✓ Produzione registrata');
+    await loadAll();
+  }catch(e){
+    alert('Errore produzione: '+e.message+'\n\nVerifica che Apps Script sia aggiornato e ridistribuito.');
+    btn.disabled=false;btn.textContent='Conferma produzione';
+  }
+}
+
+function openAcquisto(codice,nome,unita){
+  om('Acquisto — '+nome,`
+    <div class="field"><label class="label">Codice MP</label><input class="input" value="${esc(codice)}" id="aq-cod" readonly style="background:#f5f5f5;font-family:monospace"></div>
+    <div class="field"><label class="label">Quantità acquistata (${esc(unita)})</label><input class="input" type="number" min="0" step="0.1" id="aq-qty" placeholder="Es. 250" autofocus></div>
+    <div class="field"><label class="label">Prezzo totale (€)</label><input class="input" type="number" min="0" step="0.01" id="aq-prez" placeholder="Es. 12.50"></div>
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-p" onclick="confermaAcquisto()" style="flex:1">Conferma acquisto</button>
+      <button class="btn btn-s" onclick="cm()" style="flex:1">Annulla</button>
+    </div>
+  `);
+}
+
+async function confermaAcquisto(){
+  const cod=document.getElementById('aq-cod')?.value;
+  const qty=parseFloat(document.getElementById('aq-qty')?.value)||0;
+  const prez=parseFloat(document.getElementById('aq-prez')?.value)||0;
+  if(!cod||qty<=0){alert('Inserisci la quantità acquistata');return;}
+  const btn=document.querySelector('#mbody .btn-p');
+  if(btn){btn.disabled=true;btn.textContent='Salvataggio...';}
+  try{
+    const res=await post('acquistaMp',{codiceMP:cod,qtaComprata:qty,prezzoTotale:prez});
+    if(res&&res.error)throw new Error(res.error);
+    ss('ok','✓ Acquisto registrato');
+    cm();
+    await loadAll();
+  }catch(e){
+    alert('Errore acquisto: '+e.message+'\n\nVerifica che Apps Script sia aggiornato alla versione più recente e ridistribuito.');
+    if(btn){btn.disabled=false;btn.textContent='Conferma acquisto';}
+  }
+}
+
+// ── AUTO-REFRESH ORDINI ogni 30 secondi
+setInterval(async()=>{
+  try{
+    const or=await get('getOrders');
+    if(or&&or.length>0){
+      orders=rows2obj(or,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));
+      utl();renderO();
+    }
+  }catch(e){}
+},30000);
+
+loadAll();
+</script>
+</body>
+</html>
