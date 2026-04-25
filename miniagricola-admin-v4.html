@@ -380,21 +380,7 @@ async function updS(id,status){orders=orders.map(o=>o.id===id?{...o,status}:o);r
 function renderG(){
   const v=document.getElementById('v-g');
   if(!v)return;
-  // Se già montato, aggiorna solo le parti dinamiche senza ricostruire
-  if(v.dataset.mounted==='1'){
-    updateMPTable();
-    // Aggiorna dropdown prodotti
-    const sel=document.getElementById('g-prod');
-    if(sel){
-      const curr=sel.value;
-      const prodConRicetta=products.filter(p=>ricette.find(r=>r.nomeApp===p.name));
-      sel.innerHTML='<option value="">— seleziona prodotto —</option>'+
-        prodConRicetta.map(p=>`<option value="${esc(p.name)}">${esc(p.name)} (${p.qty} disp.)</option>`).join('');
-      if(curr)sel.value=curr;
-    }
-    return;
-  }
-  v.dataset.mounted='1';
+
   const prodConRicetta=products.filter(p=>ricette.find(r=>r.nomeApp===p.name));
 
   v.innerHTML=`
