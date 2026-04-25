@@ -500,7 +500,7 @@ function onGProdChange(){
         <div style="color:${okTerr?'#1a1a1a':'#e53935'}">🌱 Terreno Completo (MA042644): −${terrenoQty}g ${mpTerr?`(stock: ${mpTerr.stockResiduo}g)`:''} ${okTerr?'✓':'⚠ insufficiente'}</div>
         <div style="color:${okSeme?'#1a1a1a':'#e53935'}">🌿 ${esc(mpSeme?.nome||ric.semeMP)} (${ric.semeMP}): −${semeQty}g ${mpSeme?`(stock: ${mpSeme.stockResiduo}g)`:''} ${okSeme?'✓':'⚠ insufficiente'}</div>
         <div style="margin-top:8px;color:#5c8a3c;font-weight:600">→ ${esc(nome)}: +${n} vasoio${n>1?'i':''} disponibil${n>1?'i':'e'}</div>
-        <div style="margin-top:4px;font-size:12px;color:#888">Costo stimato: €${calcolaCostoVassoi(ric.semeMP,semeQty,nVassoi).toFixed(2)} totale · €${(calcolaCostoVassoi(ric.semeMP,semeQty,nVassoi)/n).toFixed(2)} per vassoio</div>
+        <div style="margin-top:4px;font-size:12px;color:#888">Costo stimato: €${calcolaCostoVassoi(ric.semeMP,semeQty,n).toFixed(2)} totale · €${(calcolaCostoVassoi(ric.semeMP,semeQty,n)/n).toFixed(2)} per vassoio</div>
       </div>`;
   }
   if(btn)btn.disabled=!allOk;
