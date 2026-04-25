@@ -221,7 +221,7 @@ function renderCl(){
         </div>`:''}
         <div style="background:#f5f5f5;border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:12px">
           <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888">
-            🔗 miniagricola.netlify.app/ordine.html?id=<strong style="color:#333">${esc(c.token)}</strong>
+            🔗 faberrunner.github.io/MiniAgricola/ORDINE.html?id=<strong style="color:#333">${esc(c.token)}</strong>
           </span>
           <button class="btn btn-g" onclick="cpL('${esc(c.token)}',this)" style="font-size:12px;padding:2px 8px">Copia</button>
         </div>
@@ -371,7 +371,7 @@ async function saveCl(){
   cm();renderAll();await saveClie();
 }
 async function delCl(id){const c=clients.find(x=>x.id===id);if(!c||!confirm(`Eliminare "${c.restaurant}"?`))return;clients=clients.filter(x=>x.id!==id);renderAll();await saveClie();}
-function cpL(tok,btn){try{navigator.clipboard.writeText(`https://miniagricola.netlify.app/ordine.html?id=${tok}`);}catch(e){}if(btn){const old=btn.textContent;btn.textContent='✓';btn.style.color='#5c8a3c';setTimeout(()=>{btn.textContent=old;btn.style.color=''},1500);}}
+function cpL(tok,btn){try{navigator.clipboard.writeText(`https://faberrunner.github.io/MiniAgricola/ORDINE.html?id=${tok}`);}catch(e){}if(btn){const old=btn.textContent;btn.textContent='✓';btn.style.color='#5c8a3c';setTimeout(()=>{btn.textContent=old;btn.style.color=''},1500);}}
 
 // ORDINI
 async function updS(id,status){orders=orders.map(o=>o.id===id?{...o,status}:o);renderAll();await saveOrd();}
@@ -400,8 +400,8 @@ function renderG(){
 
     <div class="sh" style="margin-top:20px">Magazzino Materie Prime</div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
-      <input class="input" id="mp-search" placeholder="🔍 Cerca..." oninput="renderG()" style="flex:1">
-      <select class="input" id="mp-cat" onchange="renderG()" style="width:auto">
+      <input class="input" id="mp-search" placeholder="🔍 Cerca..." oninput="updateMPTable()" style="flex:1;background:#fff;color:#1a1a1a">
+      <select class="input" id="mp-cat" onchange="updateMPTable()" style="width:auto;background:#fff;color:#1a1a1a">
         <option value="all">Tutte</option>
         <option value="Semi">Semi</option>
         <option value="Vaschette">Vaschette</option>
@@ -410,10 +410,14 @@ function renderG(){
         <option value="Altro">Altro</option>
       </select>
     </div>
-    ${renderMPTable()}
+    <div id="mp-table-body">${renderMPTable()}</div>
   `;
 }
 
+function updateMPTable(){
+  const el=document.getElementById('mp-table-body');
+  if(el)el.innerHTML=renderMPTable();
+}
 function renderMPTable(){
   const s=(document.getElementById('mp-search')||{}).value||'';
   const cat=(document.getElementById('mp-cat')||{}).value||'all';
