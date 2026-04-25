@@ -380,6 +380,21 @@ async function updS(id,status){orders=orders.map(o=>o.id===id?{...o,status}:o);r
 function renderG(){
   const v=document.getElementById('v-g');
   if(!v)return;
+  // Se già montato, aggiorna solo le parti dinamiche senza ricostruire
+  if(v.dataset.mounted==='1'){
+    updateMPTable();
+    // Aggiorna dropdown prodotti
+    const sel=document.getElementById('g-prod');
+    if(sel){
+      const curr=sel.value;
+      const prodConRicetta=products.filter(p=>ricette.find(r=>r.nomeApp===p.name));
+      sel.innerHTML='<option value="">— seleziona prodotto —</option>'+
+        prodConRicetta.map(p=>`<option value="${esc(p.name)}">${esc(p.name)} (${p.qty} disp.)</option>`).join('');
+      if(curr)sel.value=curr;
+    }
+    return;
+  }
+  v.dataset.mounted='1';
   const prodConRicetta=products.filter(p=>ricette.find(r=>r.nomeApp===p.name));
 
   v.innerHTML=`
@@ -447,6 +462,16 @@ function renderMPTable(){
   }).join('');
 }
 
+function calcolaCostoVassoi(semeMP, semeQtyTot, nVassoi){
+  let costo=0;
+  const mpVasch=materiePrime.find(m=>m.codice==='MA042642');
+  const mpTerr=materiePrime.find(m=>m.codice==='MA042644');
+  const mpSeme=materiePrime.find(m=>m.codice===semeMP);
+  if(mpVasch&&mpVasch.costoPerUnita) costo+=parseFloat(mpVasch.costoPerUnita||0)*nVassoi;
+  if(mpTerr&&mpTerr.costoPerUnita) costo+=parseFloat(mpTerr.costoPerUnita||0)*(400*nVassoi);
+  if(mpSeme&&mpSeme.costoPerUnita) costo+=parseFloat(mpSeme.costoPerUnita||0)*parseFloat(semeQtyTot||0);
+  return costo;
+}
 function onGProdChange(){
   const nome=document.getElementById('g-prod')?.value;
   const nStr=document.getElementById('g-vassoi')?.value;
@@ -475,6 +500,7 @@ function onGProdChange(){
         <div style="color:${okTerr?'#1a1a1a':'#e53935'}">🌱 Terreno Completo (MA042644): −${terrenoQty}g ${mpTerr?`(stock: ${mpTerr.stockResiduo}g)`:''} ${okTerr?'✓':'⚠ insufficiente'}</div>
         <div style="color:${okSeme?'#1a1a1a':'#e53935'}">🌿 ${esc(mpSeme?.nome||ric.semeMP)} (${ric.semeMP}): −${semeQty}g ${mpSeme?`(stock: ${mpSeme.stockResiduo}g)`:''} ${okSeme?'✓':'⚠ insufficiente'}</div>
         <div style="margin-top:8px;color:#5c8a3c;font-weight:600">→ ${esc(nome)}: +${n} vasoio${n>1?'i':''} disponibil${n>1?'i':'e'}</div>
+        <div style="margin-top:4px;font-size:12px;color:#888">Costo stimato: €${calcolaCostoVassoi(ric.semeMP,semeQty,nVassoi).toFixed(2)} totale · €${(calcolaCostoVassoi(ric.semeMP,semeQty,nVassoi)/n).toFixed(2)} per vassoio</div>
       </div>`;
   }
   if(btn)btn.disabled=!allOk;

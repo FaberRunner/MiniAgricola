@@ -123,39 +123,39 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <!-- SUCCESSO -->
 <div class="sscr" id="sscr">
   <div class="mganim" id="mganim">
-    <svg viewBox="0 0 120 155" xmlns="http://www.w3.org/2000/svg" width="120" height="155">
+    <svg viewBox="0 0 140 170" xmlns="http://www.w3.org/2000/svg" width="140" height="170">
       <!-- Terreno -->
-      <rect x="22" y="136" width="76" height="13" rx="5" fill="#b8944a" opacity=".75"/>
-      <ellipse cx="60" cy="136" rx="38" ry="5" fill="#c8a96e" opacity=".5"/>
-      <!-- Stelo cresce dal basso -->
-      <line x1="60" y1="136" x2="60" y2="42"
-            stroke="#5c8a3c" stroke-width="5" stroke-linecap="round"
-            stroke-dasharray="94" stroke-dashoffset="94"
-            style="animation:drawStem .65s cubic-bezier(.4,0,.2,1) .1s forwards"/>
-      <!-- Foglia sinistra: parte dal punto sullo stelo (60,105) e va a sinistra -->
-      <g opacity="0" style="animation:showLeaf .5s ease .75s forwards">
-        <path d="M60,108 C50,100 32,100 26,90 C32,96 50,103 60,108Z" fill="#7ab648"/>
-        <line x1="60" y1="108" x2="26" y2="90" stroke="#5c8a3c" stroke-width="1.5" stroke-linecap="round"/>
+      <rect x="20" y="148" width="100" height="16" rx="6" fill="#c8a070" opacity=".8"/>
+      <ellipse cx="70" cy="148" rx="50" ry="7" fill="#d4a87a" opacity=".5"/>
+      <!-- Stelo principale -->
+      <line x1="70" y1="148" x2="70" y2="38"
+            stroke="#4a7a2e" stroke-width="6" stroke-linecap="round"
+            stroke-dasharray="110" stroke-dashoffset="110"
+            style="animation:drawStem .7s cubic-bezier(.4,0,.2,1) .1s forwards"/>
+      <!-- Foglia grande SINISTRA (a 2/3 dell'altezza stelo) -->
+      <g opacity="0" style="animation:showLeaf .55s ease .8s forwards">
+        <path d="M68,112 Q40,95 22,82 Q42,90 68,112Z" fill="#7ab648"/>
+        <path d="M68,112 Q44,98 22,82" stroke="#5c8a3c" stroke-width="1.8" fill="none" stroke-linecap="round"/>
       </g>
-      <!-- Foglia destra: parte dal punto sullo stelo (60,88) e va a destra -->
-      <g opacity="0" style="animation:showLeaf .5s ease .95s forwards">
-        <path d="M60,88 C70,80 88,80 94,70 C88,76 70,83 60,88Z" fill="#8dc63f"/>
-        <line x1="60" y1="88" x2="94" y2="70" stroke="#6a9e30" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Foglia grande DESTRA (a metà stelo) -->
+      <g opacity="0" style="animation:showLeaf .55s ease 1.0s forwards">
+        <path d="M72,90 Q100,73 118,60 Q98,68 72,90Z" fill="#8dc63f"/>
+        <path d="M72,90 Q96,75 118,60" stroke="#6a9e30" stroke-width="1.8" fill="none" stroke-linecap="round"/>
       </g>
-      <!-- Fogliolina sinistra più in alto -->
-      <g opacity="0" style="animation:showLeaf .45s ease 1.1s forwards">
-        <path d="M60,68 C50,60 36,58 30,48 C37,55 51,62 60,68Z" fill="#9dd240"/>
-        <line x1="60" y1="68" x2="30" y2="48" stroke="#5c8a3c" stroke-width="1.2" stroke-linecap="round"/>
+      <!-- Foglia media SINISTRA (più in alto) -->
+      <g opacity="0" style="animation:showLeaf .5s ease 1.15s forwards">
+        <path d="M68,70 Q48,58 32,46 Q50,55 68,70Z" fill="#9dd63f"/>
+        <path d="M68,70 Q50,58 32,46" stroke="#5c8a3c" stroke-width="1.5" fill="none" stroke-linecap="round"/>
       </g>
-      <!-- Foglia apicale: in cima allo stelo, centrata -->
-      <g opacity="0" style="animation:showLeaf .4s ease 1.25s forwards">
-        <path d="M60,50 C54,40 54,28 60,22 C66,28 66,40 60,50Z" fill="#b8e84a"/>
-        <line x1="60" y1="50" x2="60" y2="22" stroke="#7ab648" stroke-width="1.2" stroke-linecap="round"/>
+      <!-- Foglia apicale centrata (in cima) -->
+      <g opacity="0" style="animation:showLeaf .45s ease 1.28s forwards">
+        <path d="M70,52 C62,40 62,24 70,16 C78,24 78,40 70,52Z" fill="#b8f040"/>
+        <line x1="70" y1="52" x2="70" y2="16" stroke="#7ab648" stroke-width="1.5" stroke-linecap="round"/>
       </g>
-      <!-- Check badge in alto a destra -->
-      <g opacity="0" style="animation:showCheck .4s cubic-bezier(.34,1.56,.64,1) 1.55s forwards">
-        <circle cx="94" cy="30" r="15" fill="#5c8a3c"/>
-        <path d="M87,30 L92,36 L102,22" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <!-- Badge checkmark -->
+      <g opacity="0" style="animation:showCheck .4s cubic-bezier(.34,1.56,.64,1) 1.6s forwards">
+        <circle cx="108" cy="32" r="18" fill="#4a7a2e"/>
+        <path d="M100,32 L106,39 L118,22" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       </g>
     </svg>
   </div>
