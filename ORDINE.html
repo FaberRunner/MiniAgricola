@@ -206,17 +206,24 @@ async function post_(a,d){const r=await fetch(API,{method:'POST',headers:{'Conte
 async function init(){
   token=new URLSearchParams(window.location.search).get('id');
 
-  // Carica prodotti
-  try{
-    const rows=await get_('getProducts');
-    if(rows&&rows.length>1){
-      const H=rows[0].map(h=>String(h).trim());
-      products=rows.slice(1).filter(r=>r[0]).map(row=>{
-        const o={};H.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});
-        return {id:String(o.id),name:String(o.name),desc:String(o.desc||''),price:pp(o.price),avail:String(o.avail).toLowerCase()==='true',unit:String(o.unit||'vassoio'),qty:parseInt(o.qty)||0};
-      });
-    }
-  }catch(e){console.error('Errore caricamento prodotti:',e);}
+  // Prodotti: usa cache locale se disponibile (TTL 5 min)
+  const CACHE_TTL=5*60*1000;
+  const cachedProd=(()=>{try{const c=JSON.parse(localStorage.getItem('ma_op')||'null');if(c&&(Date.now()-c.ts)<CACHE_TTL)return c.data;}catch(e){}return null;})();
+  if(cachedProd){
+    products=cachedProd;
+  } else {
+    try{
+      const rows=await get_('getProducts');
+      if(rows&&rows.length>1){
+        const H=rows[0].map(h=>String(h).trim());
+        products=rows.slice(1).filter(r=>r[0]).map(row=>{
+          const o={};H.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});
+          return {id:String(o.id),name:String(o.name),desc:String(o.desc||''),price:pp(o.price),avail:String(o.avail).toLowerCase()==='true',unit:String(o.unit||'vassoio'),qty:parseInt(o.qty)||0};
+        });
+        try{localStorage.setItem('ma_op',JSON.stringify({ts:Date.now(),data:products}));}catch(e){}
+      }
+    }catch(e){console.error('Errore caricamento prodotti:',e);}
+  }
 
   // Se ho un token, cerca il cliente nel DB
   if(token){

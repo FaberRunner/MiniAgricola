@@ -43,6 +43,7 @@ body{background:#f5f5f0;color:#1a1a1a;font-size:14px;min-height:100vh}
   <div class="logo">🌱 MINIAGRICOLA <span style="font-weight:300;font-size:13px">admin</span></div>
   <div style="display:flex;align-items:center;gap:10px">
     <span id="ss" style="font-size:12px;color:#a0d080"></span>
+    <button onclick="clearCache();loadAll(true)" style="font-size:11px;background:transparent;border:1px solid #444;color:#aaa;border-radius:5px;padding:2px 8px;cursor:pointer" title="Forza aggiornamento dati">↺</button>
     <span class="badge">GESTIONALE</span>
   </div>
 </div>
@@ -102,27 +103,39 @@ async function post(action,data){
 
 function ss(s,t){const e=document.getElementById('ss');e.style.color={ok:'#a0d080',loading:'#f59e0b',err:'#e53935'}[s]||'#888';e.textContent=t;}
 
-async function loadAll(){
+const CACHE_TTL=5*60*1000;
+function saveCache(k,d){try{localStorage.setItem(k,JSON.stringify({ts:Date.now(),data:d}));}catch(e){}}
+function loadCache(k){try{const c=JSON.parse(localStorage.getItem(k)||'null');if(c&&(Date.now()-c.ts)<CACHE_TTL)return c.data;}catch(e){}return null;}
+function clearCache(){['ma_cp','ma_cr','ma_cm'].forEach(k=>localStorage.removeItem(k));}
+
+async function loadAll(force=false){
   ss('loading','⟳ Connessione...');
   try{
-    const[pr,cl,or]=await Promise.all([get('getProducts'),get('getClients'),get('getOrders')]);
-    products=rows2obj(pr,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0}));
+    const cP=!force&&loadCache('ma_cp');
+    const cR=!force&&loadCache('ma_cr');
+    const cM=!force&&loadCache('ma_cm');
+    const[pr,cl,or,ric,mp]=await Promise.all([
+      cP?Promise.resolve(null):get('getProducts'),
+      get('getClients'),
+      get('getOrders'),
+      cR?Promise.resolve(null):get('getRicette'),
+      cM?Promise.resolve(null):get('getMateriePrime'),
+    ]);
+    const prodRaw=pr||(cP||null);
+    if(prodRaw){products=rows2obj(prodRaw,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0}));if(pr)saveCache('ma_cp',pr);}
     clients=rows2obj(cl,CLIE_H);
     orders=rows2obj(or,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));
-    // Ricette e Materie Prime per Gestionale
-    try{
-      const ric=await get('getRicette');
-      if(ric&&ric.length>1){const rH=ric[0].map(h=>String(h).trim());ricette=ric.slice(1).filter(r=>r[0]).map(row=>{const o={};rH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtyPerVassoio:pp(o.qtyPerVassoio)};});}
-    }catch(e){}
-    try{
-      const mp=await get('getMateriePrime');
-      if(mp&&mp.length>1){const mH=mp[0].map(h=>String(h).trim());materiePrime=mp.slice(1).filter(r=>r[0]).map(row=>{const o={};mH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtaAcquistata:pp(o.qtaAcquistata),prezzoTotale:pp(o.prezzoTotale),costoPerUnita:pp(o.costoPerUnita),qtaUsata:pp(o.qtaUsata),stockResiduo:pp(o.stockResiduo),valoreStock:pp(o.valoreStock)};});}
-    }catch(e){}
+    const ricRaw=ric||(cR||null);
+    if(ricRaw&&ricRaw.length>1){const rH=ricRaw[0].map(h=>String(h).trim());ricette=ricRaw.slice(1).filter(r=>r[0]).map(row=>{const o={};rH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtyPerVassoio:pp(o.qtyPerVassoio)};});if(ric)saveCache('ma_cr',ric);}
+    const mpRaw=mp||(cM||null);
+    if(mpRaw&&mpRaw.length>1){const mH=mpRaw[0].map(h=>String(h).trim());materiePrime=mpRaw.slice(1).filter(r=>r[0]).map(row=>{const o={};mH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtaAcquistata:pp(o.qtaAcquistata),prezzoTotale:pp(o.prezzoTotale),costoPerUnita:pp(o.costoPerUnita),qtaUsata:pp(o.qtaUsata),stockResiduo:pp(o.stockResiduo),valoreStock:pp(o.valoreStock)};});if(mp)saveCache('ma_cm',mp);}
     ss('ok','✓ Sincronizzato');renderAll();
   }catch(e){ss('err','⚠ Errore connessione');renderAll();}
 }
 
 async function saveProd(){
+  localStorage.removeItem('ma_cp');
+  localStorage.removeItem('ma_cache_prod');
   ss('loading','⟳ Salvataggio...');
   try{
     const rows=obj2rows(products.map(p=>({...p,avail:String(p.avail),price:String(p.price),qty:String(p.qty||0)})),PROD_H);
