@@ -368,8 +368,11 @@ async function confirm_(){
     if(cfb){cfb.disabled=false;cfb.textContent='Conferma ordine';}
     cart={};renderCat();updateCart();
     document.getElementById('stxt').textContent='Grazie '+(client?.restaurant||'')+'! Il tuo ordine è stato ricevuto e verrà confermato a breve.';
-    const ma=document.getElementById('mganim');
-    const svg=ma.querySelector('svg');if(svg){const c=svg.cloneNode(true);ma.replaceChild(c,svg);}
+    // Riavvia animazione carrello
+    const img2=document.getElementById('cart-img');
+    const chk2=document.getElementById('cart-check');
+    if(img2){img2.style.animation='none';void img2.offsetWidth;img2.style.animation='';}
+    if(chk2){chk2.style.opacity='0';chk2.style.animation='none';void chk2.offsetWidth;chk2.style.animation='';}
     document.getElementById('sscr').classList.add('open');
   }catch(e){
     console.error('Errore ordine:',e);
