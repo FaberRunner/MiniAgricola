@@ -58,13 +58,14 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 /* Schermata successo */
 .sscr{display:none;position:fixed;inset:0;background:var(--bg);z-index:200;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:24px}
 .sscr.open{display:flex}
-/* Animazione microgreen */
+/* Animazione carrello microgreens */
 @keyframes fadeUp{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
-@keyframes drawStem{0%{stroke-dashoffset:100}100%{stroke-dashoffset:0}}
-@keyframes showLeaf{0%{opacity:0}100%{opacity:1}}
-@keyframes showCheck{0%{opacity:0}50%{opacity:1;transform:scale(1.15)}100%{opacity:1;transform:scale(1)}}
-.mganim{width:130px;height:160px;margin-bottom:4px;display:flex;align-items:center;justify-content:center}
-.stxt{animation:fadeUp .5s ease 1.6s both}
+@keyframes cartBounce{0%{opacity:0;transform:scale(.6) translateY(20px)}60%{transform:scale(1.08) translateY(-6px)}80%{transform:scale(.97) translateY(2px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes checkPop{0%{opacity:0;transform:scale(0)}60%{transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
+.mganim{width:150px;height:160px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;position:relative}
+.cart-img{width:140px;height:140px;object-fit:contain;animation:cartBounce .7s cubic-bezier(.34,1.56,.64,1) .2s both}
+.cart-check{position:absolute;top:6px;right:6px;width:36px;height:36px;background:#4a7a2e;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:checkPop .4s cubic-bezier(.34,1.56,.64,1) .9s both;opacity:0}
+.stxt{animation:fadeUp .5s ease 1.1s both}
 .gbar{background:var(--gl);padding:10px 16px;font-size:13px;color:var(--g);font-weight:600;text-align:center;border-bottom:1px solid #d4eac4}
 </style>
 </head>
@@ -123,58 +124,13 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <!-- SUCCESSO -->
 <div class="sscr" id="sscr">
   <div class="mganim" id="mganim">
-    <svg viewBox="0 0 160 185" xmlns="http://www.w3.org/2000/svg" width="130" height="150">
-      <!-- Terreno -->
-      <rect x="30" y="163" width="100" height="16" rx="7" fill="#c8a070" opacity=".9"/>
-      <ellipse cx="80" cy="163" rx="52" ry="7" fill="#e0b888" opacity=".6"/>
-      <!-- Stelo -->
-      <line x1="80" y1="163" x2="80" y2="50"
-        stroke="#4a7a2e" stroke-width="7" stroke-linecap="round"
-        stroke-dasharray="113" stroke-dashoffset="113"
-        style="animation:drawStem .7s cubic-bezier(.4,0,.2,1) .1s forwards"/>
-      <!-- FOGLIA SINISTRA BASSA: forma chiusa a goccia -->
-      <path opacity="0"
-        d="M80,128 C60,115 28,112 14,98 C28,106 60,118 80,128 Z"
-        fill="#7ab648"
-        style="animation:showLeaf .55s ease .8s forwards"/>
-      <path opacity="0"
-        d="M80,128 C60,116 30,113 14,98"
-        stroke="#5a8030" stroke-width="1.8" fill="none" stroke-linecap="round"
-        style="animation:showLeaf .55s ease .8s forwards"/>
-      <!-- FOGLIA DESTRA MEDIA: forma chiusa a goccia -->
-      <path opacity="0"
-        d="M80,104 C100,91 132,88 146,74 C132,82 100,95 80,104 Z"
-        fill="#8dc63f"
-        style="animation:showLeaf .55s ease 1.0s forwards"/>
-      <path opacity="0"
-        d="M80,104 C100,92 130,89 146,74"
-        stroke="#6a9e30" stroke-width="1.8" fill="none" stroke-linecap="round"
-        style="animation:showLeaf .55s ease 1.0s forwards"/>
-      <!-- FOGLIA SINISTRA ALTA: forma chiusa -->
-      <path opacity="0"
-        d="M80,80 C60,68 34,64 20,52 C35,61 60,71 80,80 Z"
-        fill="#9dd63f"
-        style="animation:showLeaf .5s ease 1.15s forwards"/>
-      <path opacity="0"
-        d="M80,80 C60,69 35,65 20,52"
-        stroke="#5a8030" stroke-width="1.6" fill="none" stroke-linecap="round"
-        style="animation:showLeaf .5s ease 1.15s forwards"/>
-      <!-- FOGLIA APICALE: ellisse verticale in cima -->
-      <ellipse cx="80" cy="46" rx="14" ry="24" fill="#b8f040"
-        opacity="0"
-        style="animation:showLeaf .45s ease 1.28s forwards"/>
-      <line x1="80" y1="66" x2="80" y2="26"
-        stroke="#7ab648" stroke-width="1.8" stroke-linecap="round"
-        opacity="0"
-        style="animation:showLeaf .45s ease 1.28s forwards"/>
-      <!-- CHECK BADGE -->
-      <g opacity="0" style="animation:showCheck .4s cubic-bezier(.34,1.56,.64,1) 1.6s forwards">
-        <circle cx="122" cy="38" r="20" fill="#4a7a2e"/>
-        <path d="M113,38 L120,46 L134,26" stroke="#fff" stroke-width="3.5"
-          stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-      </g>
-    </svg>
-  </div>v>
+    <img class="cart-img" id="cart-img" src="https://faberrunner.github.io/MiniAgricola/microgreens-cart.jpg" alt="Ordine confermato"/>
+    <div class="cart-check" id="cart-check">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+        <path d="M5 12L10 17L19 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
   <div class="stxt">
     <div style="font-size:22px;font-weight:700;margin-bottom:8px">Ordine inviato!</div>
     <div style="font-size:15px;color:var(--m);margin-bottom:32px;line-height:1.6;max-width:280px" id="stxt"></div>
@@ -425,9 +381,11 @@ async function confirm_(){
 function resetS(){
   const sc=document.getElementById('sscr');
   sc.classList.remove('open');
-  const ma=document.getElementById('mganim');
-  const svg=ma.querySelector('svg');
-  if(svg){const cl=svg.cloneNode(true);ma.replaceChild(cl,svg);}
+  // Riavvia animazione riapplicando la classe
+  const img=document.querySelector('.cart-img');
+  const chk=document.querySelector('.cart-check');
+  if(img){img.style.animation='none';void img.offsetWidth;img.style.animation='';}
+  if(chk){chk.style.animation='none';chk.style.opacity='0';void chk.offsetWidth;chk.style.animation='';}
 }
 
 init();
