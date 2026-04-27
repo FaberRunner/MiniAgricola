@@ -90,7 +90,10 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
   <div class="gbar" id="gbar"></div>
   <div class="hdr">
     <div class="hlogo">🌱 <span style="font-weight:700">Mini</span>Agricola <span>· ordina</span></div>
-    <button class="cbtn" onclick="openR()">🛒 <span id="ccount" class="cbadge">0</span></button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="hbtn" onclick="openHist()" title="I miei ordini" style="background:transparent;border:1.5px solid var(--g);color:var(--g);border-radius:99px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer">📋 Ordini</button>
+      <button class="cbtn" onclick="openR()">🛒 <span id="ccount" class="cbadge">0</span></button>
+    </div>
   </div>
   <div class="body" id="cat"></div>
 </div>
@@ -121,6 +124,17 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
     <div class="rsec">Note per la consegna</div>
     <textarea class="ninp" id="note" rows="3" placeholder="Es. consegna mercoledì mattina..."></textarea>
     <button class="cfbtn" id="cfbtn" onclick="confirm_()">Conferma ordine</button>
+  </div>
+</div>
+
+<!-- STORICO ORDINI -->
+<div class="rscr" id="histscr">
+  <div class="rhdr">
+    <button class="rback" onclick="closeHist()">←</button>
+    <div style="font-weight:700;font-size:16px">I miei ordini</div>
+  </div>
+  <div class="rbody" id="histbody">
+    <div style="text-align:center;padding:40px;color:var(--m)">Caricamento...</div>
   </div>
 </div>
 
@@ -332,10 +346,81 @@ function openR(){
 }
 function closeR(){document.getElementById('rscr').classList.remove('open');}
 
+async function openHist(){
+  const scr=document.getElementById('histscr');
+  const body=document.getElementById('histbody');
+  scr.classList.add('open');
+  body.innerHTML='<div style="text-align:center;padding:40px;color:var(--m)">Caricamento ordini...</div>';
+  try{
+    const rows=await get_('getOrders');
+    if(!rows||rows.length<2){
+      body.innerHTML='<div style="text-align:center;padding:40px;color:var(--m)">Non hai ancora effettuato ordini.</div>';
+      return;
+    }
+    const H=rows[0].map(h=>String(h).trim());
+    const iId=H.indexOf('id'),iCli=H.indexOf('clientId'),iRest=H.indexOf('restaurant'),
+          iItems=H.indexOf('itemsJson'),iTot=H.indexOf('total'),iNote=H.indexOf('note'),
+          iSt=H.indexOf('status'),iCr=H.indexOf('createdAt');
+    // Filtra ordini per cliente — match per clientId se presente, altrimenti per restaurant
+    const myId=client?.id||'';
+    const myRest=client?.restaurant||'';
+    const myOrders=rows.slice(1).filter(r=>{
+      const rcId=String(r[iCli]||'').trim();
+      const rcRest=String(r[iRest]||'').trim();
+      if(myId&&rcId===myId)return true;
+      if(!myId&&myRest&&rcRest===myRest)return true;
+      return false;
+    });
+    if(myOrders.length===0){
+      body.innerHTML='<div style="text-align:center;padding:40px;color:var(--m)">Non hai ancora effettuato ordini.</div>';
+      return;
+    }
+    // Ordina dal più recente
+    myOrders.sort((a,b)=>new Date(b[iCr])-new Date(a[iCr]));
+    const SL={pending:'In attesa',confirmed:'Confermato',delivered:'Consegnato',cancelled:'Annullato'};
+    const SC={pending:'#f59e0b',confirmed:'#5c8a3c',delivered:'#888',cancelled:'#e53935'};
+    body.innerHTML='<div class="rsec">'+myOrders.length+' ordin'+(myOrders.length===1?'e':'i')+' totali</div>'+
+      myOrders.map(o=>{
+        const id=String(o[iId]||'');
+        const status=String(o[iSt]||'pending');
+        const total=parseFloat(String(o[iTot]||0).replace(',','.'))||0;
+        const note=String(o[iNote]||'');
+        const created=o[iCr]?new Date(o[iCr]).toLocaleString('it-IT'):'';
+        let items=[];
+        try{items=JSON.parse(o[iItems]||'[]');}catch(e){}
+        const sc=SC[status]||'#888';
+        const sl=SL[status]||status;
+        return '<div class="ritem" style="flex-direction:column;align-items:stretch;gap:8px">'+
+          '<div style="display:flex;justify-content:space-between;align-items:center">'+
+            '<div><div style="font-weight:700;font-size:14px">'+esc(id)+'</div>'+
+            '<div style="font-size:11px;color:var(--m)">'+esc(created)+'</div></div>'+
+            '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:'+sc+'22;color:'+sc+'">● '+sl+'</span>'+
+          '</div>'+
+          '<div style="background:#f9f9f9;border-radius:6px;padding:8px 10px;font-size:13px">'+
+            items.map(it=>'<div style="display:flex;justify-content:space-between;padding:2px 0"><span>'+esc(it.name)+'</span><span style="color:var(--m)">×'+it.qty+' = €'+(it.qty*it.price).toFixed(2)+'</span></div>').join('')+
+          '</div>'+
+          (note?'<div style="font-size:12px;color:var(--m);font-style:italic">📝 '+esc(note)+'</div>':'')+
+          '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--b);padding-top:8px"><span style="font-size:12px;color:var(--m)">Totale</span><strong style="font-size:15px;color:var(--g)">€'+total.toFixed(2)+'</strong></div>'+
+        '</div>';
+      }).join('');
+  }catch(e){
+    console.error('Errore caricamento storico:',e);
+    body.innerHTML='<div style="text-align:center;padding:40px;color:#e53935">Errore caricamento ordini. Riprova.</div>';
+  }
+}
+
+function closeHist(){document.getElementById('histscr').classList.remove('open');}
+
 async function confirm_(){
   const btn=document.getElementById('cfbtn');
-  btn.disabled=true;btn.textContent='Invio in corso...';
   const items=cartItems(),total=cartTotal(),note=document.getElementById('note').value.trim();
+  // VALIDAZIONE: ordine minimo 6 vaschette (anche di varietà diverse)
+  const totQty=items.reduce((s,i)=>s+(parseInt(i.qty)||0),0);
+  if(totQty<6){
+    alert('Ordine minimo 6 vaschette (anche di varietà diverse).\n\nAttualmente nel carrello ne hai '+totQty+'. Aggiungi altre '+(6-totQty)+' vaschett'+(6-totQty===1?'a':'e')+' per procedere.\n\nCi scusiamo per il disagio.');
+    return;
+  }
+  btn.disabled=true;btn.textContent='Invio in corso...';
   const ORDI_H=['id','clientId','restaurant','itemsJson','total','note','status','createdAt'];
   const order={
     id:'ORD-'+Date.now(),
