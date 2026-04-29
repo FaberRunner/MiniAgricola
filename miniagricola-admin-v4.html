@@ -277,14 +277,14 @@ function renderO(){
             <div style="font-size:12px;color:#888">${esc(o.id)} · ${new Date(o.createdAt).toLocaleString('it-IT')}</div>
           </div>
           <span class="tag" style="background:${sc}22;color:${sc}">● ${SL[o.status]||o.status}</span>
-          <strong style="font-size:16px;min-width:60px;text-align:right">€${pp(o.total).toFixed(2)}</strong>
+          <strong style="font-size:16px;min-width:60px;text-align:right">€${(()=>{const t=pp(o.total);if(t>9999){const calc=(o.items||[]).filter(i=>!i.preorder).reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);return calc.toFixed(2);}return t.toFixed(2);})()}</strong>
         </div>
         <div style="background:#f9f9f9;border-radius:8px;padding:8px 12px;margin-bottom:8px">
-          ${(o.items||[]).map((it,i)=>`
-            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;${i<(o.items.length-1)?'border-bottom:1px solid #eee':''}">
-              <span>${esc(it.name)}</span>
-              <span style="color:#888">${it.qty} × €${it.price} → <strong>€${(it.qty*it.price).toFixed(2)}</strong></span>
-            </div>`).join('')}
+          ${(o.items||[]).map((it,i)=>{const isPre=it.preorder===true||it.preorder==='true';const lineTotal=Math.round(parseFloat(it.qty||0)*parseFloat(it.price||0)*100)/100;return`
+            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;${i<(o.items.length-1)?'border-bottom:1px solid #eee':''}${isPre?';background:#fff8e6;padding:4px 8px;border-radius:4px;margin:2px 0':''}">
+              <span>${esc(it.name)}${isPre?' <span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fff0c0;padding:1px 5px;border-radius:3px;margin-left:4px">PRE-ORDINE</span>':''}</span>
+              <span style="color:${isPre?'#f59e0b':'#888'}">${it.qty} × €${it.price}${isPre?' (pre-ord.)':''} → <strong>€${lineTotal.toFixed(2)}</strong></span>
+            </div>`;}).join('')}
         </div>
         ${o.note?`<div style="font-size:13px;color:#666;font-style:italic;margin-bottom:8px">📝 ${esc(o.note)}</div>`:''}
         ${cl?.address?`<div style="font-size:13px;margin-bottom:10px">📍 ${esc(cl.address)} ${m?`<a href="${esc(m)}" target="_blank" style="color:#5c8a3c;font-weight:700">→ Maps</a>`:''}</div>`:''}
