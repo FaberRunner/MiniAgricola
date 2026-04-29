@@ -513,7 +513,7 @@ function onGProdChange(){
         <div style="color:${okSeme?'#1a1a1a':'#e53935'}">🌿 ${esc(mpSeme?.nome||ric.semeMP)} (${ric.semeMP}): −${semeQty}g ${mpSeme?`(stock: ${mpSeme.stockResiduo}g)`:''} ${okSeme?'✓':'⚠ insufficiente'}</div>
         <div style="margin-top:8px;color:#5c8a3c;font-weight:600">→ ${esc(nome)}: +${n} vasoio${n>1?'i':''} disponibil${n>1?'i':'e'}</div>
         <div style="margin-top:4px;font-size:12px;color:#888">Costo stimato: €${calcolaCostoVassoi(ric.semeMP,semeQty,n).toFixed(2)} totale · €${(calcolaCostoVassoi(ric.semeMP,semeQty,n)/n).toFixed(2)} per vassoio</div>
-        <div style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border-left:3px solid #5c8a3c;font-size:12px;color:#444">📦 Con lo stock attuale puoi produrre massimo <strong style="color:#5c8a3c">${calcolaMaxVassoi(ric.semeMP,ric.qtyPerVassoio)}</strong> vassoi totali</div>
+        <div style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border-left:3px solid #5c8a3c;font-size:12px;color:#444">📦 Con lo stock attuale puoi produrre massimo <strong style="color:#5c8a3c">${materiePrime.length>0?calcolaMaxVassoi(ric.semeMP,ric.qtyPerVassoio)+' vassoi':'— (dati MP in caricamento)'}</strong></div>
       </div>`;
   }
   if(btn)btn.disabled=!allOk;

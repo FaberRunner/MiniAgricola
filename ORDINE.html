@@ -88,6 +88,9 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="gbar" id="gbar"></div>
+  <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
+    ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
+  </div>
   <div class="hdr">
     <div class="hlogo">🌱 <span style="font-weight:700">Mini</span>Agricola <span>· ordina</span></div>
     <div style="display:flex;gap:8px;align-items:center">
@@ -120,6 +123,9 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
     <div class="rtot">
       <span style="font-weight:600;font-size:15px">Totale</span>
       <span style="font-weight:800;font-size:20px;color:var(--g)" id="rtot">€0.00</span>
+    </div>
+    <div id="note-min" style="display:none;background:#fff8e6;border:1px solid #f0d080;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#8a6800;font-weight:600">
+      ⚠️ Ordine minimo 6 vaschette — aggiungine ancora <span id="note-min-count"></span>
     </div>
     <div class="rsec">Note per la consegna</div>
     <textarea class="ninp" id="note" rows="3" placeholder="Es. consegna mercoledì mattina..."></textarea>
@@ -169,7 +175,7 @@ const CATS=[
 ];
 const EMO={'MG-0001':'🌿','MG-0002':'🌱','MG-0003':'🌿','MG-0004':'🌿','MG-0005':'🌿','MG-0006':'🌿','MG-0007':'🌱','MG-0008':'🍋','MG-0009':'🌿','MG-0010':'🟣','MG-0011':'🔴','MG-0012':'🟡','MG-0013':'🔴','MG-0014':'🔴','MG-0015':'⚫','MG-0016':'🔴','MG-0017':'💚','MG-0018':'🟣','MG-0019':'🩷','MG-0020':'🖤','MG-0021':'🟣','MG-0022':'💜','MG-0023':'🟠','MG-0024':'🔴','MG-0025':'💜','MG-0026':'🟡','MG-0027':'🤍','MG-0028':'🤍','MG-0029':'🌿','MG-0030':'🟠','MG-0031':'🟢','MG-0032':'🟤','MG-0033':'🟤','MG-0034':'🌿'};
 
-let products=[],cart={},client=null,token=null;
+let products=[],cart={},preCart={},client=null,token=null;
 
 function pp(v){return typeof v==='number'?v:parseFloat(String(v||0).replace(',','.'))||0;}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -305,39 +311,79 @@ function addC(id){
   if(requested===0){alert('Inserisci almeno 1 vaschetta.');return;}
   const product=products.find(p=>p.id===id);
   const available=product?.qty||0;
-  let qty=requested;
-  let msg='';
-  if(available>0&&requested>available){
-    qty=available;
-    if(el)el.value=available;
-    msg='Abbiamo solo '+available+' vaschett'+(available===1?'a':'e')+' disponibil'+(available===1?'e':'i')+' per il momento. Ci scusiamo per il disagio.';
+
+  if(available<=0){
+    // Prodotto esaurito — offri pre-ordine
+    const conf=confirm('Questo prodotto non è al momento disponibile.\n\nVuoi effettuare un PRE-ORDINE di '+requested+' vaschett'+(requested===1?'a':'e')+' di '+product.name+'?\n\nRiceverai la merce non appena disponibile, in linea con la nostra politica anti-spreco.');
+    if(conf){
+      preCart[id]=(preCart[id]||0)+requested;
+      updateCart();
+      const btn=document.getElementById('ab-'+id);
+      if(btn){btn.textContent='📋 Pre-ordine ('+preCart[id]+')';btn.className='abtn';btn.style.background='#f59e0b';}
+    }
+    return;
   }
-  cart[id]=qty;updateCart();
+
+  if(requested>available){
+    // Parzialmente disponibile — cappа a disponibile + offri pre-ordine per il resto
+    const diff=requested-available;
+    cart[id]=available;
+    if(el)el.value=available;
+    const conf=confirm('Abbiamo solo '+available+' vaschett'+(available===1?'a':'e')+' disponibil'+(available===1?'e':'i')+' di '+product.name+'.\n\nVuoi aggiungere '+available+' al carrello e fare un PRE-ORDINE per le restanti '+diff+'?\n\nLe vaschette in pre-ordine saranno consegnate non appena disponibili.');
+    if(conf) preCart[id]=(preCart[id]||0)+diff;
+    updateCart();
+    const btn=document.getElementById('ab-'+id);
+    const totBtn=(cart[id]||0)+(preCart[id]||0);
+    if(btn){btn.textContent='✓ Carrello ('+totBtn+')';btn.className='abtn added';}
+    return;
+  }
+
+  // Disponibile — normale
+  cart[id]=requested;
+  updateCart();
   const btn=document.getElementById('ab-'+id);
-  if(btn){btn.textContent='✓ Nel carrello ('+qty+')';btn.className='abtn added';}
-  if(msg)setTimeout(()=>alert(msg),100);
+  if(btn){btn.textContent='✓ Nel carrello ('+requested+')';btn.className='abtn added';}
 }
 
-function cartItems(){return Object.entries(cart).map(([id,q])=>{const p=products.find(x=>x.id===id);return p?{id,name:p.name,qty:parseInt(q)||0,price:parseFloat(p.price)||0}:null;}).filter(Boolean);}
+function cartItems(){return Object.entries(cart).filter(([,q])=>(parseInt(q)||0)>0).map(([id,q])=>{const p=products.find(x=>x.id===id);return p?{id,name:p.name,qty:parseInt(q)||0,price:parseFloat(p.price)||0,preorder:false}:null;}).filter(Boolean);}
+function preCartItems(){return Object.entries(preCart).filter(([,q])=>(parseInt(q)||0)>0).map(([id,q])=>{const p=products.find(x=>x.id===id);return p?{id,name:p.name,qty:parseInt(q)||0,price:parseFloat(p.price)||0,preorder:true}:null;}).filter(Boolean);}
 function cartTotal(){return cartItems().reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);}
 
 function updateCart(){
-  const items=cartItems(),count=items.reduce((s,i)=>s+i.qty,0),tot=cartTotal();
-  document.getElementById('ccount').textContent=count;
-  document.getElementById('cbarlbl').textContent=count>0?`Vai all'ordine · ${count} prod.`:'Carrello vuoto';
-  document.getElementById('cbartot').textContent=`€${tot.toFixed(2)}`;
-  document.getElementById('cbarbtn').disabled=count===0;
+  const items=cartItems(),pItems=preCartItems();
+  const count=items.reduce((s,i)=>s+i.qty,0);
+  const pCount=pItems.reduce((s,i)=>s+i.qty,0);
+  const tot=cartTotal();
+  const totCount=count+pCount;
+  document.getElementById('ccount').textContent=totCount;
+  document.getElementById('cbarlbl').textContent=totCount>0?`Vai all'ordine · ${totCount} vasch.`:"Carrello vuoto";
+  document.getElementById('cbartot').textContent='€'+tot.toFixed(2);
+  document.getElementById('cbarbtn').disabled=totCount===0;
 }
 
 function openR(){
   const items=cartItems();if(!items.length)return;
-  document.getElementById('ritems').innerHTML=items.map(it=>`
+  const pItems=preCartItems();
+  const realHtml=items.map(it=>`
     <div class="ritem">
       <div style="flex:1;font-weight:600;font-size:14px">${esc(it.name)}</div>
       <div style="font-size:13px;color:var(--m)">${it.qty} × €${it.price}</div>
       <div style="font-weight:700;font-size:14px">€${(it.qty*it.price).toFixed(2)}</div>
     </div>`).join('');
-  document.getElementById('rtot').textContent=`€${cartTotal().toFixed(2)}`;
+  const preHtml=pItems.length>0?
+    '<div style="font-size:11px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">📋 Pre-ordini (consegna appena disponibili)</div>'+
+    pItems.map(it=>`
+    <div class="ritem" style="border-color:#f59e0b22;background:#fff8e6">
+      <div style="flex:1;font-weight:600;font-size:14px;color:#8a6800">${esc(it.name)}</div>
+      <div style="font-size:13px;color:#f59e0b">${it.qty} vasch. · pre-ordine</div>
+      <div style="font-weight:700;font-size:14px;color:#8a6800">€0.00</div>
+    </div>`).join(''):'';
+  document.getElementById('ritems').innerHTML=realHtml+preHtml;
+  document.getElementById('rtot').textContent='€'+cartTotal().toFixed(2);
+  // Nota minimo ordine
+  const totQtyPreview=(items.reduce((s,i)=>s+i.qty,0))+(pItems.reduce((s,i)=>s+i.qty,0));
+  const noteMin=document.getElementById('note-min');
+  if(noteMin)noteMin.style.display=totQtyPreview<6?'block':'none';
   document.getElementById('note').value='';
   // Sempre resetta il bottone quando si apre il riepilogo
   const btn=document.getElementById('cfbtn');
@@ -413,20 +459,28 @@ function closeHist(){document.getElementById('histscr').classList.remove('open')
 
 async function confirm_(){
   const btn=document.getElementById('cfbtn');
-  const items=cartItems(),total=cartTotal(),note=document.getElementById('note').value.trim();
-  // VALIDAZIONE: ordine minimo 6 vaschette (anche di varietà diverse)
-  const totQty=items.reduce((s,i)=>s+(parseInt(i.qty)||0),0);
+  const items=cartItems(),pItems=preCartItems(),total=cartTotal(),note=document.getElementById('note').value.trim();
+  // VALIDAZIONE: ordine minimo 6 vaschette (reali + pre-ordini)
+  const totQty=items.reduce((s,i)=>s+(parseInt(i.qty)||0),0)+pItems.reduce((s,i)=>s+(parseInt(i.qty)||0),0);
   if(totQty<6){
-    alert('Ordine minimo 6 vaschette (anche di varietà diverse).\n\nAttualmente nel carrello ne hai '+totQty+'. Aggiungi altre '+(6-totQty)+' vaschett'+(6-totQty===1?'a':'e')+' per procedere.\n\nCi scusiamo per il disagio.');
+    const mancano=6-totQty;
+    // Aggiorna il contatore nel banner
+    const nc=document.getElementById('note-min-count');
+    if(nc)nc.textContent=mancano+' vaschett'+(mancano===1?'a':'e');
+    const noteMin=document.getElementById('note-min');
+    if(noteMin)noteMin.style.display='block';
+    alert('Ordine minimo 6 vaschette (anche di varietà diverse).\n\nHai '+totQty+' vaschette. Ne mancano ancora '+mancano+'.\n\nPuoi aggiungere prodotti disponibili o effettuare pre-ordini per raggiungere il minimo.');
     return;
   }
+  const noteMin=document.getElementById('note-min');
+  if(noteMin)noteMin.style.display='none';
   btn.disabled=true;btn.textContent='Invio in corso...';
   const ORDI_H=['id','clientId','restaurant','itemsJson','total','note','status','createdAt'];
   const order={
     id:'ORD-'+Date.now(),
     clientId:client?.id||'',
     restaurant:client?.restaurant||'Sconosciuto',
-    itemsJson:JSON.stringify(items.map(i=>({name:i.name,qty:i.qty,price:i.price}))),
+    itemsJson:JSON.stringify([...items.map(i=>({name:i.name,qty:i.qty,price:i.price,preorder:false})),...pItems.map(i=>({name:i.name,qty:i.qty,price:0,preorder:true}))]),
     total:String(total),
     note:note,
     status:'pending',
@@ -451,6 +505,7 @@ async function confirm_(){
     }catch(_){}
     // Successo
     closeR();
+    preCart={};
     // Reset bottone per prossimo ordine
     const cfb=document.getElementById('cfbtn');
     if(cfb){cfb.disabled=false;cfb.textContent='Conferma ordine';}
