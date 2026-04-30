@@ -429,8 +429,7 @@ function updateCart(){
 }
 
 function openR(){
-  const items=cartItems();if(!items.length)return;
-  const pItems=preCartItems();
+  const items=cartItems(),pItems=preCartItems();if(!items.length&&!pItems.length)return;
   const realHtml=items.map(it=>`
     <div class="ritem">
       <div style="flex:1;font-weight:600;font-size:14px">${esc(it.name)}</div>
@@ -549,17 +548,22 @@ async function confirm_(){
   const btn=document.getElementById('cfbtn');
   const items=cartItems(),pItems=preCartItems(),subtotal=cartTotal(),total=subtotal+(deliveryCost||0),note=document.getElementById('note').value.trim();
   // VALIDAZIONE: ordine minimo 6 vaschette (reali + pre-ordini)
-  // Minimo 6 conta SOLO vaschette reali — i pre-ordini non contribuiscono
+  // Minimo 6: conta reali + pre-ordini insieme
   const totQtyReali=items.reduce((s,i)=>s+(parseInt(i.qty)||0),0);
-  const totQty=totQtyReali; // alias per compatibilità
-  if(totQtyReali<6){
-    const mancano=6-totQtyReali;
-    // Aggiorna il contatore nel banner
+  const preCount=pItems.reduce((s,i)=>s+(parseInt(i.qty)||0),0);
+  const totQty=totQtyReali+preCount;
+  if(totQty<6){
+    const mancano=6-totQty;
     const nc=document.getElementById('note-min-count');
     if(nc)nc.textContent=mancano+' vaschett'+(mancano===1?'a':'e');
     const noteMin=document.getElementById('note-min');
     if(noteMin)noteMin.style.display='block';
-    alert('Ordine minimo 6 vaschette (anche di varietà diverse).\n\nHai '+totQty+' vaschette. Ne mancano ancora '+mancano+'.\n\nPuoi aggiungere prodotti disponibili per raggiungere il minimo.');
+    let msg='Ordine minimo 6 vaschette.\n\n';
+    if(totQtyReali>0&&preCount>0) msg+='Hai '+totQtyReali+' vaschett'+(totQtyReali===1?'a':'e')+' disponibil'+(totQtyReali===1?'e':'i')+' e '+preCount+' in pre-ordine (totale '+totQty+').';
+    else if(preCount>0) msg+='Hai '+preCount+' vaschett'+(preCount===1?'a':'e')+' in pre-ordine.';
+    else msg+='Hai '+totQtyReali+' vaschett'+(totQtyReali===1?'a':'e')+' disponibil'+(totQtyReali===1?'e':'i')+'.';
+    msg+='\nNe mancano ancora '+mancano+' per arrivare ad un totale di 6.';
+    alert(msg);
     return;
   }
   const noteMin=document.getElementById('note-min');
