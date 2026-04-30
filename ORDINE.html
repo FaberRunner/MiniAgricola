@@ -288,7 +288,28 @@ function renderCat(){
             ${q>0?`✓ Nel carrello (${q})`:'Aggiungi al carrello'}
           </button>
         </div>`;
+      }else if(p.preorder){
+        // Prodotto esaurito ma con pre-ordine attivo
+        const q=preCart[p.id]||0;
+        h+=`<div class="pcard" style="opacity:.85;border-color:#e9d5ff">
+          <div class="pimg" style="background:#f5f0ff">${em}</div>
+          <div class="pinfo">
+            <div class="pname">${esc(p.name)}</div>
+            <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
+            <div class="pdesc" style="color:#7c3aed">📋 Pre-ordine disponibile</div>
+          </div>
+          <div class="qctrl">
+            <button class="qbtn" onclick="chQ('${p.id}',-1)">−</button>
+            <input class="qinp" id="q-${p.id}" type="number" min="0" value="${q}" readonly>
+            <button class="qbtn" onclick="chQ('${p.id}',1)">+</button>
+          </div>
+          <button class="abtn ${q>0?'added':''}" id="ab-${p.id}" onclick="addC('${p.id}')"
+            style="${q>0?'background:#7c3aed':'background:#7c3aed'}">
+            ${q>0?'📋 Pre-ordine ('+q+')':'📋 Pre-ordina'}
+          </button>
+        </div>`;
       }else{
+        // Non disponibile senza pre-ordine
         h+=`<div class="pcard na">
           <div class="pimg">${em}</div>
           <div class="pinfo">
