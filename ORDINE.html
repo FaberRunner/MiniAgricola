@@ -65,8 +65,8 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 @keyframes fadeUp{0%{opacity:0;transform:translateY(16px)}100%{opacity:1;transform:translateY(0)}}
 @keyframes cartBounce{0%{opacity:0;transform:scale(.6) translateY(20px)}60%{transform:scale(1.08) translateY(-6px)}80%{transform:scale(.97) translateY(2px)}100%{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes checkPop{0%{opacity:0;transform:scale(0)}60%{transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
-.mganim{width:200px;height:200px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;position:relative}
-.cart-img{width:190px;height:190px;object-fit:contain;animation:cartBounce .7s cubic-bezier(.34,1.56,.64,1) .2s both}
+.mganim{width:240px;height:240px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:12px}
+.cart-img{width:100%;height:100%;object-fit:cover;animation:cartBounce .7s cubic-bezier(.34,1.56,.64,1) .2s both}
 .cart-check{position:absolute;top:6px;right:6px;width:36px;height:36px;background:#4a7a2e;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:checkPop .4s cubic-bezier(.34,1.56,.64,1) .9s both;opacity:0}
 .stxt{animation:fadeUp .5s ease 1.1s both}
 .gbar{background:var(--gl);padding:10px 16px;font-size:13px;color:var(--g);font-weight:600;text-align:center;border-bottom:1px solid #d4eac4}
@@ -461,9 +461,11 @@ async function confirm_(){
   const btn=document.getElementById('cfbtn');
   const items=cartItems(),pItems=preCartItems(),total=cartTotal(),note=document.getElementById('note').value.trim();
   // VALIDAZIONE: ordine minimo 6 vaschette (reali + pre-ordini)
-  const totQty=items.reduce((s,i)=>s+(parseInt(i.qty)||0),0)+pItems.reduce((s,i)=>s+(parseInt(i.qty)||0),0);
-  if(totQty<6){
-    const mancano=6-totQty;
+  // Minimo 6 conta SOLO vaschette reali — i pre-ordini non contribuiscono
+  const totQtyReali=items.reduce((s,i)=>s+(parseInt(i.qty)||0),0);
+  const totQty=totQtyReali; // alias per compatibilità
+  if(totQtyReali<6){
+    const mancano=6-totQtyReali;
     // Aggiorna il contatore nel banner
     const nc=document.getElementById('note-min-count');
     if(nc)nc.textContent=mancano+' vaschett'+(mancano===1?'a':'e');
