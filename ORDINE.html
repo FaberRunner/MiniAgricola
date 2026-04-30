@@ -480,7 +480,8 @@ async function init(){
         if(iToken>=0){
           const found=all.clients.slice(1).find(r=>String(r[iToken]).trim()===token.trim());
           if(found){
-            client={id:String(found[iId]||''),restaurant:String(found[iRest]||''),email:iEmail>=0?String(found[iEmail]||''):'',token};
+            const iAddr=H.indexOf('address');
+            client={id:String(found[iId]||''),restaurant:String(found[iRest]||''),email:iEmail>=0?String(found[iEmail]||''):'',address:iAddr>=0?String(found[iAddr]||''):'',token};
             const sk='ma_s_'+token;
             localStorage.setItem(sk,JSON.stringify(client));
             showApp(client.restaurant);
