@@ -182,6 +182,56 @@ const CATS=[
   {name:'Bieta',ids:['MG-0011','MG-0012'],emoji:'🟣'},
   {name:'Altri',ids:['MG-0006','MG-0017','MG-0022','MG-0023','MG-0024','MG-0025','MG-0026','MG-0027','MG-0028','MG-0029','MG-0030','MG-0031','MG-0032','MG-0033','MG-0034'],emoji:'🌾'},
 ];
+// ── EMOJI PREMIUM CATALOGO ──────────────────────────────────
+const EMO={
+  'MG-0001':'🌿', // Crescione
+  'MG-0002':'🌱', // Senape Bianca
+  'MG-0003':'🍁', // Senape Rossa
+  'MG-0004':'🍂', // Senape Rossa Frastagliata
+  'MG-0005':'🌿', // Senape Verde
+  'MG-0006':'🥬', // Rucola
+  'MG-0007':'🌿', // Basilico Verde
+  'MG-0008':'🍋', // Basilico Limone
+  'MG-0009':'🌸', // Basilico Thailandese
+  'MG-0010':'🟣', // Basilico Rosso Dark Opal
+  'MG-0011':'🔴', // Bieta Rossa
+  'MG-0012':'🟡', // Bieta Gialla
+  'MG-0013':'🌸', // Ravanello China Rose
+  'MG-0014':'🔴', // Ravanello Vulcano
+  'MG-0015':'⚫', // Ravanello Nero
+  'MG-0016':'🟣', // Ravanello Venom
+  'MG-0017':'🫛', // Pisello Verde
+  'MG-0018':'🟣', // Cavolo Rosso
+  'MG-0019':'🌸', // Cavolo Rosa
+  'MG-0020':'🖤', // Cavolo Nero
+  'MG-0021':'💜', // Cavolo Rapa Rosso
+  'MG-0022':'💙', // Borragine
+  'MG-0023':'🟠', // Nasturzio Verde Alaska
+  'MG-0024':'❤️', // Acetosa Rossa
+  'MG-0025':'💜', // Malva
+  'MG-0026':'🌼', // Tarassaco
+  'MG-0027':'🧅', // Cipolla
+  'MG-0028':'🧅', // Porro
+  'MG-0029':'🌿', // Prezzemolo
+  'MG-0030':'🥕', // Carota
+  'MG-0031':'🌿', // Sedano
+  'MG-0032':'🌾', // Grano Saraceno
+  'MG-0033':'🫘', // Lenticchia
+  'MG-0034':'💧', // Crescione Acqua
+};
+// Colori di sfondo per categoria
+const BG={
+  'MG-0001':'#e8f5e9','MG-0002':'#f9fbe7','MG-0003':'#fce4ec','MG-0004':'#ffebee',
+  'MG-0005':'#f1f8e9','MG-0006':'#f1f8e9','MG-0007':'#e8f5e9','MG-0008':'#fffde7',
+  'MG-0009':'#fce4ec','MG-0010':'#f3e5f5','MG-0011':'#fbe9e7','MG-0012':'#fffde7',
+  'MG-0013':'#fce4ec','MG-0014':'#ffebee','MG-0015':'#fafafa','MG-0016':'#f3e5f5',
+  'MG-0017':'#f1f8e9','MG-0018':'#f3e5f5','MG-0019':'#fce4ec','MG-0020':'#efebe9',
+  'MG-0021':'#ede7f6','MG-0022':'#e8eaf6','MG-0023':'#fff3e0','MG-0024':'#fbe9e7',
+  'MG-0025':'#f3e5f5','MG-0026':'#fffde7','MG-0027':'#f1f8e9','MG-0028':'#e8f5e9',
+  'MG-0029':'#e8f5e9','MG-0030':'#fff3e0','MG-0031':'#e8f5e9','MG-0032':'#fff8e1',
+  'MG-0033':'#fce4ec','MG-0034':'#e0f7fa',
+};
+
 // ── ICONE SVG BOTANICHE ─────────────────────────────────────
 function _ic(bg,body){return '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="'+bg+'"/>'+body+'</svg>';}
 
@@ -493,10 +543,10 @@ function renderCat(){
     if(!cp.length)return;
     h+=`<div class="catsec"><div class="cattl">${cat.emoji} ${cat.name}</div><div class="pgrid">`;
     cp.forEach(p=>{
-      const q=cart[p.id]||0,icon=ICONS[p.id]||ICONS['MG-0007'];
+      const q=cart[p.id]||0,em=EMO[p.id]||'🌿',bg=BG[p.id]||'#f1f8e9';
       if(p.avail){
         h+=`<div class="pcard">
-          <div class="pimg" style="padding:0;background:none">${icon}</div>
+          <div class="pimg" style="background:${bg};font-size:52px">${em}</div>
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
@@ -515,7 +565,7 @@ function renderCat(){
         // Prodotto esaurito ma con pre-ordine attivo
         const q=preCart[p.id]||0;
         h+=`<div class="pcard" style="opacity:.85;border-color:#e9d5ff">
-          <div class="pimg" style="padding:0;background:none">${icon}</div>
+          <div class="pimg" style="background:${bg};font-size:52px">${em}</div>
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
@@ -534,7 +584,7 @@ function renderCat(){
       }else{
         // Non disponibile senza pre-ordine
         h+=`<div class="pcard na">
-          <div class="pimg" style="padding:0;background:none;opacity:.7">${icon}</div>
+          <div class="pimg" style="background:${bg};font-size:52px;opacity:.6">${em}</div>
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
