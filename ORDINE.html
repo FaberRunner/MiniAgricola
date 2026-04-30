@@ -168,8 +168,6 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 
 <script>
 const API='https://script.google.com/macros/s/AKfycbz5jt_DB2DBRwrkEsY1efzx8J-t_aDH66HKfbl0Q0KVWqNQgN-4jy9tsFKydvu5-sXejQ/exec';
-// Indirizzo fisso di partenza MiniAgricola
-const ORIGIN_ADDRESS='via varcaturiello 43, 80014 Lago Patria, NA, Italia';
 const DELIVERY_RATE=0.20; // €/km
 const ROAD_FACTOR=1.3;    // fattore correttivo strade urbane
 
@@ -413,54 +411,77 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 async function get_(a){const r=await fetch(`${API}?action=${a}&t=${Date.now()}`);return r.json();}
 async function post_(a,d){const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({action:a,data:d})});return r.json();}
 
-// ── CALCOLO DISTANZA CONSEGNA ─────────────────────────────────
+// ── CALCOLO DISTANZA CONSEGNA (CAP-based, zero dipendenze) ───
+// Coordinate origine MiniAgricola: via Varcaturiello 43, 80014 Lago Patria
+const ORIGIN_LAT=40.9317, ORIGIN_LON=14.0486;
+
 function haversineKm(lat1,lon1,lat2,lon2){
   const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
   const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 }
-async function geocode(address){
-  const url='https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(address);
-  const r=await fetch(url,{headers:{'Accept-Language':'it','User-Agent':'MiniAgricola/1.0'}});
-  const data=await r.json();
-  if(!data||!data.length)throw new Error('Indirizzo non trovato');
-  return {lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon)};
-}
-let deliveryCost=null; // cache costo consegna
 
-async function calcolaConsegna(clientAddress){
-  if(!clientAddress||clientAddress.trim().length<5)return null;
-  // Pulisce l'indirizzo: rimuove il nome del locale (prima della prima virgola se non è via/piazza/corso)
-  function cleanAddr(a){
-    const parts=a.split(',').map(s=>s.trim());
-    const streetWords=['via','viale','piazza','corso','strada','vicolo','largo','traversa','contrada','loc','localita'];
-    const first=parts[0].toLowerCase();
-    const startsWithStreet=streetWords.some(w=>first.startsWith(w));
-    // Se la prima parte non inizia con una parola stradale, è probabilmente il nome del locale
-    if(!startsWithStreet&&parts.length>1) return parts.slice(1).join(', ');
-    return a;
-  }
-  const addr=clientAddress.toLowerCase();
-  const hasCity=addr.includes('napoli')||addr.includes('aversa')||addr.includes('caserta')||addr.includes('pozzuoli')||addr.includes('giugliano')||addr.includes('italy')||addr.includes('italia');
-  const cleaned=cleanAddr(clientAddress);
-  const fullAddr=(hasCity?cleaned:cleaned+', Napoli, Italia');
-  try{
-    const origin=await geocode(ORIGIN_ADDRESS);
-    let dest=null;
-    // Prova prima con indirizzo pulito, poi con originale
-    try{ dest=await geocode(fullAddr); }catch(e1){
-      try{ dest=await geocode(hasCity?clientAddress:clientAddress+', Napoli, Italia'); }catch(e2){
-        console.error('Geocoding fallito:',e2); return null;
-      }
+// Tabella CAP → coordinate centroide (provincia Napoli + zone limitrofe)
+const CAP_COORDS={
+  '80014':[40.9317,14.0486],'80010':[40.9600,14.0800],'80011':[40.9483,14.1433],
+  '80012':[40.9333,14.1833],'80013':[40.8833,14.2667],'80015':[41.0000,14.0833],
+  '80016':[41.0167,14.0167],'80017':[40.9833,14.1333],'80018':[40.9500,14.0333],
+  '80019':[40.9667,14.0667],'80020':[40.9333,14.2667],'80021':[40.9167,14.2333],
+  '80022':[40.8667,14.2833],'80023':[40.9000,14.2500],'80024':[40.9833,14.2167],
+  '80025':[41.0167,14.1167],'80026':[40.9167,14.1500],'80027':[40.8833,14.1833],
+  '80028':[41.0000,14.0500],'80029':[40.9333,14.2000],'80030':[40.9833,14.3167],
+  '80031':[40.8500,14.2667],'80032':[40.8000,14.3333],'80033':[40.8167,14.4333],
+  '80034':[40.7667,14.4000],'80035':[40.8167,14.4833],'80036':[40.8333,14.4000],
+  '80037':[40.7833,14.3667],'80038':[40.7333,14.4167],'80039':[40.7000,14.4333],
+  '80040':[40.7167,14.4500],'80041':[40.8167,14.3167],'80042':[40.7667,14.3667],
+  '80043':[40.7667,14.4500],'80044':[40.7167,14.3667],'80045':[40.7000,14.3000],
+  '80046':[40.6667,14.3333],'80047':[40.6333,14.3333],'80048':[40.6000,14.3000],
+  '80049':[40.6167,14.4333],'80050':[40.9833,14.3667],'80051':[40.9000,14.3500],
+  '80052':[40.8667,14.4667],'80053':[40.8833,14.4000],'80054':[40.8500,14.4667],
+  '80055':[40.8167,14.5000],'80056':[40.8667,14.5333],'80057':[40.8333,14.5833],
+  '80058':[40.8000,14.5333],'80059':[40.8167,14.5667],'80060':[40.8667,14.5833],
+  '80061':[40.7667,14.5167],'80062':[40.7500,14.5500],'80063':[40.7667,14.5667],
+  '80064':[40.7333,14.5667],'80065':[40.7833,14.5167],'80066':[40.7500,14.5000],
+  '80067':[40.6333,14.4833],'80068':[40.6000,14.4833],'80069':[40.6167,14.4000],
+  '80070':[40.5833,14.4167],'80071':[40.5667,14.4000],'80072':[40.5500,14.3333],
+  '80073':[40.5667,14.3833],'80074':[40.5333,14.3333],'80075':[40.6000,14.3667],
+  '80076':[40.5667,14.3167],'80077':[40.5333,14.3000],'80078':[40.5000,14.2833],
+  '80126':[40.8667,14.2167],'80127':[40.8500,14.2000],'80128':[40.8667,14.1833],
+  '80129':[40.8500,14.2167],'80131':[40.8833,14.2333],'80132':[40.8333,14.2500],
+  '80133':[40.8333,14.2667],'80134':[40.8333,14.2500],'80135':[40.8500,14.2500],
+  '80136':[40.8667,14.2500],'80137':[40.8833,14.2500],'80138':[40.8500,14.2667],
+  '80139':[40.8667,14.2833],'80141':[40.9000,14.2500],'80142':[40.8833,14.2667],
+  '80143':[40.8667,14.3000],'80144':[40.9000,14.2833],'80145':[40.9167,14.2667],
+  '80146':[40.9000,14.3000],'80147':[40.8833,14.3167],
+  // Caserta e provincia
+  '81020':[41.0167,14.1333],'81030':[41.0333,14.2167],'81010':[41.0833,14.0667],
+  // Aversa
+  '81031':[40.9833,14.2000],
+};
+
+let deliveryCost=null;
+
+function calcolaConsegna(clientAddress){
+  if(!clientAddress||clientAddress.trim().length<5)return Promise.resolve(null);
+  // Estrai il CAP dall'indirizzo (5 cifre che iniziano con 8)
+  const capMatch=clientAddress.match(/\b(8\d{4})\b/);
+  if(capMatch){
+    const cap=capMatch[1];
+    const coords=CAP_COORDS[cap];
+    if(coords){
+      const km=haversineKm(ORIGIN_LAT,ORIGIN_LON,coords[0],coords[1])*ROAD_FACTOR;
+      const cost=Math.round(km*DELIVERY_RATE*100)/100;
+      console.log('Consegna CAP '+cap+': '+km.toFixed(1)+'km → €'+cost);
+      return Promise.resolve(cost);
     }
-    const km=haversineKm(origin.lat,origin.lon,dest.lat,dest.lon)*ROAD_FACTOR;
-    const cost=Math.round(km*DELIVERY_RATE*100)/100;
-    console.log('Consegna: '+km.toFixed(1)+'km → €'+cost);
-    return cost;
-  }catch(e){
-    console.error('Calcolo consegna fallito:',e);
-    return null;
   }
+  // Nessun CAP riconosciuto — stima flat per Napoli città
+  const addr=clientAddress.toLowerCase();
+  if(addr.includes('napoli')||addr.includes('na ')||addr.includes(', na')){
+    const km=haversineKm(ORIGIN_LAT,ORIGIN_LON,40.8522,14.2681)*ROAD_FACTOR;
+    return Promise.resolve(Math.round(km*DELIVERY_RATE*100)/100);
+  }
+  return Promise.resolve(null);
 }
 
 async function init(){
