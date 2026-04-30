@@ -714,7 +714,10 @@ async function openHist(){
       myOrders.map(o=>{
         const id=String(o[iId]||'');
         const status=String(o[iSt]||'pending');
-        const total=parseFloat(String(o[iTot]||0).replace(',','.'))||0;
+        // Ricalcola totale dagli items — evita totali corrotti nei vecchi ordini
+    const calcTotal=items.reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);
+    const rawTotal=parseFloat(String(o[iTot]||0).replace(',','.'))||0;
+    const total=(rawTotal>0&&rawTotal<9999)?rawTotal:calcTotal;
         const note=String(o[iNote]||'');
         const created=o[iCr]?new Date(o[iCr]).toLocaleString('it-IT'):'';
         let items=[];
