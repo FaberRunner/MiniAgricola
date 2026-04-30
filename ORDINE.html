@@ -592,7 +592,11 @@ function addC(id){
 
 function cartItems(){return Object.entries(cart).filter(([,q])=>(parseInt(q)||0)>0).map(([id,q])=>{const p=products.find(x=>x.id===id);return p?{id,name:p.name,qty:parseInt(q)||0,price:parseFloat(p.price)||0,preorder:false}:null;}).filter(Boolean);}
 function preCartItems(){return Object.entries(preCart).filter(([,q])=>(parseInt(q)||0)>0).map(([id,q])=>{const p=products.find(x=>x.id===id);return p?{id,name:p.name,qty:parseInt(q)||0,price:parseFloat(p.price)||0,preorder:true}:null;}).filter(Boolean);}
-function cartTotal(){return cartItems().reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);}
+function cartTotal(){
+  const r=cartItems().reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);
+  const p=preCartItems().reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);
+  return r+p;
+}
 
 function updateCart(){
   const items=cartItems(),pItems=preCartItems();
@@ -645,10 +649,14 @@ function openR(){
         }else if(cost===0){
           delEl.innerHTML='🚚 Consegna: <strong>gratuita</strong>';
         }else{
+          deliveryCost=null;
           delEl.innerHTML='<span style="color:#aaa;font-size:12px">🚚 costo consegna da definire</span>';
+          if(delTotEl)delTotEl.textContent='€'+cartTotal().toFixed(2);
         }
       }).catch(()=>{
+        deliveryCost=null;
         delEl.innerHTML='<span style="color:#aaa;font-size:12px">🚚 costo consegna da definire</span>';
+        if(delTotEl)delTotEl.textContent='€'+cartTotal().toFixed(2);
       });
     }
   }
