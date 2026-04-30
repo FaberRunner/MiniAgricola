@@ -184,17 +184,127 @@ const CATS=[
 ];
 // ── ICONE SVG BOTANICHE ─────────────────────────────────────
 function _ic(bg,body){return '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="'+bg+'"/>'+body+'</svg>';}
-function _fOv(bg,f,v){return _ic(bg,'<ellipse cx="40" cy="42" rx="20" ry="25" fill="'+f+'"/><line x1="40" y1="19" x2="40" y2="65" stroke="'+v+'" stroke-width="1.5"/><line x1="40" y1="38" x2="30" y2="48" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="38" x2="50" y2="48" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="32" y2="36" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="48" y2="36" stroke="'+v+'" stroke-width="1"/>');}
-function _fAp(bg,f,v){return _ic(bg,'<path d="M40 13 C52 20 63 35 59 52 C55 67 42 73 40 73 C38 73 25 67 21 52 C17 35 28 20 40 13Z" fill="'+f+'"/><line x1="40" y1="18" x2="40" y2="68" stroke="'+v+'" stroke-width="1.5"/><line x1="40" y1="40" x2="28" y2="52" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="40" x2="52" y2="52" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="30" y2="38" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="50" y2="38" stroke="'+v+'" stroke-width="1"/>');}
-function _rad(bg,r,f){return _ic(bg,'<ellipse cx="40" cy="54" rx="14" ry="18" fill="'+r+'"/><path d="M32 38 C28 28 32 18 40 15 C48 18 52 28 48 38 C46 44 34 44 32 38Z" fill="'+f+'"/><line x1="37" y1="30" x2="34" y2="22" stroke="'+f+'" stroke-width="1.2"/><line x1="43" y1="30" x2="46" y2="22" stroke="'+f+'" stroke-width="1.2"/><line x1="40" y1="70" x2="40" y2="76" stroke="'+r+'" stroke-width="1.5"/>');}
-function _cl(bg,c1,c2,c3){return _ic(bg,'<circle cx="28" cy="40" r="11" fill="'+c1+'"/><circle cx="52" cy="40" r="11" fill="'+c2+'"/><circle cx="40" cy="27" r="10" fill="'+c3+'"/><circle cx="40" cy="52" r="7" fill="'+c1+'"/><rect x="38" y="55" width="4" height="12" rx="2" fill="'+c1+'"/>');}
-function _fLu(bg,f,s){return _ic(bg,'<path d="M40 10 C46 14 50 30 48 48 C46 64 43 73 40 75 C37 73 34 64 32 48 C30 30 34 14 40 10Z" fill="'+f+'"/><rect x="38.5" y="10" width="3" height="65" rx="1.5" fill="'+s+'"/><line x1="40" y1="35" x2="32" y2="45" stroke="'+s+'" stroke-width="1"/><line x1="40" y1="35" x2="48" y2="45" stroke="'+s+'" stroke-width="1"/><line x1="40" y1="50" x2="33" y2="58" stroke="'+s+'" stroke-width="1"/><line x1="40" y1="50" x2="47" y2="58" stroke="'+s+'" stroke-width="1"/>');}
-function _bac(bg,f,s){return _ic(bg,'<path d="M16 42 C16 26 26 12 40 12 C54 12 64 26 64 42 C64 58 54 68 40 68 C26 68 16 58 16 42Z" fill="'+f+'"/><circle cx="29" cy="42" r="7" fill="'+s+'"/><circle cx="40" cy="36" r="7" fill="'+s+'"/><circle cx="51" cy="42" r="7" fill="'+s+'"/>');}
-function _cav(bg,c1,c2){return _ic(bg,'<ellipse cx="40" cy="44" rx="29" ry="24" fill="'+c2+'"/><ellipse cx="40" cy="44" rx="22" ry="18" fill="'+c1+'"/><ellipse cx="40" cy="44" rx="15" ry="12" fill="'+c2+'"/><ellipse cx="40" cy="44" rx="8" ry="7" fill="'+c1+'"/>');}
-function _fio(bg,p,c){return _ic(bg,'<ellipse cx="40" cy="20" rx="9" ry="13" fill="'+p+'"/><ellipse cx="60" cy="29" rx="13" ry="9" fill="'+p+'" transform="rotate(-30 60 29)"/><ellipse cx="56" cy="56" rx="9" ry="13" fill="'+p+'" transform="rotate(-60 56 56)"/><ellipse cx="24" cy="56" rx="9" ry="13" fill="'+p+'" transform="rotate(60 24 56)"/><ellipse cx="20" cy="29" rx="13" ry="9" fill="'+p+'" transform="rotate(30 20 29)"/><circle cx="40" cy="40" r="11" fill="'+c+'"/>');}
-function _maz(bg,c1,c2){return _ic(bg,'<path d="M28 65 C28 40 26 22 28 14 C29 8 31 8 32 14 L32 65" stroke="'+c1+'" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M40 65 C40 38 38 18 40 12 C41 6 43 6 44 12 L44 65" stroke="'+c2+'" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M52 65 C52 40 50 22 52 14 C53 8 55 8 56 14 L56 65" stroke="'+c1+'" stroke-width="4" stroke-linecap="round" fill="none"/><ellipse cx="40" cy="66" rx="17" ry="5" fill="'+c2+'" opacity="0.3"/>');}
-function _car(bg,f,s){return _ic(bg,'<path d="M35 18 C33 32 32 52 40 72 C48 52 47 32 45 18 C43 13 37 13 35 18Z" fill="'+f+'"/><path d="M36 16 C30 8 22 14 27 22 L36 16Z" fill="'+s+'"/><path d="M40 13 C40 5 45 6 44 13Z" fill="'+s+'"/><path d="M44 16 C50 8 58 14 53 22 L44 16Z" fill="'+s+'"/>');}
-function _gr(bg,c1,c2){return _ic(bg,'<ellipse cx="28" cy="47" rx="9" ry="15" fill="'+c1+'" transform="rotate(-12 28 47)"/><ellipse cx="40" cy="40" rx="9" ry="15" fill="'+c2+'"/><ellipse cx="52" cy="47" rx="9" ry="15" fill="'+c1+'" transform="rotate(12 52 47)"/><line x1="28" y1="33" x2="28" y2="25" stroke="'+c1+'" stroke-width="1.5"/><line x1="40" y1="26" x2="40" y2="18" stroke="'+c2+'" stroke-width="1.5"/><line x1="52" y1="33" x2="52" y2="25" stroke="'+c1+'" stroke-width="1.5"/>');}
+
+// Foglia ovale botanica con nervature ramificate (basilico)
+function _fOv(bg,f,v){return _ic(bg,
+  '<path d="M40 14 C52 14 64 26 64 43 C64 60 52 68 40 68 C28 68 16 60 16 43 C16 26 28 14 40 14Z" fill="'+f+'"/>'+
+  '<path d="M40 14 C38 34 38 54 40 68" fill="none" stroke="'+v+'" stroke-width="1.5" stroke-linecap="round"/>'+
+  '<path d="M40 28 C33 32 26 35 20 40" fill="none" stroke="'+v+'" stroke-width="0.9" stroke-linecap="round"/>'+
+  '<path d="M40 28 C47 32 54 35 60 40" fill="none" stroke="'+v+'" stroke-width="0.9" stroke-linecap="round"/>'+
+  '<path d="M39 42 C30 46 22 49 17 52" fill="none" stroke="'+v+'" stroke-width="0.8" stroke-linecap="round"/>'+
+  '<path d="M41 42 C50 46 58 49 63 52" fill="none" stroke="'+v+'" stroke-width="0.8" stroke-linecap="round"/>'+
+  '<path d="M39 55 C32 59 27 62 23 65" fill="none" stroke="'+v+'" stroke-width="0.7" stroke-linecap="round"/>'+
+  '<path d="M41 55 C48 59 53 62 57 65" fill="none" stroke="'+v+'" stroke-width="0.7" stroke-linecap="round"/>'
+);}
+
+// Foglia appuntita con nervature pennate (senape, rucola)
+function _fAp(bg,f,v){return _ic(bg,
+  '<path d="M40 11 C51 17 62 31 60 47 C58 63 48 71 40 72 C32 71 22 63 20 47 C18 31 29 17 40 11Z" fill="'+f+'"/>'+
+  '<path d="M40 11 C38 34 38 55 40 72" fill="none" stroke="'+v+'" stroke-width="1.5" stroke-linecap="round"/>'+
+  '<path d="M40 26 C33 30 25 33 20 37" fill="none" stroke="'+v+'" stroke-width="0.9" stroke-linecap="round"/>'+
+  '<path d="M40 26 C47 30 55 33 60 37" fill="none" stroke="'+v+'" stroke-width="0.9" stroke-linecap="round"/>'+
+  '<path d="M39 40 C30 44 22 48 18 52" fill="none" stroke="'+v+'" stroke-width="0.9" stroke-linecap="round"/>'+
+  '<path d="M41 40 C50 44 58 48 62 52" fill="none" stroke="'+v+'" stroke-width="0.9" stroke-linecap="round"/>'+
+  '<path d="M39 54 C32 57 25 60 22 63" fill="none" stroke="'+v+'" stroke-width="0.8" stroke-linecap="round"/>'+
+  '<path d="M41 54 C48 57 55 60 58 63" fill="none" stroke="'+v+'" stroke-width="0.8" stroke-linecap="round"/>'
+);}
+
+// Ravanello - sfera con germoglio trifogliato
+function _rad(bg,r,f){return _ic(bg,
+  '<circle cx="40" cy="54" r="18" fill="'+r+'"/>'+
+  '<path d="M40 36 C40 30 40 24 40 20" stroke="'+r+'" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
+  '<path d="M40 24 C36 16 28 12 26 18 C28 22 34 24 38 26" fill="'+f+'"/>'+
+  '<path d="M40 22 C40 13 40 7 40 8 C41 7 42 13 42 22" fill="'+f+'"/>'+
+  '<path d="M40 24 C44 16 52 12 54 18 C52 22 46 24 42 26" fill="'+f+'"/>'+
+  '<line x1="40" y1="70" x2="40" y2="76" stroke="'+r+'" stroke-width="1.5" stroke-linecap="round"/>'+
+  '<ellipse cx="40" cy="54" rx="14" ry="4" fill="'+r+'" opacity="0.3"/>'
+);}
+
+// Crescione/acqua - foglioline tonde su steli ramificati
+function _cl(bg,c1,c2,c3){return _ic(bg,
+  '<line x1="40" y1="64" x2="40" y2="40" stroke="'+c1+'" stroke-width="2.5" stroke-linecap="round"/>'+
+  '<line x1="40" y1="50" x2="24" y2="38" stroke="'+c1+'" stroke-width="1.8" stroke-linecap="round"/>'+
+  '<line x1="40" y1="50" x2="56" y2="38" stroke="'+c1+'" stroke-width="1.8" stroke-linecap="round"/>'+
+  '<line x1="40" y1="42" x2="32" y2="30" stroke="'+c1+'" stroke-width="1.5" stroke-linecap="round"/>'+
+  '<line x1="40" y1="42" x2="48" y2="30" stroke="'+c1+'" stroke-width="1.5" stroke-linecap="round"/>'+
+  '<circle cx="22" cy="30" r="11" fill="'+c2+'"/>'+
+  '<circle cx="58" cy="30" r="11" fill="'+c2+'"/>'+
+  '<circle cx="30" cy="22" r="9" fill="'+c3+'"/>'+
+  '<circle cx="50" cy="22" r="9" fill="'+c3+'"/>'+
+  '<circle cx="40" cy="16" r="10" fill="'+c1+'"/>'+
+  '<rect x="38" y="60" width="4" height="14" rx="2" fill="'+c1+'"/>'
+);}
+
+// Foglia lunga bieta con costola prominente
+function _fLu(bg,f,s){return _ic(bg,
+  '<path d="M40 8 C48 13 53 32 51 50 C49 66 44 76 40 77 C36 76 31 66 29 50 C27 32 32 13 40 8Z" fill="'+f+'"/>'+
+  '<path d="M40 8 C40 36 40 58 40 77" fill="none" stroke="'+s+'" stroke-width="3" stroke-linecap="round"/>'+
+  '<path d="M40 28 C34 34 29 40 27 48" fill="none" stroke="'+s+'" stroke-width="1.2" stroke-linecap="round"/>'+
+  '<path d="M40 28 C46 34 51 40 53 48" fill="none" stroke="'+s+'" stroke-width="1.2" stroke-linecap="round"/>'+
+  '<path d="M40 48 C34 54 30 60 29 66" fill="none" stroke="'+s+'" stroke-width="1.0" stroke-linecap="round"/>'+
+  '<path d="M40 48 C46 54 50 60 51 66" fill="none" stroke="'+s+'" stroke-width="1.0" stroke-linecap="round"/>'
+);}
+
+// Baccello pisello gonfio
+function _bac(bg,f,s){return _ic(bg,
+  '<path d="M13 42 C13 25 24 10 40 10 C56 10 67 25 67 42 C67 59 56 70 40 70 C24 70 13 59 13 42Z" fill="'+f+'"/>'+
+  '<circle cx="28" cy="43" r="8.5" fill="'+s+'"/>'+
+  '<circle cx="40" cy="36" r="8.5" fill="'+s+'"/>'+
+  '<circle cx="52" cy="43" r="8.5" fill="'+s+'"/>'+
+  '<path d="M13 40 C22 34 32 31 40 31" fill="none" stroke="'+f+'" stroke-width="1.2" opacity="0.4" stroke-linecap="round"/>'
+);}
+
+// Cavolo - sezione trasversale con 5 strati
+function _cav(bg,c1,c2){return _ic(bg,
+  '<ellipse cx="40" cy="44" rx="30" ry="25" fill="'+c2+'"/>'+
+  '<ellipse cx="40" cy="44" rx="23" ry="19" fill="'+c1+'"/>'+
+  '<ellipse cx="40" cy="44" rx="17" ry="14" fill="'+c2+'"/>'+
+  '<ellipse cx="40" cy="44" rx="11" ry="9" fill="'+c1+'"/>'+
+  '<ellipse cx="40" cy="44" rx="5" ry="4" fill="'+c2+'"/>'+
+  '<line x1="40" y1="19" x2="40" y2="44" stroke="'+c2+'" stroke-width="2" stroke-linecap="round" opacity="0.5"/>'
+);}
+
+// Fiore 5 petali organici (borragine, nasturzio, malva, tarassaco)
+function _fio(bg,p,c){return _ic(bg,
+  '<ellipse cx="40" cy="19" rx="9" ry="14" fill="'+p+'"/>'+
+  '<ellipse cx="60" cy="29" rx="14" ry="9" fill="'+p+'" transform="rotate(-32 60 29)"/>'+
+  '<ellipse cx="55" cy="57" rx="9" ry="14" fill="'+p+'" transform="rotate(-65 55 57)"/>'+
+  '<ellipse cx="25" cy="57" rx="9" ry="14" fill="'+p+'" transform="rotate(65 25 57)"/>'+
+  '<ellipse cx="20" cy="29" rx="14" ry="9" fill="'+p+'" transform="rotate(32 20 29)"/>'+
+  '<circle cx="40" cy="40" r="12" fill="'+c+'"/>'+
+  '<circle cx="40" cy="40" r="5" fill="'+p+'" opacity="0.5"/>'
+);}
+
+// Mazzetto di erbe con foglioline
+function _maz(bg,c1,c2){return _ic(bg,
+  '<path d="M29 66 C29 50 28 34 29 18 C30 11 32 11 33 18 C32 34 31 50 31 66Z" fill="'+c1+'"/>'+
+  '<path d="M40 66 C40 48 39 28 40 14 C41 6 43 6 44 14 C43 28 42 48 42 66Z" fill="'+c2+'"/>'+
+  '<path d="M51 66 C51 50 50 34 51 18 C52 11 54 11 55 18 C54 34 53 50 53 66Z" fill="'+c1+'"/>'+
+  '<path d="M29 22 C25 16 24 9 28 12 C30 16 31 20 30 24" fill="'+c1+'"/>'+
+  '<path d="M40 18 C38 10 38 4 40 6 C42 4 42 10 40 18" fill="'+c2+'"/>'+
+  '<path d="M51 22 C55 16 56 9 52 12 C50 16 49 20 50 24" fill="'+c1+'"/>'+
+  '<ellipse cx="40" cy="67" rx="18" ry="5" fill="'+c2+'" opacity="0.3"/>'
+);}
+
+// Carota con ciuffo
+function _car(bg,f,s){return _ic(bg,
+  '<path d="M35 18 C32 33 30 55 40 74 C50 55 48 33 45 18 C43 12 37 12 35 18Z" fill="'+f+'"/>'+
+  '<path d="M38 26 C33 18 32 12 35 16 L38 26Z" fill="'+f+'" opacity="0.25"/>'+
+  '<path d="M36 16 C30 6 21 10 24 20 L36 16Z" fill="'+s+'"/>'+
+  '<path d="M40 13 C40 4 45 5 44 13Z" fill="'+s+'"/>'+
+  '<path d="M44 16 C50 6 59 10 56 20 L44 16Z" fill="'+s+'"/>'
+);}
+
+// Chicchi di grano/semi con steli
+function _gr(bg,c1,c2){return _ic(bg,
+  '<ellipse cx="27" cy="47" rx="10" ry="16" fill="'+c1+'" transform="rotate(-12 27 47)"/>'+
+  '<ellipse cx="40" cy="40" rx="10" ry="16" fill="'+c2+'"/>'+
+  '<ellipse cx="53" cy="47" rx="10" ry="16" fill="'+c1+'" transform="rotate(12 53 47)"/>'+
+  '<path d="M27 32 C26 22 27 16 27 12" fill="none" stroke="'+c1+'" stroke-width="1.5" stroke-linecap="round"/>'+
+  '<path d="M40 25 C40 15 40 9 40 5" fill="none" stroke="'+c2+'" stroke-width="1.5" stroke-linecap="round"/>'+
+  '<path d="M53 32 C54 22 53 16 53 12" fill="none" stroke="'+c1+'" stroke-width="1.5" stroke-linecap="round"/>'
+);}
+
 const ICONS={
   'MG-0001':_cl('#e8f5e9','#66bb6a','#4caf50','#81c784'),
   'MG-0002':_fAp('#f9fbe7','#cddc39','#827717'),
@@ -232,6 +342,20 @@ const ICONS={
   'MG-0034':_cl('#e0f7fa','#4dd0e1','#00838f'),
 };
 
+// ── ICONE SVG BOTANICHE ─────────────────────────────────────
+function _ic(bg,body){return '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="'+bg+'"/>'+body+'</svg>';}
+function _fOv(bg,f,v){return _ic(bg,'<ellipse cx="40" cy="42" rx="20" ry="25" fill="'+f+'"/><line x1="40" y1="19" x2="40" y2="65" stroke="'+v+'" stroke-width="1.5"/><line x1="40" y1="38" x2="30" y2="48" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="38" x2="50" y2="48" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="32" y2="36" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="48" y2="36" stroke="'+v+'" stroke-width="1"/>');}
+function _fAp(bg,f,v){return _ic(bg,'<path d="M40 13 C52 20 63 35 59 52 C55 67 42 73 40 73 C38 73 25 67 21 52 C17 35 28 20 40 13Z" fill="'+f+'"/><line x1="40" y1="18" x2="40" y2="68" stroke="'+v+'" stroke-width="1.5"/><line x1="40" y1="40" x2="28" y2="52" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="40" x2="52" y2="52" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="30" y2="38" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="50" y2="38" stroke="'+v+'" stroke-width="1"/>');}
+function _rad(bg,r,f){return _ic(bg,'<ellipse cx="40" cy="54" rx="14" ry="18" fill="'+r+'"/><path d="M32 38 C28 28 32 18 40 15 C48 18 52 28 48 38 C46 44 34 44 32 38Z" fill="'+f+'"/><line x1="37" y1="30" x2="34" y2="22" stroke="'+f+'" stroke-width="1.2"/><line x1="43" y1="30" x2="46" y2="22" stroke="'+f+'" stroke-width="1.2"/><line x1="40" y1="70" x2="40" y2="76" stroke="'+r+'" stroke-width="1.5"/>');}
+function _cl(bg,c1,c2,c3){return _ic(bg,'<circle cx="28" cy="40" r="11" fill="'+c1+'"/><circle cx="52" cy="40" r="11" fill="'+c2+'"/><circle cx="40" cy="27" r="10" fill="'+c3+'"/><circle cx="40" cy="52" r="7" fill="'+c1+'"/><rect x="38" y="55" width="4" height="12" rx="2" fill="'+c1+'"/>');}
+function _fLu(bg,f,s){return _ic(bg,'<path d="M40 10 C46 14 50 30 48 48 C46 64 43 73 40 75 C37 73 34 64 32 48 C30 30 34 14 40 10Z" fill="'+f+'"/><rect x="38.5" y="10" width="3" height="65" rx="1.5" fill="'+s+'"/><line x1="40" y1="35" x2="32" y2="45" stroke="'+s+'" stroke-width="1"/><line x1="40" y1="35" x2="48" y2="45" stroke="'+s+'" stroke-width="1"/><line x1="40" y1="50" x2="33" y2="58" stroke="'+s+'" stroke-width="1"/><line x1="40" y1="50" x2="47" y2="58" stroke="'+s+'" stroke-width="1"/>');}
+function _bac(bg,f,s){return _ic(bg,'<path d="M16 42 C16 26 26 12 40 12 C54 12 64 26 64 42 C64 58 54 68 40 68 C26 68 16 58 16 42Z" fill="'+f+'"/><circle cx="29" cy="42" r="7" fill="'+s+'"/><circle cx="40" cy="36" r="7" fill="'+s+'"/><circle cx="51" cy="42" r="7" fill="'+s+'"/>');}
+function _cav(bg,c1,c2){return _ic(bg,'<ellipse cx="40" cy="44" rx="29" ry="24" fill="'+c2+'"/><ellipse cx="40" cy="44" rx="22" ry="18" fill="'+c1+'"/><ellipse cx="40" cy="44" rx="15" ry="12" fill="'+c2+'"/><ellipse cx="40" cy="44" rx="8" ry="7" fill="'+c1+'"/>');}
+function _fio(bg,p,c){return _ic(bg,'<ellipse cx="40" cy="20" rx="9" ry="13" fill="'+p+'"/><ellipse cx="60" cy="29" rx="13" ry="9" fill="'+p+'" transform="rotate(-30 60 29)"/><ellipse cx="56" cy="56" rx="9" ry="13" fill="'+p+'" transform="rotate(-60 56 56)"/><ellipse cx="24" cy="56" rx="9" ry="13" fill="'+p+'" transform="rotate(60 24 56)"/><ellipse cx="20" cy="29" rx="13" ry="9" fill="'+p+'" transform="rotate(30 20 29)"/><circle cx="40" cy="40" r="11" fill="'+c+'"/>');}
+function _maz(bg,c1,c2){return _ic(bg,'<path d="M28 65 C28 40 26 22 28 14 C29 8 31 8 32 14 L32 65" stroke="'+c1+'" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M40 65 C40 38 38 18 40 12 C41 6 43 6 44 12 L44 65" stroke="'+c2+'" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M52 65 C52 40 50 22 52 14 C53 8 55 8 56 14 L56 65" stroke="'+c1+'" stroke-width="4" stroke-linecap="round" fill="none"/><ellipse cx="40" cy="66" rx="17" ry="5" fill="'+c2+'" opacity="0.3"/>');}
+function _car(bg,f,s){return _ic(bg,'<path d="M35 18 C33 32 32 52 40 72 C48 52 47 32 45 18 C43 13 37 13 35 18Z" fill="'+f+'"/><path d="M36 16 C30 8 22 14 27 22 L36 16Z" fill="'+s+'"/><path d="M40 13 C40 5 45 6 44 13Z" fill="'+s+'"/><path d="M44 16 C50 8 58 14 53 22 L44 16Z" fill="'+s+'"/>');}
+function _gr(bg,c1,c2){return _ic(bg,'<ellipse cx="28" cy="47" rx="9" ry="15" fill="'+c1+'" transform="rotate(-12 28 47)"/><ellipse cx="40" cy="40" rx="9" ry="15" fill="'+c2+'"/><ellipse cx="52" cy="47" rx="9" ry="15" fill="'+c1+'" transform="rotate(12 52 47)"/><line x1="28" y1="33" x2="28" y2="25" stroke="'+c1+'" stroke-width="1.5"/><line x1="40" y1="26" x2="40" y2="18" stroke="'+c2+'" stroke-width="1.5"/><line x1="52" y1="33" x2="52" y2="25" stroke="'+c1+'" stroke-width="1.5"/>');}
+
 let products=[],cart={},preCart={},client=null,token=null;
 
 function pp(v){return typeof v==='number'?v:parseFloat(String(v||0).replace(',','.'))||0;}
@@ -256,10 +380,16 @@ let deliveryCost=null; // cache costo consegna
 
 async function calcolaConsegna(clientAddress){
   if(!clientAddress||clientAddress.trim().length<5)return null;
+  // Aggiungi città di default se non presente nell'indirizzo
+  const addr=clientAddress.toLowerCase();
+  const hasCity=addr.includes('napoli')||addr.includes('aversa')||addr.includes('caserta')||addr.includes('pozzuoli')||addr.includes('giugliano')||addr.includes('italy')||addr.includes('italia');
+  const fullAddr=hasCity?clientAddress:clientAddress+', Napoli, Italia';
   try{
-    const[origin,dest]=await Promise.all([geocode(ORIGIN_ADDRESS),geocode(clientAddress)]);
+    const[origin,dest]=await Promise.all([geocode(ORIGIN_ADDRESS),geocode(fullAddr)]);
     const km=haversineKm(origin.lat,origin.lon,dest.lat,dest.lon)*ROAD_FACTOR;
-    return Math.round(km*DELIVERY_RATE*100)/100;
+    const cost=Math.round(km*DELIVERY_RATE*100)/100;
+    console.log('Consegna: '+km.toFixed(1)+'km → €'+cost);
+    return cost;
   }catch(e){
     console.error('Calcolo consegna fallito:',e);
     return null;
@@ -510,10 +640,10 @@ function openR(){
       calcolaConsegna(client.address).then(cost=>{
         deliveryCost=cost;
         if(cost!==null&&cost>0){
-          delEl.innerHTML='🚚 Consegna: <strong>€'+cost.toFixed(2)+'</strong>';
+          delEl.innerHTML='🚚 Consegna stimata: <strong>€'+cost.toFixed(2)+'</strong>';
           if(delTotEl)delTotEl.textContent='€'+(cartTotal()+cost).toFixed(2);
         }else if(cost===0){
-          delEl.innerHTML='🚚 Consegna: <strong>Gratuita</strong>';
+          delEl.innerHTML='🚚 Consegna: <strong>gratuita</strong>';
         }else{
           delEl.innerHTML='<span style="color:#aaa;font-size:12px">🚚 costo consegna da definire</span>';
         }
