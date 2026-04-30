@@ -71,7 +71,7 @@ body{background:#f5f5f0;color:#1a1a1a;font-size:14px;min-height:100vh}
 <script>
 const API='https://script.google.com/macros/s/AKfycbz5jt_DB2DBRwrkEsY1efzx8J-t_aDH66HKfbl0Q0KVWqNQgN-4jy9tsFKydvu5-sXejQ/exec';
 // Schema Sheet (deve corrispondere esattamente alle intestazioni su Google Sheet)
-const PROD_H=['id','name','desc','price','avail','unit','qty'];
+const PROD_H=['id','name','desc','price','avail','unit','qty','preorder','waitTime'];
 const CLIE_H=['id','restaurant','contact','phone','email','address','token','createdAt'];
 const ORDI_H=['id','clientId','restaurant','itemsJson','total','note','status','createdAt'];
 
@@ -122,7 +122,7 @@ async function loadAll(force=false){
       cM?Promise.resolve(null):get('getMateriePrime'),
     ]);
     const prodRaw=pr||(cP||null);
-    if(prodRaw){products=rows2obj(prodRaw,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true'}));if(pr)saveCache('ma_cp',pr);}
+    if(prodRaw){products=rows2obj(prodRaw,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true',waitTime:String(p.waitTime||'')}));if(pr)saveCache('ma_cp',pr);}
     clients=rows2obj(cl,CLIE_H);
     orders=rows2obj(or,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));
     const ricRaw=ric||(cR||null);
@@ -138,8 +138,9 @@ async function saveProd(){
   localStorage.removeItem('ma_cache_prod');
   ss('loading','⟳ Salvataggio...');
   try{
-    const rows=obj2rows(products.map(p=>({...p,avail:String(p.avail),price:String(p.price),qty:String(p.qty||0),preorder:String(p.preorder||false)})),PROD_H);
+    const rows=obj2rows(products.map(p=>({...p,avail:String(p.avail),price:String(p.price),qty:String(p.qty||0),preorder:String(p.preorder||false),waitTime:String(p.waitTime||'')})),PROD_H);
     await post('saveProducts',rows);ss('ok','✓ Salvato');
+    await loadAll(true);
   }catch{ss('err','⚠ Errore');}
 }
 async function saveClie(){
@@ -306,7 +307,7 @@ function om(title,html){document.getElementById('mtitle').textContent=title;docu
 function cm(){document.getElementById('overlay').classList.remove('open');}
 
 // PRODOTTI
-function newP(){editing=null;pfAvail=true;pfPreorder=false;om('Nuovo prodotto',pForm({id:gid('MG',products),name:'',desc:'',price:10,avail:true,unit:'vassoio',qty:0,preorder:false}));}
+function newP(){editing=null;pfAvail=true;pfPreorder=false;om('Nuovo prodotto',pForm({id:gid('MG',products),name:'',desc:'',price:10,avail:true,unit:'vassoio',qty:0,preorder:false,waitTime:''}));}
 function editP(id){editing=products.find(p=>p.id===id);if(!editing)return;pfAvail=editing.avail;pfPreorder=editing.preorder||false;om('Modifica prodotto',pForm(editing));}
 function pForm(p){return `
   <div class="field"><label class="label">Codice</label><input class="input" value="${esc(p.id)}" id="pi" readonly style="background:#f5f5f5"></div>
@@ -323,6 +324,7 @@ function pForm(p){return `
     </div>
   </div>
   <div class="field"><label class="label">Quantità disponibile (vaschette)</label><input class="input" type="number" min="0" step="1" value="${p.qty||0}" id="pq"></div>
+  <div class="field"><label class="label">Tempi attesa pre-ordine</label><input class="input" value="${esc(p.waitTime||'')}" id="pwt" placeholder="Es. 6-7 giorni"></div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
     <button class="toggle" id="ptog" style="background:${p.avail?'#5c8a3c':'#ccc'}" onclick="tpA()" type="button">
       <span class="knob" id="pknob" style="left:${p.avail?19:3}px"></span>
@@ -343,7 +345,7 @@ function tpA(){pfAvail=!pfAvail;document.getElementById('ptog').style.background
 function tpP(){pfPreorder=!pfPreorder;document.getElementById('ptog2').style.background=pfPreorder?'#7c3aed':'#ccc';document.getElementById('pknob2').style.left=pfPreorder?'19px':'3px';document.getElementById('palbl2').textContent=pfPreorder?'Accetta pre-ordini':'Pre-ordini non attivi';}
 async function saveP(){
   const name=document.getElementById('pn').value.trim();if(!name){alert('Inserisci il nome');return;}
-  const obj={id:document.getElementById('pi').value,name,desc:document.getElementById('pd').value,price:parseFloat(document.getElementById('ppr').value)||0,unit:document.getElementById('pu').value,qty:parseInt(document.getElementById('pq').value)||0,avail:pfAvail,preorder:pfPreorder};
+  const obj={id:document.getElementById('pi').value,name,desc:document.getElementById('pd').value,price:parseFloat(document.getElementById('ppr').value)||0,unit:document.getElementById('pu').value,qty:parseInt(document.getElementById('pq').value)||0,avail:pfAvail,preorder:pfPreorder,waitTime:document.getElementById('pwt')?.value||''};
   products=editing?products.map(p=>p.id===obj.id?obj:p):[...products,obj];
   cm();renderAll();await saveProd();
 }
