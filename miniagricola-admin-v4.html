@@ -109,32 +109,41 @@ function loadCache(k){try{const c=JSON.parse(localStorage.getItem(k)||'null');if
 function clearCache(){['ma_cp','ma_cr','ma_cm'].forEach(k=>localStorage.removeItem(k));}
 
 async function loadAll(force=false){
-  ss('loading','⟳ Connessione...');
+  ss('loading','⟳ Sincronizzazione...');
+  // Mostra subito dati da cache, poi aggiorna in background
+  const cP=!force&&loadCache('ma_cp');
+  const cR=!force&&loadCache('ma_cr');
+  const cM=!force&&loadCache('ma_cm');
+  const cO=!force&&loadCache('ma_co');
+  const cC=!force&&loadCache('ma_cc');
+  if(cP){products=rows2obj(cP,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true',waitTime:String(p.waitTime||'')}));}
+  if(cC){clients=rows2obj(cC,CLIE_H);}
+  if(cO){orders=rows2obj(cO,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));}
+  if(cR){const rH=cR[0]?.map(h=>String(h).trim())||[];ricette=cR.slice(1).filter(r=>r[0]).map(row=>{const o={};rH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtyPerVassoio:pp(o.qtyPerVassoio)};});}
+  if(cM){const mH=cM[0]?.map(h=>String(h).trim())||[];materiePrime=cM.slice(1).filter(r=>r[0]).map(row=>{const o={};mH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtaAcquistata:pp(o.qtaAcquistata),prezzoTotale:pp(o.prezzoTotale),costoPerUnita:pp(o.costoPerUnita),qtaUsata:pp(o.qtaUsata),stockResiduo:pp(o.stockResiduo),valoreStock:pp(o.valoreStock)};});}
+  if(cP&&cC&&cO&&cR&&cM){ss('ok','✓ Dati in cache');renderAll();}
+  // Fetch batch in background (1 sola chiamata)
   try{
-    const cP=!force&&loadCache('ma_cp');
-    const cR=!force&&loadCache('ma_cr');
-    const cM=!force&&loadCache('ma_cm');
-    const[pr,cl,or,ric,mp]=await Promise.all([
-      cP?Promise.resolve(null):get('getProducts'),
-      get('getClients'),
-      get('getOrders'),
-      cR?Promise.resolve(null):get('getRicette'),
-      cM?Promise.resolve(null):get('getMateriePrime'),
-    ]);
-    const prodRaw=pr||(cP||null);
-    if(prodRaw){products=rows2obj(prodRaw,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true',waitTime:String(p.waitTime||'')}));if(pr)saveCache('ma_cp',pr);}
-    clients=rows2obj(cl,CLIE_H);
-    orders=rows2obj(or,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));
-    const ricRaw=ric||(cR||null);
-    if(ricRaw&&ricRaw.length>1){const rH=ricRaw[0].map(h=>String(h).trim());ricette=ricRaw.slice(1).filter(r=>r[0]).map(row=>{const o={};rH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtyPerVassoio:pp(o.qtyPerVassoio)};});if(ric)saveCache('ma_cr',ric);}
-    const mpRaw=mp||(cM||null);
-    if(mpRaw&&mpRaw.length>1){const mH=mpRaw[0].map(h=>String(h).trim());materiePrime=mpRaw.slice(1).filter(r=>r[0]).map(row=>{const o={};mH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtaAcquistata:pp(o.qtaAcquistata),prezzoTotale:pp(o.prezzoTotale),costoPerUnita:pp(o.costoPerUnita),qtaUsata:pp(o.qtaUsata),stockResiduo:pp(o.stockResiduo),valoreStock:pp(o.valoreStock)};});if(mp)saveCache('ma_cm',mp);}
+    const all=await get('getAllAdmin');
+    if(!all||all.error)throw new Error(all?.error||'Risposta non valida');
+    const pr=all.products, cl=all.clients, or=all.orders, ric=all.ricette, mp=all.mp;
+    if(pr){products=rows2obj(pr,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true',waitTime:String(p.waitTime||'')}));saveCache('ma_cp',pr);localStorage.removeItem('ma_cp_v');saveCache('ma_cp',pr);}
+    if(cl){clients=rows2obj(cl,CLIE_H);saveCache('ma_cc',cl);}
+    if(or){orders=rows2obj(or,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));saveCache('ma_co',or);}
+    if(ric&&ric.length>1){const rH=ric[0].map(h=>String(h).trim());ricette=ric.slice(1).filter(r=>r[0]).map(row=>{const o={};rH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtyPerVassoio:pp(o.qtyPerVassoio)};});saveCache('ma_cr',ric);}
+    if(mp&&mp.length>1){const mH=mp[0].map(h=>String(h).trim());materiePrime=mp.slice(1).filter(r=>r[0]).map(row=>{const o={};mH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtaAcquistata:pp(o.qtaAcquistata),prezzoTotale:pp(o.prezzoTotale),costoPerUnita:pp(o.costoPerUnita),qtaUsata:pp(o.qtaUsata),stockResiduo:pp(o.stockResiduo),valoreStock:pp(o.valoreStock)};});saveCache('ma_cm',mp);}
     ss('ok','✓ Sincronizzato');renderAll();
-  }catch(e){ss('err','⚠ Errore connessione');renderAll();}
+  }catch(e){
+    if(!cP)ss('err','⚠ Errore connessione');
+    else ss('ok','✓ Dati in cache (offline)');
+    renderAll();
+  }
 }
 
 async function saveProd(){
   localStorage.removeItem('ma_cp');
+  localStorage.removeItem('ma_cc');
+  localStorage.removeItem('ma_co');
   localStorage.removeItem('ma_cache_prod');
   ss('loading','⟳ Salvataggio...');
   try{

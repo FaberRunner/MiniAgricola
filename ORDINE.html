@@ -399,59 +399,68 @@ async function calcolaConsegna(clientAddress){
 async function init(){
   token=new URLSearchParams(window.location.search).get('id');
 
-  // Prodotti: usa cache locale se disponibile (TTL 5 min)
-  const CACHE_TTL=5*60*1000;
-  const cachedProd=(()=>{try{const c=JSON.parse(localStorage.getItem('ma_op2')||'null');if(c&&(Date.now()-c.ts)<CACHE_TTL)return c.data;}catch(e){}return null;})();
-  if(cachedProd){
-    products=cachedProd.map(p=>({...p,price:parseFloat(p.price)||0,avail:p.avail===true||p.avail==='true',qty:parseInt(p.qty)||0,preorder:p.preorder===true||p.preorder==='true',waitTime:String(p.waitTime||'')}));
-  } else {
-    try{
-      const rows=await get_('getProducts');
-      if(rows&&rows.length>1){
-        const H=rows[0].map(h=>String(h).trim());
-        products=rows.slice(1).filter(r=>r[0]).map(row=>{
-          const o={};H.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});
-          return {id:String(o.id),name:String(o.name),desc:String(o.desc||''),price:pp(o.price),avail:String(o.avail).toLowerCase()==='true',unit:String(o.unit||'vassoio'),qty:parseInt(o.qty)||0,preorder:String(o.preorder).toLowerCase()==='true',waitTime:String(o.waitTime||'')};
-        });
-        try{localStorage.setItem('ma_op2',JSON.stringify({ts:Date.now(),data:products}));}catch(e){}
-      }
-    }catch(e){console.error('Errore caricamento prodotti:',e);}
+  // Mostra subito dati da cache locale
+  const cP=loadCacheOrd('ma_op');
+  if(cP){
+    products=cP;
+    document.getElementById('lscr').style.display='flex';
   }
 
-  // Se ho un token, cerca il cliente nel DB
-  if(token){
-    const sk='ma_s_'+token;
-    const saved=localStorage.getItem(sk);
-    if(saved){
-      // Sessione locale valida
-      client=JSON.parse(saved);
-      showApp(client.restaurant);
-      return;
-    }
-    // Cerca nel DB
-    try{
-      const rows=await get_('getClients');
-      if(rows&&rows.length>1){
-        const H=rows[0].map(h=>String(h).trim());
-        const iToken=H.indexOf('token');
-        const iId=H.indexOf('id');
-        const iRest=H.indexOf('restaurant');
-        const iEmail=H.indexOf('email');
+  // 1 sola chiamata batch per prodotti + clienti
+  try{
+    const all=await get_('getAllClient');
+    if(all&&!all.error){
+      // Prodotti
+      if(all.products&&all.products.length>1){
+        const H=all.products[0].map(h=>String(h).trim());
+        products=all.products.slice(1).filter(r=>r[0]).map(row=>{
+          const o={};H.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});
+          return {id:String(o.id),name:String(o.name),desc:String(o.desc||''),
+            price:pp(o.price),avail:String(o.avail).toLowerCase()==='true',
+            unit:String(o.unit||'vassoio'),qty:parseInt(o.qty)||0,
+            preorder:String(o.preorder).toLowerCase()==='true',
+            waitTime:String(o.waitTime||'')};
+        });
+        try{localStorage.setItem('ma_op',JSON.stringify({ts:Date.now(),data:products}));}catch(e){}
+      }
+      // Clienti — cerca token
+      if(token&&all.clients&&all.clients.length>1){
+        const H=all.clients[0].map(h=>String(h).trim());
+        const iToken=H.indexOf('token'),iId=H.indexOf('id'),iRest=H.indexOf('restaurant'),iEmail=H.indexOf('email');
         if(iToken>=0){
-          const found=rows.slice(1).find(r=>String(r[iToken]).trim()===token.trim());
+          const found=all.clients.slice(1).find(r=>String(r[iToken]).trim()===token.trim());
           if(found){
             client={id:String(found[iId]||''),restaurant:String(found[iRest]||''),email:iEmail>=0?String(found[iEmail]||''):'',token};
+            const sk='ma_s_'+token;
             localStorage.setItem(sk,JSON.stringify(client));
             showApp(client.restaurant);
             return;
           }
         }
       }
-    }catch(e){console.error('Errore caricamento clienti:',e);}
-  }
+    }
+  }catch(e){console.error('Batch load error:',e);}
 
-  // Mostra login manuale
+  // Fallback: controlla sessione locale
+  if(token){
+    const sk='ma_s_'+token;
+    const saved=localStorage.getItem(sk);
+    if(saved){
+      client=JSON.parse(saved);
+      showApp(client.restaurant);
+      return;
+    }
+  }
   showLogin();
+}
+
+function loadCacheOrd(key){
+  try{
+    const CACHE_TTL=5*60*1000;
+    const c=JSON.parse(localStorage.getItem(key)||'null');
+    if(c&&(Date.now()-c.ts)<CACHE_TTL)return c.data;
+  }catch(e){}
+  return null;
 }
 
 function showLogin(){
