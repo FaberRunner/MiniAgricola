@@ -430,12 +430,29 @@ let deliveryCost=null; // cache costo consegna
 
 async function calcolaConsegna(clientAddress){
   if(!clientAddress||clientAddress.trim().length<5)return null;
-  // Aggiungi città di default se non presente nell'indirizzo
+  // Pulisce l'indirizzo: rimuove il nome del locale (prima della prima virgola se non è via/piazza/corso)
+  function cleanAddr(a){
+    const parts=a.split(',').map(s=>s.trim());
+    const streetWords=['via','viale','piazza','corso','strada','vicolo','largo','traversa','contrada','loc','localita'];
+    const first=parts[0].toLowerCase();
+    const startsWithStreet=streetWords.some(w=>first.startsWith(w));
+    // Se la prima parte non inizia con una parola stradale, è probabilmente il nome del locale
+    if(!startsWithStreet&&parts.length>1) return parts.slice(1).join(', ');
+    return a;
+  }
   const addr=clientAddress.toLowerCase();
   const hasCity=addr.includes('napoli')||addr.includes('aversa')||addr.includes('caserta')||addr.includes('pozzuoli')||addr.includes('giugliano')||addr.includes('italy')||addr.includes('italia');
-  const fullAddr=hasCity?clientAddress:clientAddress+', Napoli, Italia';
+  const cleaned=cleanAddr(clientAddress);
+  const fullAddr=(hasCity?cleaned:cleaned+', Napoli, Italia');
   try{
-    const[origin,dest]=await Promise.all([geocode(ORIGIN_ADDRESS),geocode(fullAddr)]);
+    const origin=await geocode(ORIGIN_ADDRESS);
+    let dest=null;
+    // Prova prima con indirizzo pulito, poi con originale
+    try{ dest=await geocode(fullAddr); }catch(e1){
+      try{ dest=await geocode(hasCity?clientAddress:clientAddress+', Napoli, Italia'); }catch(e2){
+        console.error('Geocoding fallito:',e2); return null;
+      }
+    }
     const km=haversineKm(origin.lat,origin.lon,dest.lat,dest.lon)*ROAD_FACTOR;
     const cost=Math.round(km*DELIVERY_RATE*100)/100;
     console.log('Consegna: '+km.toFixed(1)+'km → €'+cost);
