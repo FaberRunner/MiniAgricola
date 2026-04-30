@@ -820,7 +820,13 @@ async function openHist(){
             '<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:'+sc+'22;color:'+sc+'">● '+sl+'</span>'+
           '</div>'+
           '<div style="background:#f9f9f9;border-radius:6px;padding:8px 10px;font-size:13px">'+
-            items.map(it=>'<div style="display:flex;justify-content:space-between;padding:2px 0"><span>'+esc(it.name)+'</span><span style="color:var(--m)">×'+it.qty+' = €'+(it.qty*it.price).toFixed(2)+'</span></div>').join('')+
+            items.map(it=>{
+              const isOm=it.omaggio===true||it.omaggio==='true';
+              const isPre=it.preorder===true||it.preorder==='true';
+              const badge=isOm?' 🎁':isPre?' 📋':'';
+              const priceStr=isOm?'<span style="color:#d97706">gratuito</span>':'×'+it.qty+' = €'+(it.qty*it.price).toFixed(2);
+              return '<div style="display:flex;justify-content:space-between;padding:2px 0'+(isOm?';background:#fef9ec;border-radius:4px;padding:2px 6px':'')+'">'+'<span>'+esc(it.name)+badge+'</span><span style="color:var(--m)">'+priceStr+'</span></div>';
+            }).join('')+
           '</div>'+
           (note?'<div style="font-size:12px;color:var(--m);font-style:italic">📝 '+esc(note)+'</div>':'')+
           '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--b);padding-top:8px"><span style="font-size:12px;color:var(--m)">Totale</span><strong style="font-size:15px;color:var(--g)">€'+total.toFixed(2)+'</strong></div>'+

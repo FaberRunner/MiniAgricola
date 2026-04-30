@@ -291,10 +291,16 @@ function renderO(){
           <strong style="font-size:16px;min-width:60px;text-align:right">€${(()=>{const t=pp(o.total);if(t>9999){const calc=(o.items||[]).filter(i=>!i.preorder).reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);return calc.toFixed(2);}return t.toFixed(2);})()}</strong>
         </div>
         <div style="background:#f9f9f9;border-radius:8px;padding:8px 12px;margin-bottom:8px">
-          ${(o.items||[]).map((it,i)=>{const isPre=it.preorder===true||it.preorder==='true';const lineTotal=Math.round(parseFloat(it.qty||0)*parseFloat(it.price||0)*100)/100;return`
-            <div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;${i<(o.items.length-1)?'border-bottom:1px solid #eee':''}${isPre?';background:#fff8e6;padding:4px 8px;border-radius:4px;margin:2px 0':''}">
-              <span>${esc(it.name)}${isPre?' <span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fff0c0;padding:1px 5px;border-radius:3px;margin-left:4px">PRE-ORDINE</span>':''}</span>
-              <span style="color:${isPre?'#f59e0b':'#888'}">${it.qty} × €${it.price}${isPre?' (pre-ord.)':''} → <strong>€${lineTotal.toFixed(2)}</strong></span>
+          ${(o.items||[]).map((it,i)=>{
+            const isPre=it.preorder===true||it.preorder==='true';
+            const isOm=it.omaggio===true||it.omaggio==='true';
+            const lineTotal=Math.round(parseFloat(it.qty||0)*parseFloat(it.price||0)*100)/100;
+            const bg=isOm?';background:#fef9ec;padding:4px 8px;border-radius:4px;margin:2px 0':isPre?';background:#fff8e6;padding:4px 8px;border-radius:4px;margin:2px 0':'';
+            const badge=isOm?'<span style="font-size:10px;font-weight:700;color:#d97706;background:#fef3c7;padding:1px 5px;border-radius:3px;margin-left:4px">OMAGGIO</span>':isPre?'<span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fff0c0;padding:1px 5px;border-radius:3px;margin-left:4px">PRE-ORDINE</span>':'';
+            const priceStr=isOm?'🎁 gratuito':isPre?`${it.qty} × €${it.price} (pre-ord.) → <strong>€${lineTotal.toFixed(2)}</strong>`:`${it.qty} × €${it.price} → <strong>€${lineTotal.toFixed(2)}</strong>`;
+            return`<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;${i<(o.items.length-1)?'border-bottom:1px solid #eee':''}${bg}">
+              <span>${esc(it.name)}${badge}</span>
+              <span style="color:${isOm?'#d97706':isPre?'#f59e0b':'#888'}">${priceStr}</span>
             </div>`;}).join('')}
         </div>
         ${o.note?`<div style="font-size:13px;color:#666;font-style:italic;margin-bottom:8px">📝 ${esc(o.note)}</div>`:''}
@@ -303,6 +309,7 @@ function renderO(){
           <button class="btn btn-p" onclick="updS('${esc(o.id)}','confirmed')">✓ Conferma</button>
           <button class="btn btn-s" onclick="updS('${esc(o.id)}','delivered')">📦 Consegnato</button>
           <button class="btn" style="background:#7c3aed;color:#fff" onclick="handlePreordine('${esc(o.id)}')">📋 Pre-ordine</button>
+          <button class="btn" style="background:#d97706;color:#fff" onclick="openOmaggio('${esc(o.id)}')">🎁 Omaggio</button>
           <button class="btn btn-d" onclick="updS('${esc(o.id)}','cancelled')">✕ Annulla</button>
         </div>`:''}
         ${o.status==='confirmed'?`<button class="btn btn-s" onclick="updS('${esc(o.id)}','delivered')">📦 Segna consegnato</button>`:''}
@@ -586,6 +593,44 @@ async function confermaAcquisto(){
     alert('Errore acquisto: '+e.message+'\n\nVerifica che Apps Script sia aggiornato alla versione più recente e ridistribuito.');
     if(btn){btn.disabled=false;btn.textContent='Conferma acquisto';}
   }
+}
+
+// ── GESTIONE OMAGGIO ─────────────────────────────────────────
+function openOmaggio(orderId){
+  const order=orders.find(o=>o.id===orderId);
+  if(!order)return;
+  om('🎁 Aggiungi omaggio — '+esc(order.restaurant),`
+    <div class="field"><label class="label">Prodotto</label>
+      <select class="input" id="om-prod" style="width:100%">
+        <option value="">— seleziona prodotto —</option>
+        ${products.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field"><label class="label">Quantità vaschette</label>
+      <input class="input" type="number" id="om-qty" min="1" step="1" value="1">
+    </div>
+    <div style="background:#fff8ec;border-radius:8px;padding:10px;font-size:12px;color:#92400e;margin-bottom:16px">
+      🎁 Le vaschette omaggio non scalano lo stock e appaiono gratuitamente nel riepilogo del cliente.
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn" style="background:#d97706;color:#fff;flex:1" onclick="confermaOmaggio('${esc(orderId)}')">Aggiungi omaggio</button>
+      <button class="btn btn-s" onclick="cm()" style="flex:1">Annulla</button>
+    </div>
+  `);
+}
+
+async function confermaOmaggio(orderId){
+  const nome=document.getElementById('om-prod')?.value;
+  const qty=parseInt(document.getElementById('om-qty')?.value)||0;
+  if(!nome||qty<=0){alert('Seleziona un prodotto e inserisci la quantità.');return;}
+  const order=orders.find(o=>o.id===orderId);
+  if(!order)return;
+  // Aggiungi item omaggio all'ordine
+  const omItem={name:nome,qty,price:0,omaggio:true};
+  const updItems=[...(order.items||[]),omItem];
+  orders=orders.map(o=>o.id===orderId?{...o,items:updItems,itemsJson:JSON.stringify(updItems)}:o);
+  cm();renderAll();await saveOrd();
+  ss('ok','🎁 Omaggio aggiunto');
 }
 
 // ── GESTIONE PRE-ORDINE ──────────────────────────────────────
