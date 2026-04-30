@@ -122,7 +122,7 @@ async function loadAll(force=false){
       cM?Promise.resolve(null):get('getMateriePrime'),
     ]);
     const prodRaw=pr||(cP||null);
-    if(prodRaw){products=rows2obj(prodRaw,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0}));if(pr)saveCache('ma_cp',pr);}
+    if(prodRaw){products=rows2obj(prodRaw,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true'}));if(pr)saveCache('ma_cp',pr);}
     clients=rows2obj(cl,CLIE_H);
     orders=rows2obj(or,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));
     const ricRaw=ric||(cR||null);
@@ -138,7 +138,7 @@ async function saveProd(){
   localStorage.removeItem('ma_cache_prod');
   ss('loading','⟳ Salvataggio...');
   try{
-    const rows=obj2rows(products.map(p=>({...p,avail:String(p.avail),price:String(p.price),qty:String(p.qty||0)})),PROD_H);
+    const rows=obj2rows(products.map(p=>({...p,avail:String(p.avail),price:String(p.price),qty:String(p.qty||0),preorder:String(p.preorder||false)})),PROD_H);
     await post('saveProducts',rows);ss('ok','✓ Salvato');
   }catch{ss('err','⚠ Errore');}
 }
@@ -161,10 +161,10 @@ function sw(tab){
   });renderAll();
 }
 function utl(){
-  const a=products.filter(p=>p.avail).length,pend=orders.filter(o=>o.status==='pending').length;
+  const a=products.filter(p=>p.avail).length,pend=orders.filter(o=>o.status==='pending').length,preord=orders.filter(o=>o.status==='preorder').length,alertCount=pend+preord;
   document.getElementById('tab-c').textContent=`Catalogo (${a}/${products.length})`;
   document.getElementById('tab-cl').textContent=`Clienti (${clients.length})`;
-  document.getElementById('tab-o').textContent=pend>0?`Ordini ⚠ ${pend}`:`Ordini (${orders.length})`;
+  document.getElementById('tab-o').textContent=alertCount>0?`Ordini ⚠ ${alertCount}`:`Ordini (${orders.length})`;
   document.getElementById('tab-g').textContent='Gestionale';
 }
 function renderAll(){utl();renderC();renderCl();renderO();renderG();}
@@ -201,6 +201,7 @@ function renderC(){
           <div style="font-size:15px;font-weight:700">€${p.price}</div>
           <div style="font-size:11px;color:#888">/${esc(p.unit)}</div>
           <div style="font-size:11px;font-weight:700;color:${(p.qty||0)>0?'#5c8a3c':'#e53935'}">${(p.qty||0)>0?p.qty+' disp.':'esaurito'}</div>
+          ${p.preorder?'<div style="font-size:10px;color:#7c3aed;font-weight:700">📋 pre-ord.</div>':''}
         </div>
         <span style="font-size:10px;font-family:monospace;background:#eee;padding:2px 7px;border-radius:99px;color:#555;white-space:nowrap">${esc(p.id)}</span>
         <button class="btn btn-s" onclick="editP('${esc(p.id)}')" style="padding:6px 10px">✏️</button>
@@ -247,8 +248,8 @@ function renderO(){
   const pend=orders.filter(o=>o.status==='pending').length;
   const sorted=[...orders].sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
   const fil=f==='all'?sorted:sorted.filter(o=>o.status===f);
-  const SL={pending:'In attesa',confirmed:'Confermato',delivered:'Consegnato',cancelled:'Annullato'};
-  const SC={pending:'#f59e0b',confirmed:'#5c8a3c',delivered:'#888',cancelled:'#e53935'};
+  const SL={pending:'In attesa',confirmed:'Confermato',delivered:'Consegnato',cancelled:'Annullato',preorder:'📋 Pre-ordine'};
+  const SC={pending:'#f59e0b',confirmed:'#5c8a3c',delivered:'#888',cancelled:'#e53935',preorder:'#7c3aed'};
   document.getElementById('v-o').innerHTML=`
     <div class="topbar">
       <div><div class="sh">Ordini</div>
@@ -291,9 +292,11 @@ function renderO(){
         ${o.status==='pending'?`<div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-p" onclick="updS('${esc(o.id)}','confirmed')">✓ Conferma</button>
           <button class="btn btn-s" onclick="updS('${esc(o.id)}','delivered')">📦 Consegnato</button>
+          <button class="btn" style="background:#7c3aed;color:#fff" onclick="handlePreordine('${esc(o.id)}')">📋 Pre-ordine</button>
           <button class="btn btn-d" onclick="updS('${esc(o.id)}','cancelled')">✕ Annulla</button>
         </div>`:''}
         ${o.status==='confirmed'?`<button class="btn btn-s" onclick="updS('${esc(o.id)}','delivered')">📦 Segna consegnato</button>`:''}
+        ${o.status==='preorder'?`<button class="btn" style="background:#7c3aed;color:#fff" onclick="updS('${esc(o.id)}','delivered')">✓ Evaso</button>`:''}
       </div>`;
     }).join('')}`;
 }
@@ -303,8 +306,8 @@ function om(title,html){document.getElementById('mtitle').textContent=title;docu
 function cm(){document.getElementById('overlay').classList.remove('open');}
 
 // PRODOTTI
-function newP(){editing=null;pfAvail=true;om('Nuovo prodotto',pForm({id:gid('MG',products),name:'',desc:'',price:10,avail:true,unit:'vassoio',qty:0}));}
-function editP(id){editing=products.find(p=>p.id===id);if(!editing)return;pfAvail=editing.avail;om('Modifica prodotto',pForm(editing));}
+function newP(){editing=null;pfAvail=true;pfPreorder=false;om('Nuovo prodotto',pForm({id:gid('MG',products),name:'',desc:'',price:10,avail:true,unit:'vassoio',qty:0,preorder:false}));}
+function editP(id){editing=products.find(p=>p.id===id);if(!editing)return;pfAvail=editing.avail;pfPreorder=editing.preorder||false;om('Modifica prodotto',pForm(editing));}
 function pForm(p){return `
   <div class="field"><label class="label">Codice</label><input class="input" value="${esc(p.id)}" id="pi" readonly style="background:#f5f5f5"></div>
   <div class="field"><label class="label">Nome *</label><input class="input" value="${esc(p.name)}" id="pn" placeholder="Es. Crescione" autofocus></div>
@@ -320,20 +323,27 @@ function pForm(p){return `
     </div>
   </div>
   <div class="field"><label class="label">Quantità disponibile (vaschette)</label><input class="input" type="number" min="0" step="1" value="${p.qty||0}" id="pq"></div>
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
     <button class="toggle" id="ptog" style="background:${p.avail?'#5c8a3c':'#ccc'}" onclick="tpA()" type="button">
       <span class="knob" id="pknob" style="left:${p.avail?19:3}px"></span>
     </button>
     <span id="palbl" style="font-size:13px;color:#888">${p.avail?'Visibile ai clienti':'Non visibile ai clienti'}</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+    <button class="toggle" id="ptog2" style="background:${(p.preorder||false)?'#7c3aed':'#ccc'}" onclick="tpP()" type="button">
+      <span class="knob" id="pknob2" style="left:${(p.preorder||false)?19:3}px"></span>
+    </button>
+    <span id="palbl2" style="font-size:13px;color:#888">${(p.preorder||false)?'Accetta pre-ordini':'Pre-ordini non attivi'}</span>
   </div>
   <div style="display:flex;gap:10px">
     <button class="btn btn-p" onclick="saveP()" style="flex:1">Salva</button>
     <button class="btn btn-s" onclick="cm()" style="flex:1">Annulla</button>
   </div>`;}
 function tpA(){pfAvail=!pfAvail;document.getElementById('ptog').style.background=pfAvail?'#5c8a3c':'#ccc';document.getElementById('pknob').style.left=pfAvail?'19px':'3px';document.getElementById('palbl').textContent=pfAvail?'Visibile ai clienti':'Non visibile ai clienti';}
+function tpP(){pfPreorder=!pfPreorder;document.getElementById('ptog2').style.background=pfPreorder?'#7c3aed':'#ccc';document.getElementById('pknob2').style.left=pfPreorder?'19px':'3px';document.getElementById('palbl2').textContent=pfPreorder?'Accetta pre-ordini':'Pre-ordini non attivi';}
 async function saveP(){
   const name=document.getElementById('pn').value.trim();if(!name){alert('Inserisci il nome');return;}
-  const obj={id:document.getElementById('pi').value,name,desc:document.getElementById('pd').value,price:parseFloat(document.getElementById('ppr').value)||0,unit:document.getElementById('pu').value,qty:parseInt(document.getElementById('pq').value)||0,avail:pfAvail};
+  const obj={id:document.getElementById('pi').value,name,desc:document.getElementById('pd').value,price:parseFloat(document.getElementById('ppr').value)||0,unit:document.getElementById('pu').value,qty:parseInt(document.getElementById('pq').value)||0,avail:pfAvail,preorder:pfPreorder};
   products=editing?products.map(p=>p.id===obj.id?obj:p):[...products,obj];
   cm();renderAll();await saveProd();
 }
@@ -565,6 +575,22 @@ async function confermaAcquisto(){
     alert('Errore acquisto: '+e.message+'\n\nVerifica che Apps Script sia aggiornato alla versione più recente e ridistribuito.');
     if(btn){btn.disabled=false;btn.textContent='Conferma acquisto';}
   }
+}
+
+// ── GESTIONE PRE-ORDINE ──────────────────────────────────────
+async function handlePreordine(id){
+  const order=orders.find(o=>o.id===id);
+  if(!order)return;
+  const preItems=(order.items||[]).filter(i=>i.preorder===true||i.preorder==='true');
+  // Annulla ordine originale — Apps Script ripristina lo stock
+  orders=orders.map(o=>o.id===id?{...o,status:'cancelled'}:o);
+  // Crea nuovo ordine con soli pre-ordini se presenti
+  if(preItems.length>0){
+    const preTotal=preItems.reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);
+    const preOrd={id:'PRE-'+Date.now(),clientId:order.clientId,restaurant:order.restaurant,itemsJson:JSON.stringify(preItems),items:preItems,total:preTotal,note:order.note||'',status:'preorder',createdAt:new Date().toISOString()};
+    orders=[...orders,preOrd];
+  }
+  renderAll();await saveOrd();
 }
 
 // ── AUTO-REFRESH ORDINI ogni 30 secondi

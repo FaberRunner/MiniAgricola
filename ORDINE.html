@@ -189,7 +189,7 @@ async function init(){
   const CACHE_TTL=5*60*1000;
   const cachedProd=(()=>{try{const c=JSON.parse(localStorage.getItem('ma_op')||'null');if(c&&(Date.now()-c.ts)<CACHE_TTL)return c.data;}catch(e){}return null;})();
   if(cachedProd){
-    products=cachedProd.map(p=>({...p,price:parseFloat(p.price)||0,avail:p.avail===true||p.avail==='true',qty:parseInt(p.qty)||0}));
+    products=cachedProd.map(p=>({...p,price:parseFloat(p.price)||0,avail:p.avail===true||p.avail==='true',qty:parseInt(p.qty)||0,preorder:p.preorder===true||p.preorder==='true'}));
   } else {
     try{
       const rows=await get_('getProducts');
@@ -197,7 +197,7 @@ async function init(){
         const H=rows[0].map(h=>String(h).trim());
         products=rows.slice(1).filter(r=>r[0]).map(row=>{
           const o={};H.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});
-          return {id:String(o.id),name:String(o.name),desc:String(o.desc||''),price:pp(o.price),avail:String(o.avail).toLowerCase()==='true',unit:String(o.unit||'vassoio'),qty:parseInt(o.qty)||0};
+          return {id:String(o.id),name:String(o.name),desc:String(o.desc||''),price:pp(o.price),avail:String(o.avail).toLowerCase()==='true',unit:String(o.unit||'vassoio'),qty:parseInt(o.qty)||0,preorder:String(o.preorder).toLowerCase()==='true'};
         });
         try{localStorage.setItem('ma_op',JSON.stringify({ts:Date.now(),data:products}));}catch(e){}
       }
@@ -313,7 +313,12 @@ function addC(id){
   const available=product?.qty||0;
 
   if(available<=0){
-    // Prodotto esaurito — offri pre-ordine
+    if(!product.preorder){
+      // Pre-ordini non attivi su questo prodotto
+      alert(product.name+' non è al momento disponibile.');
+      return;
+    }
+    // Prodotto esaurito con pre-ordini attivi — offri pre-ordine
     const conf=confirm('🌱 '+product.name+' — Prodotto non disponibile\n\n'+requested+' vaschett'+(requested===1?'a':'e')+' in PRE-ORDINE\n\nMiniAgricola produce su richiesta per azzerare gli sprechi e garantirti la massima freschezza. Il tuo pre-ordine ci permette di pianificare la prossima produzione.\n\nConfermi il pre-ordine?');
     if(conf){
       preCart[id]=(preCart[id]||0)+requested;
@@ -325,12 +330,17 @@ function addC(id){
   }
 
   if(requested>available){
-    // Parzialmente disponibile — cappа a disponibile + offri pre-ordine per il resto
-    const diff=requested-available;
+    // Cappа a disponibile
     cart[id]=available;
     if(el)el.value=available;
-    const conf=confirm('🌱 '+product.name+'\n\nDisponibili subito: '+available+' vaschett'+(available===1?'a':'e')+'\nIn pre-ordine: '+diff+' vaschett'+(diff===1?'a':'e')+'\n\nProduciamo solo ciò che viene richiesto, per rispettare le risorse e offrirti sempre prodotto fresco. Le vaschette in pre-ordine saranno prodotte e consegnate il prima possibile.\n\nConfermi?');
-    if(conf) preCart[id]=(preCart[id]||0)+diff;
+    if(product.preorder){
+      // Pre-ordini attivi — offri il resto come pre-ordine
+      const diff=requested-available;
+      const conf=confirm('🌱 '+product.name+'\n\nDisponibili subito: '+available+' vaschett'+(available===1?'a':'e')+'\nIn pre-ordine: '+diff+' vaschett'+(diff===1?'a':'e')+'\n\nProduciamo solo ciò che viene richiesto, per rispettare le risorse e offrirti sempre prodotto fresco. Le vaschette in pre-ordine saranno prodotte e consegnate il prima possibile.\n\nConfermi?');
+      if(conf) preCart[id]=(preCart[id]||0)+diff;
+    } else {
+      alert('Abbiamo solo '+available+' vaschett'+(available===1?'a':'e')+' disponibil'+(available===1?'e':'i')+' di '+product.name+'. Ne abbiamo aggiunte '+available+' al carrello.');
+    }
     updateCart();
     const btn=document.getElementById('ab-'+id);
     const totBtn=(cart[id]||0)+(preCart[id]||0);
