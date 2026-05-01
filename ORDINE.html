@@ -653,12 +653,12 @@ function renderCat(){
       }else if(p.preorder){
         // Prodotto esaurito ma con pre-ordine attivo
         const q=preCart[p.id]||0;
-        h+=`<div class="pcard" style="opacity:.85;border-color:#e9d5ff">
+        h+=`<div class="pcard">
           ${pimgHtml(p,em,bg)}
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
-            <div class="pdesc" style="color:#7c3aed">📋 Pre-ordine disponibile${p.waitTime?" · "+esc(p.waitTime):""}</div>
+            <div class="pdesc" style="color:#5c8a3c;font-weight:600">📋 Pre-ordine disponibile${p.waitTime?" · "+esc(p.waitTime):""}</div>
           </div>
           <div class="qctrl">
             <button class="qbtn" onclick="chQ('${p.id}',-1)">−</button>
