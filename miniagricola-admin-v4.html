@@ -306,6 +306,7 @@ function renderO(){
             <div style="font-size:12px;color:#888">${esc(o.id)} · ${new Date(o.createdAt).toLocaleString('it-IT')}</div>
           </div>
           <span class="tag" style="background:${sc}22;color:${sc}">● ${SL[o.status]||o.status}</span>
+          <button onclick="deleteOrder('${esc(o.id)}')" title="Elimina ordine" style="background:transparent;border:none;color:#ccc;font-size:18px;cursor:pointer;padding:0 4px;line-height:1;margin-left:4px" onmouseover="this.style.color='#e53935'" onmouseout="this.style.color='#ccc'">×</button>
           <strong style="font-size:16px;min-width:60px;text-align:right">€${(()=>{const calc=(o.items||[]).filter(i=>!(i.omaggio===true||i.omaggio==='true')).reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);return calc.toFixed(2);})()}</strong>
         </div>
         <div style="background:#f9f9f9;border-radius:8px;padding:8px 12px;margin-bottom:8px">
@@ -736,6 +737,18 @@ function checkAuth(){
     return false;
   }
   return true;
+}
+
+
+// ── ELIMINA SINGOLO ORDINE ───────────────────────────────────
+async function deleteOrder(id){
+  const o=orders.find(x=>x.id===id);
+  if(!o)return;
+  if(!confirm('Eliminare ordine '+id+'\n'+o.restaurant+'?\n\nL\'operazione è irreversibile.'))return;
+  orders=orders.filter(x=>x.id!==id);
+  renderAll();
+  await saveOrd();
+  ss('ok','✓ Ordine eliminato');
 }
 
 // ── AUTO-REFRESH ORDINI ogni 30 secondi
