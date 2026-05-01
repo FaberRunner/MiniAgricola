@@ -886,10 +886,16 @@ async function confirm_(){
     if(res&&res.error) throw new Error(res.error);
     // Email via GET (non blocca l'ordine se fallisce)
     try{
+      // Costruisci lista completa: reali + preorder + omaggi come oggetti
+      const allNotifyItems=[
+        ...items.map(i=>({name:i.name,qty:i.qty,price:i.price,preorder:false,omaggio:false})),
+        ...pItems.map(i=>({name:i.name,qty:i.qty,price:i.price,preorder:true,omaggio:false})),
+        ...(order.items||[]).filter(i=>i.omaggio===true||i.omaggio==='true').map(i=>({name:i.name,qty:i.qty,price:0,preorder:false,omaggio:true}))
+      ];
       const d=encodeURIComponent(JSON.stringify({
         restaurant:order.restaurant,total:order.total,
         note:order.note,clientEmail:client?.email||'',
-        orderId:order.id,items:items.map(i=>i.name+' x'+i.qty)
+        orderId:order.id,items:allNotifyItems
       }));
       fetch(API+'?action=notify&d='+d+'&t='+Date.now()).catch(()=>{});
     }catch(_){}
