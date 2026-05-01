@@ -230,6 +230,40 @@ const BG={
   'MG-0033':'#fce4ec','MG-0034':'#e0f7fa',
 };
 
+// Immagini reali Golinucci Organic
+const IMGS={
+  'MG-0001':'https://faberrunner.github.io/MiniAgricola/imgs/Crescione-sito-1.png',
+  'MG-0002':'https://faberrunner.github.io/MiniAgricola/imgs/Senape-bianca-of.png',
+  'MG-0003':'https://faberrunner.github.io/MiniAgricola/imgs/senape-rossa-sito.png',
+  'MG-0004':'https://faberrunner.github.io/MiniAgricola/imgs/Senape-Rossa-Frastagliata.png',
+  'MG-0005':'https://faberrunner.github.io/MiniAgricola/imgs/Senape-Verde.png',
+  'MG-0007':'https://faberrunner.github.io/MiniAgricola/imgs/Basilico-Verde.png',
+  'MG-0008':'https://faberrunner.github.io/MiniAgricola/imgs/basilico-limone-sito-1.png',
+  'MG-0009':'https://faberrunner.github.io/MiniAgricola/imgs/Basilico-Thailandese.png',
+  'MG-0010':'https://faberrunner.github.io/MiniAgricola/imgs/Basil-Dark-Opal.png',
+  'MG-0011':'https://faberrunner.github.io/MiniAgricola/imgs/Bieta-rossa-sito-3.png',
+  'MG-0012':'https://faberrunner.github.io/MiniAgricola/imgs/Germoglio-bieta-gialla-sito.jpg',
+  'MG-0013':'https://faberrunner.github.io/MiniAgricola/imgs/Ravanello-China-Rose.png',
+  'MG-0014':'https://faberrunner.github.io/MiniAgricola/imgs/Ravanello-Vulcano.png',
+  'MG-0016':'https://faberrunner.github.io/MiniAgricola/imgs/Ravanello-Venom.jpg',
+  'MG-0017':'https://faberrunner.github.io/MiniAgricola/imgs/pisello-balboa-sito.png',
+  'MG-0018':'https://faberrunner.github.io/MiniAgricola/imgs/Cavolo-Rosso.png',
+  'MG-0019':'https://faberrunner.github.io/MiniAgricola/imgs/cavolo-rosa-sito-1.png',
+  'MG-0020':'https://faberrunner.github.io/MiniAgricola/imgs/cavolo-nero-sito-2.png',
+  'MG-0021':'https://faberrunner.github.io/MiniAgricola/imgs/cavolo-rapa-rosso-sito.png',
+  'MG-0022':'https://faberrunner.github.io/MiniAgricola/imgs/Borragine-sito-1-1.png',
+  'MG-0023':'https://faberrunner.github.io/MiniAgricola/imgs/Alaska-sito.png',
+  'MG-0024':'https://faberrunner.github.io/MiniAgricola/imgs/Acetosa-Rossa.png',
+  'MG-0025':'https://faberrunner.github.io/MiniAgricola/imgs/Malva.png',
+  'MG-0026':'https://faberrunner.github.io/MiniAgricola/imgs/Tarassaco.jpg',
+  'MG-0027':'https://faberrunner.github.io/MiniAgricola/imgs/Cipolla-sito.png',
+  'MG-0028':'https://faberrunner.github.io/MiniAgricola/imgs/Porro-sito.png',
+  'MG-0029':'https://faberrunner.github.io/MiniAgricola/imgs/Prezzemolo.png',
+  'MG-0030':'https://faberrunner.github.io/MiniAgricola/imgs/carota-sito-1.png',
+  'MG-0031':'https://faberrunner.github.io/MiniAgricola/imgs/sedano-sito-1.png',
+  'MG-0032':'https://faberrunner.github.io/MiniAgricola/imgs/Grano.png',
+  'MG-0033':'https://faberrunner.github.io/MiniAgricola/imgs/lenticchie-rosse-sito.png',
+};
 // ── ICONE SVG BOTANICHE ─────────────────────────────────────
 function _ic(bg,body){return '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="'+bg+'"/>'+body+'</svg>';}
 
@@ -590,8 +624,9 @@ function renderCat(){
     cp.forEach(p=>{
       const q=cart[p.id]||0,em=EMO[p.id]||'🌿',bg=BG[p.id]||'#f1f8e9';
       if(p.avail){
+        const imgSrc=IMGS[p.id];
         h+=`<div class="pcard">
-          <div class="pimg" style="background:${bg};font-size:52px">${em}</div>
+          <div class="pimg" style="background:${imgSrc?'#f8f8f8':bg};padding:${imgSrc?'0':'inherit'};font-size:52px;overflow:hidden">${imgSrc?`<img src="${imgSrc}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">`:em}</div>
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
@@ -610,7 +645,7 @@ function renderCat(){
         // Prodotto esaurito ma con pre-ordine attivo
         const q=preCart[p.id]||0;
         h+=`<div class="pcard" style="opacity:.85;border-color:#e9d5ff">
-          <div class="pimg" style="background:${bg};font-size:52px">${em}</div>
+          <div class="pimg" style="background:${imgSrc?'#f8f8f8':bg};padding:${imgSrc?'0':'inherit'};font-size:52px;overflow:hidden">${imgSrc?`<img src="${imgSrc}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">`:em}</div>
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
@@ -629,7 +664,7 @@ function renderCat(){
       }else{
         // Non disponibile senza pre-ordine
         h+=`<div class="pcard na">
-          <div class="pimg" style="background:${bg};font-size:52px;opacity:.6">${em}</div>
+          <div class="pimg" style="background:${imgSrc?'#f8f8f8':bg};padding:${imgSrc?'0':'inherit'};font-size:52px;overflow:hidden;opacity:.6">${imgSrc?`<img src="${imgSrc}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">`:em}</div>
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
