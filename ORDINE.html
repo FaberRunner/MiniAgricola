@@ -2,9 +2,9 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
+<meta http-equiv="Expires" content="-1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>MiniAgricola — Ordina</title>
 <style>
@@ -89,6 +89,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="gbar" id="gbar"></div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.05.02</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -620,6 +621,7 @@ function doLogin(){
 }
 
 function showApp(name){
+  document.getElementById('ver').style.display='block';
   document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('gbar').textContent='Ciao, '+name+' 👋';
