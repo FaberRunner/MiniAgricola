@@ -306,7 +306,7 @@ function renderO(){
             <div style="font-size:12px;color:#888">${esc(o.id)} · ${new Date(o.createdAt).toLocaleString('it-IT')}</div>
           </div>
           <span class="tag" style="background:${sc}22;color:${sc}">● ${SL[o.status]||o.status}</span>
-          <strong style="font-size:16px;min-width:60px;text-align:right">€${(()=>{const t=pp(o.total);if(t>9999){const calc=(o.items||[]).filter(i=>!i.preorder).reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);return calc.toFixed(2);}return t.toFixed(2);})()}</strong>
+          <strong style="font-size:16px;min-width:60px;text-align:right">€${(()=>{const calc=(o.items||[]).filter(i=>!(i.omaggio===true||i.omaggio==='true')).reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);return calc.toFixed(2);})()}</strong>
         </div>
         <div style="background:#f9f9f9;border-radius:8px;padding:8px 12px;margin-bottom:8px">
           ${(o.items||[]).map((it,i)=>{
