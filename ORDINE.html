@@ -890,7 +890,10 @@ async function openHist(){
             }).join('')+
           '</div>'+
           (note?'<div style="font-size:12px;color:var(--m);font-style:italic">📝 '+esc(note)+'</div>':'')+
-          '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--b);padding-top:8px"><span style="font-size:12px;color:var(--m)">Totale</span><strong style="font-size:15px;color:var(--g)">€'+total.toFixed(2)+'</strong></div>'+
+          '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--b);padding-top:8px">'+
+              '<button onclick="ripetiOrdine('+JSON.stringify(items)+')" style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">↺ Ripeti ordine</button>'+
+              '<div style="text-align:right"><div style="font-size:12px;color:var(--m)">Totale</div><strong style="font-size:15px;color:var(--g)">€'+total.toFixed(2)+'</strong></div>'+
+            '</div>'+
         '</div>';
       }).join('');
   }catch(e){
@@ -900,6 +903,44 @@ async function openHist(){
 }
 
 function closeHist(){document.getElementById('histscr').classList.remove('open');}
+
+function ripetiOrdine(items){
+  if(!items||!items.length)return;
+  // Resetta carrello corrente
+  cart={};preCart={};
+  let added=0,skipped=[];
+  items.forEach(function(it){
+    if(it.omaggio===true||it.omaggio==='true')return; // Escludi omaggi
+    const p=products.find(function(x){return x.name===it.name;});
+    if(!p){skipped.push(it.name);return;}
+    const qty=parseInt(it.qty)||1;
+    if(it.preorder===true||it.preorder==='true'){
+      // Pre-ordine — va in preCart se il prodotto accetta preordini
+      if(p.preorder){preCart[p.id]=(preCart[p.id]||0)+qty;}
+      else if(p.avail&&p.qty>0){cart[p.id]=Math.min(qty,p.qty);}
+    }else{
+      // Prodotto reale — aggiunge quello disponibile, resto in preCart
+      if(p.avail&&p.qty>0){
+        const realQty=Math.min(qty,p.qty);
+        cart[p.id]=realQty;
+        if(realQty<qty&&p.preorder){preCart[p.id]=(preCart[p.id]||0)+(qty-realQty);}
+      }else if(p.preorder){
+        preCart[p.id]=(preCart[p.id]||0)+qty;
+      }else{
+        skipped.push(p.name);
+      }
+    }
+    added++;
+  });
+  updateCart();
+  closeHist();
+  openR();
+  if(skipped.length>0){
+    setTimeout(function(){
+      alert('Ordine ripristinato!\n\nProdotti non più disponibili (rimossi):\n• '+skipped.join('\n• '));
+    },300);
+  }
+}
 
 async function confirm_(){
   const btn=document.getElementById('cfbtn');
