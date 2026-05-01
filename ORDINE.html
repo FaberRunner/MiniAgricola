@@ -30,6 +30,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 .pcard{background:#fff;border-radius:12px;border:1px solid var(--b);overflow:hidden;display:flex;flex-direction:column}
 .pcard.na{opacity:.5}
 .pimg{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:48px;background:var(--gl)}
+.pimg-real{padding:0;overflow:hidden;background:#fff}
 .pinfo{padding:10px 10px 6px}
 .pname{font-weight:700;font-size:13px;line-height:1.3;margin-bottom:3px}
 .pprice{font-size:13px;font-weight:800;color:var(--g)}
@@ -614,6 +615,13 @@ function showApp(name){
   renderCat();updateCart();
 }
 
+function pimgHtml(p,em,bg){
+  const src=IMGS[p.id];
+  if(src) return '<div class="pimg pimg-real"><img src="'+src+'" alt="'+esc(p.name)+'" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy" class="prod-img" data-fallback-em="'+em+'" data-fallback-bg="'+bg+'" onError="onImgErr(this)"></div>';
+  return '<div class="pimg" style="background:'+bg+';font-size:52px">'+em+'</div>';
+}
+function onImgErr(img){img.style.display="none";var p=img.parentNode;p.className="pimg";p.style.background=img.dataset.fallbackBg;p.style.fontSize="52px";p.innerHTML=img.dataset.fallbackEm;}
+
 function renderCat(){
   const pm={};products.forEach(p=>pm[p.id]=p);
   let h='';
@@ -624,9 +632,8 @@ function renderCat(){
     cp.forEach(p=>{
       const q=cart[p.id]||0,em=EMO[p.id]||'🌿',bg=BG[p.id]||'#f1f8e9';
       if(p.avail){
-        const imgSrc=IMGS[p.id];
         h+=`<div class="pcard">
-          <div class="pimg" style="background:${imgSrc?'#f8f8f8':bg};padding:${imgSrc?'0':'inherit'};font-size:52px;overflow:hidden">${imgSrc?`<img src="${imgSrc}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">`:em}</div>
+          ${pimgHtml(p,em,bg)}
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
@@ -645,7 +652,7 @@ function renderCat(){
         // Prodotto esaurito ma con pre-ordine attivo
         const q=preCart[p.id]||0;
         h+=`<div class="pcard" style="opacity:.85;border-color:#e9d5ff">
-          <div class="pimg" style="background:${imgSrc?'#f8f8f8':bg};padding:${imgSrc?'0':'inherit'};font-size:52px;overflow:hidden">${imgSrc?`<img src="${imgSrc}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">`:em}</div>
+          ${pimgHtml(p,em,bg)}
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
@@ -664,7 +671,7 @@ function renderCat(){
       }else{
         // Non disponibile senza pre-ordine
         h+=`<div class="pcard na">
-          <div class="pimg" style="background:${imgSrc?'#f8f8f8':bg};padding:${imgSrc?'0':'inherit'};font-size:52px;overflow:hidden;opacity:.6">${imgSrc?`<img src="${imgSrc}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy">`:em}</div>
+          <div style="opacity:.6">${pimgHtml(p,em,bg)}</div>
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
