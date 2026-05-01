@@ -39,11 +39,29 @@ body{background:#f5f5f0;color:#1a1a1a;font-size:14px;min-height:100vh}
 </style>
 </head>
 <body>
+
+<!-- ── SCHERMATA LOGIN ADMIN ──────────────────────────────── -->
+<div id="auth-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a2e1a 0%,#2d4a2d 100%);z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:20px;padding:40px 48px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.4);text-align:center">
+    <div style="font-size:40px;margin-bottom:8px">🌱</div>
+    <div style="font-size:22px;font-weight:800;color:#1a2e1a;margin-bottom:4px">MiniAgricola</div>
+    <div style="font-size:13px;color:#888;margin-bottom:28px">Accesso riservato</div>
+    <input id="auth-pwd" type="password" placeholder="Password" autocomplete="off"
+      style="width:100%;padding:14px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;box-sizing:border-box;margin-bottom:12px;outline:none;transition:border 0.2s"
+      onfocus="this.style.border='2px solid #5c8a3c'"
+      onblur="this.style.border='2px solid #e0e0e0'"
+      onkeydown="if(event.key==='Enter')doAuth()">
+    <button onclick="doAuth()" style="width:100%;padding:14px;background:#5c8a3c;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">Accedi</button>
+    <div id="auth-err" style="display:none;color:#e53935;font-size:13px;margin-top:4px">⚠️ Password errata</div>
+  </div>
+</div>
+
 <div class="header">
   <div class="logo">🌱 MINIAGRICOLA <span style="font-weight:300;font-size:13px">admin</span></div>
   <div style="display:flex;align-items:center;gap:10px">
     <span id="ss" style="font-size:12px;color:#a0d080"></span>
     <button onclick="clearCache();loadAll(true)" style="font-size:11px;background:transparent;border:1px solid #444;color:#aaa;border-radius:5px;padding:2px 8px;cursor:pointer" title="Forza aggiornamento dati">↺</button>
+    <button onclick="doLogout()" title="Esci" style="background:transparent;border:1px solid #888;color:#888;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:6px">⎋ Esci</button>
     <span class="badge">GESTIONALE</span>
   </div>
 </div>
@@ -415,7 +433,31 @@ async function delCl(id){const c=clients.find(x=>x.id===id);if(!c||!confirm(`Eli
 function cpL(tok,btn){try{navigator.clipboard.writeText(`https://faberrunner.github.io/MiniAgricola/ORDINE.html?id=${tok}`);}catch(e){}if(btn){const old=btn.textContent;btn.textContent='✓';btn.style.color='#5c8a3c';setTimeout(()=>{btn.textContent=old;btn.style.color=''},1500);}}
 
 // ORDINI
-async function updS(id,status){orders=orders.map(o=>o.id===id?{...o,status}:o);renderAll();await saveOrd();}
+async function updS(id,status){
+  orders=orders.map(o=>o.id===id?{...o,status}:o);
+  renderAll();await saveOrd();
+  // Quando si conferma, invia email completa al cliente (con omaggi inclusi)
+  if(status==='confirmed'){
+    const ord=orders.find(o=>o.id===id);
+    if(ord){
+      const cl=clients.find(c=>c.id===ord.clientId);
+      const clientEmail=cl?.email||'';
+      if(clientEmail&&clientEmail.indexOf('@')>0){
+        const allItems=(ord.items||[]).map(i=>({
+          name:i.name,qty:i.qty,price:parseFloat(i.price)||0,
+          preorder:i.preorder===true||i.preorder==='true',
+          omaggio:i.omaggio===true||i.omaggio==='true'
+        }));
+        const realTotal=allItems.filter(i=>!i.omaggio).reduce((s,i)=>s+Math.round(i.qty*i.price*100)/100,0);
+        const d=encodeURIComponent(JSON.stringify({
+          restaurant:ord.restaurant,total:realTotal.toFixed(2),
+          note:ord.note||'',clientEmail,orderId:ord.id,items:allItems
+        }));
+        fetch(API+'?action=notify&d='+d+'&t='+Date.now()).catch(()=>{});
+      }
+    }
+  }
+}
 
 // ── GESTIONALE ───────────────────────────────────────────────
 function renderG(){
@@ -649,6 +691,53 @@ async function handlePreordine(id){
   renderAll();await saveOrd();
 }
 
+// ── AUTENTICAZIONE ADMIN ─────────────────────────────────────
+const ADMIN_HASH='bbfdb4e5daf324f5ea4abc7b089f915d90cc0b9dcad2806d0d1faa17116c8fc9';
+
+async function sha256(msg){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function showAuth(){
+  document.getElementById('auth-overlay').style.display='flex';
+  document.querySelector('.header').style.display='none';
+  document.querySelector('.nav').style.display='none';
+  document.querySelector('.body').style.display='none';
+}
+function hideAuth(){
+  document.getElementById('auth-overlay').style.display='none';
+  document.querySelector('.header').style.display='';
+  document.querySelector('.nav').style.display='';
+  document.querySelector('.body').style.display='';
+}
+async function doAuth(){
+  const pwd=document.getElementById('auth-pwd').value;
+  if(!pwd)return;
+  const h=await sha256(pwd);
+  if(h===ADMIN_HASH){
+    sessionStorage.setItem('ma_auth','1');
+    document.getElementById('auth-err').style.display='none';
+    hideAuth();
+    loadAll(false);
+  }else{
+    document.getElementById('auth-err').style.display='block';
+    document.getElementById('auth-pwd').value='';
+    document.getElementById('auth-pwd').focus();
+  }
+}
+function doLogout(){
+  sessionStorage.removeItem('ma_auth');
+  showAuth();
+  document.getElementById('auth-pwd').value='';
+}
+function checkAuth(){
+  if(!sessionStorage.getItem('ma_auth')){
+    showAuth();
+    return false;
+  }
+  return true;
+}
+
 // ── AUTO-REFRESH ORDINI ogni 30 secondi
 setInterval(async()=>{
   try{
@@ -660,7 +749,7 @@ setInterval(async()=>{
   }catch(e){}
 },30000);
 
-loadAll();
+if(checkAuth()){ loadAll(); }
 </script>
 </body>
 </html>
