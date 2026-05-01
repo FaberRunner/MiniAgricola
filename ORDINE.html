@@ -498,32 +498,42 @@ const CAP_COORDS={
 
 let deliveryCost=null;
 
+async function geocodeAddress(address){
+  // Nominatim geocoding — trova coordinate da indirizzo testo
+  const url='https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=it&q='+encodeURIComponent(address);
+  const r=await fetch(url);
+  const data=await r.json();
+  if(!data||!data.length)throw new Error('Indirizzo non trovato: '+address);
+  return {lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon)};
+}
+
 async function calcolaConsegna(clientAddress){
   if(!clientAddress||clientAddress.trim().length<5)return null;
-  const capMatch=clientAddress.match(/\b(8\d{4})\b/);
-  const coords=capMatch?CAP_COORDS[capMatch[1]]:null;
-  const destLat=coords?coords[0]:40.8522;
-  const destLon=coords?coords[1]:14.2681;
-  if(!coords){
-    const addr=clientAddress.toLowerCase();
-    if(!addr.includes('napoli')&&!addr.includes(', na')&&!addr.includes('campania'))return null;
-  }
   try{
-    // OSRM: distanza stradale reale, gratuito, nessuna chiave
+    // 1. Prova prima con CAP per Campania (istantaneo, senza API)
+    const capMatch=clientAddress.match(/\b(8\d{4})\b/);
+    const coords=capMatch?CAP_COORDS[capMatch[1]]:null;
+    let destLat,destLon;
+    if(coords){
+      destLat=coords[0]; destLon=coords[1];
+    }else{
+      // 2. Geocoding per indirizzi fuori Campania (Lucca, Roma, etc.)
+      const geo=await geocodeAddress(clientAddress);
+      destLat=geo.lat; destLon=geo.lon;
+    }
+    // OSRM: distanza stradale reale
     const url='https://router.project-osrm.org/route/v1/driving/'+
       ORIGIN_LON+','+ORIGIN_LAT+';'+destLon+','+destLat+'?overview=false';
     const r=await fetch(url);
     const data=await r.json();
     if(data.code!=='Ok'||!data.routes||!data.routes.length)throw new Error('no route');
     const km=data.routes[0].distance/1000;
-    const cost=Math.round(km*DELIVERY_RATE*2*100)/100; // ×2 andata+ritorno
-    console.log('OSRM: '+km.toFixed(1)+'km reali → €'+cost+' A/R');
+    const cost=Math.round(km*DELIVERY_RATE*2*100)/100;
+    console.log('OSRM: '+km.toFixed(1)+'km → €'+cost+' A/R');
     return cost;
   }catch(e){
-    // Fallback haversine se OSRM non risponde
-    console.warn('OSRM fallback:',e.message);
-    const km=haversineKm(ORIGIN_LAT,ORIGIN_LON,destLat,destLon)*ROAD_FACTOR;
-    return Math.round(km*DELIVERY_RATE*2*100)/100;
+    console.warn('Consegna fallback:',e.message);
+    return null;
   }
 }
 
@@ -658,7 +668,7 @@ function renderCat(){
           <div class="pinfo">
             <div class="pname">${esc(p.name)}</div>
             <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
-            <div class="pdesc" style="color:#5c8a3c;font-weight:600">📋 Pre-ordine disponibile${p.waitTime?" · "+esc(p.waitTime):""}</div>
+            <div class="pdesc" style="color:#7c3aed;font-weight:600">📋 Pre-ordine disponibile${p.waitTime?" · "+esc(p.waitTime):""}</div>
           </div>
           <div class="qctrl">
             <button class="qbtn" onclick="chQ('${p.id}',-1)">−</button>
@@ -833,12 +843,13 @@ async function openHist(){
           iSt=H.indexOf('status'),iCr=H.indexOf('createdAt');
     // Filtra ordini per cliente — match per clientId se presente, altrimenti per restaurant
     const myId=client?.id||'';
-    const myRest=client?.restaurant||'';
+    const myRest=(client?.restaurant||'').trim();
+    const myToken=client?.token||'';
     const myOrders=rows.slice(1).filter(r=>{
       const rcId=String(r[iCli]||'').trim();
       const rcRest=String(r[iRest]||'').trim();
       if(myId&&rcId===myId)return true;
-      if(!myId&&myRest&&rcRest===myRest)return true;
+      if(myRest&&rcRest===myRest)return true;
       return false;
     });
     if(myOrders.length===0){
