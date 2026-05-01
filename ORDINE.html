@@ -470,7 +470,7 @@ function calcolaConsegna(clientAddress){
     const coords=CAP_COORDS[cap];
     if(coords){
       const km=haversineKm(ORIGIN_LAT,ORIGIN_LON,coords[0],coords[1])*ROAD_FACTOR;
-      const cost=Math.round(km*DELIVERY_RATE*100)/100;
+      const cost=Math.round(km*DELIVERY_RATE*2*100)/100;
       console.log('Consegna CAP '+cap+': '+km.toFixed(1)+'km → €'+cost);
       return Promise.resolve(cost);
     }
@@ -479,7 +479,7 @@ function calcolaConsegna(clientAddress){
   const addr=clientAddress.toLowerCase();
   if(addr.includes('napoli')||addr.includes('na ')||addr.includes(', na')){
     const km=haversineKm(ORIGIN_LAT,ORIGIN_LON,40.8522,14.2681)*ROAD_FACTOR;
-    return Promise.resolve(Math.round(km*DELIVERY_RATE*100)/100);
+    return Promise.resolve(Math.round(km*DELIVERY_RATE*2*100)/100);
   }
   return Promise.resolve(null);
 }
@@ -886,15 +886,14 @@ async function confirm_(){
     if(res&&res.error) throw new Error(res.error);
     // Email via GET (non blocca l'ordine se fallisce)
     try{
-      // Costruisci lista completa: reali + preorder + omaggi come oggetti
+      // Notifica solo admin — email cliente parte quando admin conferma
       const allNotifyItems=[
         ...items.map(i=>({name:i.name,qty:i.qty,price:i.price,preorder:false,omaggio:false})),
-        ...pItems.map(i=>({name:i.name,qty:i.qty,price:i.price,preorder:true,omaggio:false})),
-        ...(order.items||[]).filter(i=>i.omaggio===true||i.omaggio==='true').map(i=>({name:i.name,qty:i.qty,price:0,preorder:false,omaggio:true}))
+        ...pItems.map(i=>({name:i.name,qty:i.qty,price:i.price,preorder:true,omaggio:false}))
       ];
       const d=encodeURIComponent(JSON.stringify({
         restaurant:order.restaurant,total:order.total,
-        note:order.note,clientEmail:client?.email||'',
+        note:order.note,clientEmail:'',
         orderId:order.id,items:allNotifyItems
       }));
       fetch(API+'?action=notify&d='+d+'&t='+Date.now()).catch(()=>{});
