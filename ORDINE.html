@@ -461,27 +461,33 @@ const CAP_COORDS={
 
 let deliveryCost=null;
 
-function calcolaConsegna(clientAddress){
-  if(!clientAddress||clientAddress.trim().length<5)return Promise.resolve(null);
-  // Estrai il CAP dall'indirizzo (5 cifre che iniziano con 8)
+async function calcolaConsegna(clientAddress){
+  if(!clientAddress||clientAddress.trim().length<5)return null;
   const capMatch=clientAddress.match(/\b(8\d{4})\b/);
-  if(capMatch){
-    const cap=capMatch[1];
-    const coords=CAP_COORDS[cap];
-    if(coords){
-      const km=haversineKm(ORIGIN_LAT,ORIGIN_LON,coords[0],coords[1])*ROAD_FACTOR;
-      const cost=Math.round(km*DELIVERY_RATE*2*100)/100;
-      console.log('Consegna CAP '+cap+': '+km.toFixed(1)+'km → €'+cost);
-      return Promise.resolve(cost);
-    }
+  const coords=capMatch?CAP_COORDS[capMatch[1]]:null;
+  const destLat=coords?coords[0]:40.8522;
+  const destLon=coords?coords[1]:14.2681;
+  if(!coords){
+    const addr=clientAddress.toLowerCase();
+    if(!addr.includes('napoli')&&!addr.includes(', na')&&!addr.includes('campania'))return null;
   }
-  // Nessun CAP riconosciuto — stima flat per Napoli città
-  const addr=clientAddress.toLowerCase();
-  if(addr.includes('napoli')||addr.includes('na ')||addr.includes(', na')){
-    const km=haversineKm(ORIGIN_LAT,ORIGIN_LON,40.8522,14.2681)*ROAD_FACTOR;
-    return Promise.resolve(Math.round(km*DELIVERY_RATE*2*100)/100);
+  try{
+    // OSRM: distanza stradale reale, gratuito, nessuna chiave
+    const url='https://router.project-osrm.org/route/v1/driving/'+
+      ORIGIN_LON+','+ORIGIN_LAT+';'+destLon+','+destLat+'?overview=false';
+    const r=await fetch(url);
+    const data=await r.json();
+    if(data.code!=='Ok'||!data.routes||!data.routes.length)throw new Error('no route');
+    const km=data.routes[0].distance/1000;
+    const cost=Math.round(km*DELIVERY_RATE*2*100)/100; // ×2 andata+ritorno
+    console.log('OSRM: '+km.toFixed(1)+'km reali → €'+cost+' A/R');
+    return cost;
+  }catch(e){
+    // Fallback haversine se OSRM non risponde
+    console.warn('OSRM fallback:',e.message);
+    const km=haversineKm(ORIGIN_LAT,ORIGIN_LON,destLat,destLon)*ROAD_FACTOR;
+    return Math.round(km*DELIVERY_RATE*2*100)/100;
   }
-  return Promise.resolve(null);
 }
 
 async function init(){
