@@ -714,7 +714,7 @@ function addC(id){
       return;
     }
     // Prodotto esaurito con pre-ordini attivi — offri pre-ordine
-    const conf=confirm('🌱 '+product.name+' — Prodotto non disponibile\n\n'+requested+' vaschett'+(requested===1?'a':'e')+' in PRE-ORDINE\n\nMiniAgricola produce su richiesta per azzerare gli sprechi e garantirti la massima freschezza. Il tuo pre-ordine ci permette di pianificare la prossima produzione.\n\nConfermi il pre-ordine?');
+    const conf=confirm('🌱 '+product.name+' — Disponibilità in pre-ordine\n\n'+requested+' vaschett'+(requested===1?'a':'e')+' in PRE-ORDINE\n\nMiniAgricola produce su richiesta per azzerare gli sprechi e garantirti la massima freschezza. Il tuo pre-ordine ci permette di pianificare la prossima produzione.\n\nConfermi il pre-ordine?');
     if(conf){
       preCart[id]=(preCart[id]||0)+requested;
       updateCart();
@@ -844,16 +844,19 @@ async function openHist(){
           iItems=H.indexOf('itemsJson'),iTot=H.indexOf('total'),iNote=H.indexOf('note'),
           iSt=H.indexOf('status'),iCr=H.indexOf('createdAt');
     // Filtra ordini per cliente — match per clientId se presente, altrimenti per restaurant
-    const myId=client?.id||'';
+    const myId=(client?.id||'').trim();
     const myRest=(client?.restaurant||'').trim();
-    const myToken=client?.token||'';
+    console.log('[storico] client=',JSON.stringify({id:myId,restaurant:myRest}));
+    console.log('[storico] rows totali=',rows.length-1);
     const myOrders=rows.slice(1).filter(r=>{
       const rcId=String(r[iCli]||'').trim();
       const rcRest=String(r[iRest]||'').trim();
+      console.log('[storico] confronto rcId='+rcId+' rcRest='+rcRest);
       if(myId&&rcId===myId)return true;
       if(myRest&&rcRest===myRest)return true;
       return false;
     });
+    console.log('[storico] ordini trovati=',myOrders.length);
     if(myOrders.length===0){
       body.innerHTML='<div style="text-align:center;padding:40px;color:var(--m)">Non hai ancora effettuato ordini.</div>';
       return;
@@ -874,6 +877,9 @@ async function openHist(){
         const created=o[iCr]?new Date(o[iCr]).toLocaleString('it-IT'):'';
         let items=[];
         try{items=JSON.parse(o[iItems]||'[]');}catch(e){}
+        const ordItemsKey='hist_'+String(o[iId]||'');
+        window._histCache=window._histCache||{};
+        window._histCache[ordItemsKey]=items;
         const sc=SC[status]||'#888';
         const sl=SL[status]||status;
         return '<div class="ritem" style="flex-direction:column;align-items:stretch;gap:8px">'+
@@ -893,7 +899,7 @@ async function openHist(){
           '</div>'+
           (note?'<div style="font-size:12px;color:var(--m);font-style:italic">📝 '+esc(note)+'</div>':'')+
           '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--b);padding-top:8px">'+
-              '<button onclick="ripetiOrdine('+JSON.stringify(items)+')" style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">↺ Ripeti ordine</button>'+
+              '<button onclick="ripetiOrdineDaId(\'+esc(o[iId])+\')" style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">↺ Ripeti ordine</button>'+
               '<div style="text-align:right"><div style="font-size:12px;color:var(--m)">Totale</div><strong style="font-size:15px;color:var(--g)">€'+total.toFixed(2)+'</strong></div>'+
             '</div>'+
         '</div>';
@@ -905,6 +911,12 @@ async function openHist(){
 }
 
 function closeHist(){document.getElementById('histscr').classList.remove('open');}
+
+function ripetiOrdineDaId(ordId){
+  const cached=window._histCache&&window._histCache['hist_'+ordId];
+  if(cached)ripetiOrdine(cached);
+  else alert('Dati ordine non trovati. Riapri lo storico e riprova.');
+}
 
 function ripetiOrdine(items){
   if(!items||!items.length)return;
