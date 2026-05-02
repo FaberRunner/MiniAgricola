@@ -645,7 +645,7 @@ function renderCat(){
     h+=`<div class="catsec"><div class="cattl">${cat.emoji} ${cat.name}</div><div class="pgrid">`;
     cp.forEach(p=>{
       const q=cart[p.id]||0,em=EMO[p.id]||'🌿',bg=BG[p.id]||'#f1f8e9';
-      if(p.avail){
+      if(p.avail&&(p.qty||0)>0){
         h+=`<div class="pcard">
           ${pimgHtml(p,em,bg)}
           <div class="pinfo">
