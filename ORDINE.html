@@ -89,7 +89,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.05.02b</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.05.02c</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -865,6 +865,8 @@ async function openHist(){
     myOrders.sort((a,b)=>new Date(b[iCr])-new Date(a[iCr]));
     const SL={pending:'In attesa',confirmed:'Confermato',delivered:'Consegnato',cancelled:'Annullato'};
     const SC={pending:'#f59e0b',confirmed:'#5c8a3c',delivered:'#888',cancelled:'#e53935'};
+    window._histCache={};
+    let _histIdx=0;
     body.innerHTML='<div class="rsec">'+myOrders.length+' ordin'+(myOrders.length===1?'e':'i')+' totali</div>'+
       myOrders.map(o=>{
         const id=String(o[iId]||'');
@@ -877,9 +879,8 @@ async function openHist(){
         const calcTotal=items.filter(i=>!(i.omaggio===true||i.omaggio==='true')).reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);
         const rawTotal=parseFloat(String(o[iTot]||0).replace(',','.'))||0;
         const total=(rawTotal>0&&rawTotal<9999)?rawTotal:calcTotal;
-        const ordItemsKey='hist_'+String(o[iId]||'');
-        window._histCache=window._histCache||{};
-        window._histCache[ordItemsKey]=items;
+        const _idx=_histIdx++;
+        window._histCache[_idx]=items;
         const sc=SC[status]||'#888';
         const sl=SL[status]||status;
         return '<div class="ritem" style="flex-direction:column;align-items:stretch;gap:8px">'+
@@ -899,7 +900,7 @@ async function openHist(){
           '</div>'+
           (note?'<div style="font-size:12px;color:var(--m);font-style:italic">📝 '+esc(note)+'</div>':'')+
           '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--b);padding-top:8px">'+
-              '<button onclick="ripetiOrdineDaId(\'+esc(o[iId])+\')" style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">↺ Ripeti ordine</button>'+
+              '<button onclick="ripetiOrdineDaId('+_idx+')" style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">↺ Ripeti ordine</button>'+
               '<div style="text-align:right"><div style="font-size:12px;color:var(--m)">Totale</div><strong style="font-size:15px;color:var(--g)">€'+total.toFixed(2)+'</strong></div>'+
             '</div>'+
         '</div>';
@@ -912,8 +913,8 @@ async function openHist(){
 
 function closeHist(){document.getElementById('histscr').classList.remove('open');}
 
-function ripetiOrdineDaId(ordId){
-  const cached=window._histCache&&window._histCache['hist_'+ordId];
+function ripetiOrdineDaId(idx){
+  const cached=window._histCache&&window._histCache[parseInt(idx)];
   if(cached)ripetiOrdine(cached);
   else alert('Dati ordine non trovati. Riapri lo storico e riprova.');
 }
