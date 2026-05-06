@@ -89,9 +89,19 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.05.02c</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.06.00</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
+  </div>
+  <div id="searchbar" style="display:none;padding:10px 16px;background:#fff;border-bottom:1px solid var(--b)">
+    <div style="position:relative;max-width:600px;margin:0 auto">
+      <input id="searchinp" type="text" placeholder="🔍 Cerca prodotto..." autocomplete="off"
+        style="width:100%;padding:10px 36px 10px 14px;border:1.5px solid var(--b);border-radius:10px;font-size:14px;box-sizing:border-box;outline:none;transition:border .2s"
+        onfocus="this.style.border='1.5px solid var(--g)'"
+        onblur="this.style.border='1.5px solid var(--b)'"
+        oninput="filterCat(this.value)">
+      <button onclick="clearSearch()" id="searchclear" style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:#aaa;cursor:pointer">✕</button>
+    </div>
   </div>
   <div class="hdr">
     <div class="hlogo">🌱 <span style="font-weight:700">Mini</span>Agricola <span>· ordina</span></div>
@@ -174,13 +184,13 @@ const DELIVERY_RATE=0.20; // €/km
 const ROAD_FACTOR=1.3;    // fattore correttivo strade urbane
 
 const CATS=[
-  {name:'I più richiesti',ids:['MG-0001','MG-0002'],emoji:'⭐'},
-  {name:'Senape',ids:['MG-0003','MG-0004','MG-0005'],emoji:'🌿'},
+  {name:'I più richiesti',ids:['MG-0001','MG-0003'],emoji:'⭐'},
+  {name:'Senape',ids:['MG-0002','MG-0003','MG-0004','MG-0005'],emoji:'🌿'},
   {name:'Basilico',ids:['MG-0007','MG-0008','MG-0009','MG-0010'],emoji:'🌱'},
   {name:'Ravanello',ids:['MG-0013','MG-0014','MG-0015','MG-0016'],emoji:'🔴'},
   {name:'Cavolo',ids:['MG-0018','MG-0019','MG-0020','MG-0021'],emoji:'🥬'},
   {name:'Bieta',ids:['MG-0011','MG-0012'],emoji:'🟣'},
-  {name:'Altri',ids:['MG-0006','MG-0017','MG-0022','MG-0023','MG-0024','MG-0025','MG-0026','MG-0027','MG-0028','MG-0029','MG-0030','MG-0031','MG-0032','MG-0033','MG-0034'],emoji:'🌾'},
+  {name:'Altri',ids:['MG-0001','MG-0006','MG-0017','MG-0022','MG-0023','MG-0024','MG-0025','MG-0026','MG-0027','MG-0028','MG-0029','MG-0030','MG-0031','MG-0032','MG-0033','MG-0034'],emoji:'🌾'},
 ];
 // ── EMOJI PREMIUM CATALOGO ──────────────────────────────────
 const EMO={
@@ -622,11 +632,32 @@ function doLogin(){
 
 function showApp(name){
   document.getElementById('ver').style.display='block';
+  document.getElementById('searchbar').style.display='block';
   document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('gbar').textContent='Ciao, '+name+' 👋';
   document.getElementById('cbar').style.display='block';
   renderCat();updateCart();
+}
+
+let _searchQuery='';
+
+function filterCat(q){
+  _searchQuery=(q||'').trim().toLowerCase();
+  const btn=document.getElementById('searchclear');
+  if(btn)btn.style.display=_searchQuery?'block':'none';
+  renderCat();
+  // Scroll in cima
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function clearSearch(){
+  _searchQuery='';
+  const inp=document.getElementById('searchinp');
+  if(inp)inp.value='';
+  const btn=document.getElementById('searchclear');
+  if(btn)btn.style.display='none';
+  renderCat();
 }
 
 function pimgHtml(p,em,bg){
@@ -638,9 +669,15 @@ function onImgErr(img){img.style.display="none";var p=img.parentNode;p.className
 
 function renderCat(){
   const pm={};products.forEach(p=>pm[p.id]=p);
+  // Filtro ricerca per nome o descrizione
+  const sq=_searchQuery;
   let h='';
   CATS.forEach(cat=>{
-    const cp=cat.ids.map(id=>pm[id]).filter(Boolean);
+    const cp=cat.ids.map(id=>pm[id]).filter(p=>{
+      if(!p)return false;
+      if(!sq)return true;
+      return (p.name||'').toLowerCase().includes(sq)||(p.desc||'').toLowerCase().includes(sq);
+    });
     if(!cp.length)return;
     h+=`<div class="catsec"><div class="cattl">${cat.emoji} ${cat.name}</div><div class="pgrid">`;
     cp.forEach(p=>{
@@ -696,6 +733,13 @@ function renderCat(){
     });
     h+=`</div></div>`;
   });
+  if(_searchQuery&&!h.includes('pcard')){
+    h='<div style="text-align:center;padding:60px 20px;color:var(--m)">'+
+       '<div style="font-size:40px;margin-bottom:12px">🔍</div>'+
+       '<div style="font-size:16px;font-weight:600">Nessun prodotto trovato</div>'+
+       '<div style="font-size:13px;margin-top:6px">per "<strong>'+_searchQuery+'</strong>"</div>'+
+       '</div>';
+  }
   document.getElementById('cat').innerHTML=h;
 }
 
