@@ -11,7 +11,7 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 :root{--g:#4a7a2e;--gl:#f0f7eb;--d:#1a1a1a;--m:#888;--b:#e8e8e8;--bg:#fafaf8}
 body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding-bottom:100px}
-.hdr{background:#1a2e1a;border-bottom:1px solid #0d1a0d;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.hdr{background:#000;border-bottom:1px solid #111;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .hlogo{font-weight:700;font-size:16px}
 .hlogo span{font-weight:300;font-size:13px;color:var(--m)}
 .cbtn{background:var(--g);color:#fff;border:none;border-radius:99px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
@@ -103,7 +103,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.07.06</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.07.07</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -118,7 +118,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
     </div>
   </div>
   <div class="hdr">
-    <div class="hlogo"><span style="font-size:20px;font-weight:900;color:#fff;letter-spacing:1.5px;line-height:1">MINIAGRICOLA</span><span style="font-size:11px;font-weight:600;color:#4CAF50;letter-spacing:3px;display:block;margin-top:2px">MICROGREENS</span></div>
+    <div class="hlogo"><img src="https://faberrunner.github.io/MiniAgricola/imgs/logo.svg" alt="MiniAgricola" style="height:40px;width:auto;display:block" loading="eager"></div>
     <div style="display:flex;gap:8px;align-items:center">
       <button class="hbtn" onclick="openHist()" title="I miei ordini" style="background:transparent;border:1.5px solid #4CAF50;color:#4CAF50;border-radius:99px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer">📋 Ordini</button>
       <button class="cbtn" onclick="openR()">🛒 <span id="ccount" class="cbadge">0</span></button>
