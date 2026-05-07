@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="-1">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>MiniAgricola — Ordina</title>
+<title>MiniAgricola</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 :root{--g:#4a7a2e;--gl:#f0f7eb;--d:#1a1a1a;--m:#888;--b:#e8e8e8;--bg:#fafaf8}
@@ -71,15 +71,25 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 .cart-check{position:absolute;top:6px;right:6px;width:36px;height:36px;background:#4a7a2e;border-radius:50%;display:flex;align-items:center;justify-content:center;animation:checkPop .4s cubic-bezier(.34,1.56,.64,1) .9s both;opacity:0}
 .stxt{animation:fadeUp .5s ease 1.1s both}
 .gbar{background:var(--gl);padding:10px 16px;font-size:13px;color:var(--g);font-weight:600;text-align:center;border-bottom:1px solid #d4eac4}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 </style>
 </head>
 <body>
+<!-- ── AUTO-LOGIN LOADING SCREEN ─────────────────────────── -->
+<div id="autoload" style="display:none;position:fixed;inset:0;background:#f9faf7;z-index:9998;flex-direction:column;align-items:center;justify-content:center">
+  <img src="https://faberrunner.github.io/MiniAgricola/imgs/logo.png" alt="MiniAgricola" style="width:220px;height:auto;margin-bottom:32px;animation:pulse 1.5s ease-in-out infinite">
+  <div style="display:flex;align-items:center;gap:10px;color:#5c8a3c;font-size:14px;font-weight:600">
+    <div style="width:18px;height:18px;border:2.5px solid #5c8a3c;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+    Accesso in corso...
+  </div>
+  <div style="font-size:12px;color:#aaa;margin-top:8px">Benvenuto in MiniAgricola 🌱</div>
+</div>
 
 <!-- LOGIN -->
 <div class="lscr" id="lscr">
   <div class="lbox">
-    <div style="font-size:40px;margin-bottom:12px">🌱</div>
-    <div style="font-size:20px;font-weight:700;margin-bottom:6px">MiniAgricola</div>
+    <img src="https://faberrunner.github.io/MiniAgricola/imgs/logo.png" alt="MiniAgricola" style="width:200px;height:auto;margin-bottom:24px" loading="eager">
     <div style="font-size:13px;color:var(--m);margin-bottom:24px;line-height:1.5">Microgreens freschi per la tua cucina.<br>Inserisci il nome del tuo ristorante per continuare.</div>
     <input class="linp" id="linp" type="text" placeholder="Nome ristorante" autocomplete="off"/>
     <button class="lbtn" onclick="doLogin()">Accedi al catalogo →</button>
@@ -89,7 +99,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <!-- APP -->
 <div id="app" style="display:none">
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.06.00</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.07.02</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -104,7 +114,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
     </div>
   </div>
   <div class="hdr">
-    <div class="hlogo">🌱 <span style="font-weight:700">Mini</span>Agricola <span>· ordina</span></div>
+    <div class="hlogo"><img src="https://faberrunner.github.io/MiniAgricola/imgs/logo.png" alt="MiniAgricola" style="height:34px;width:auto;display:block" loading="eager"></div>
     <div style="display:flex;gap:8px;align-items:center">
       <button class="hbtn" onclick="openHist()" title="I miei ordini" style="background:transparent;border:1.5px solid var(--g);color:var(--g);border-radius:99px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer">📋 Ordini</button>
       <button class="cbtn" onclick="openR()">🛒 <span id="ccount" class="cbadge">0</span></button>
@@ -185,12 +195,16 @@ const ROAD_FACTOR=1.3;    // fattore correttivo strade urbane
 
 const CATS=[
   {name:'I più richiesti',ids:['MG-0001','MG-0003'],emoji:'⭐'},
-  {name:'Senape',ids:['MG-0002','MG-0003','MG-0004','MG-0005'],emoji:'🌿'},
-  {name:'Basilico',ids:['MG-0007','MG-0008','MG-0009','MG-0010'],emoji:'🌱'},
-  {name:'Ravanello',ids:['MG-0013','MG-0014','MG-0015','MG-0016'],emoji:'🔴'},
-  {name:'Cavolo',ids:['MG-0018','MG-0019','MG-0020','MG-0021'],emoji:'🥬'},
-  {name:'Bieta',ids:['MG-0011','MG-0012'],emoji:'🟣'},
-  {name:'Altri',ids:['MG-0001','MG-0006','MG-0017','MG-0022','MG-0023','MG-0024','MG-0025','MG-0026','MG-0027','MG-0028','MG-0029','MG-0030','MG-0031','MG-0032','MG-0033','MG-0034'],emoji:'🌾'},
+  {name:'Le Ortive',ids:[
+    'MG-0007','MG-0008','MG-0010','MG-0009',
+    'MG-0013','MG-0016','MG-0014','MG-0015',
+    'MG-0005','MG-0002','MG-0003','MG-0004',
+    'MG-0018','MG-0019','MG-0020','MG-0021',
+    'MG-0030','MG-0029','MG-0027','MG-0031','MG-0028',
+    'MG-0006','MG-0011','MG-0012','MG-0001'
+  ],emoji:'🌿'},
+  {name:'Legumi',ids:['MG-0017','MG-0032','MG-0033'],emoji:'🫘'},
+  {name:'Erbe di Campo',ids:['MG-0022','MG-0025','MG-0023','MG-0024','MG-0026'],emoji:'🌸'},
 ];
 // ── EMOJI PREMIUM CATALOGO ──────────────────────────────────
 const EMO={
@@ -549,6 +563,11 @@ async function calcolaConsegna(clientAddress){
 }
 
 async function init(){
+  // Mostra loading se c'è il token nell'URL (auto-login)
+  if(new URLSearchParams(window.location.search).get('id')){
+    const al=document.getElementById('autoload');
+    if(al)al.style.display='flex';
+  }
   token=new URLSearchParams(window.location.search).get('id');
 
   // Mostra subito dati da cache locale
@@ -631,6 +650,9 @@ function doLogin(){
 }
 
 function showApp(name){
+  // Nascondi loading screen
+  const al=document.getElementById('autoload');
+  if(al)al.style.display='none';
   document.getElementById('ver').style.display='block';
   document.getElementById('searchbar').style.display='block';
   document.getElementById('lscr').style.display='none';
