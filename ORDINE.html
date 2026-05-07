@@ -1,4 +1,11 @@
-<!DOCTYPE html>
+<!DOCTYPE html>  <div class="hdr">
+    <div class="hlogo"><img src="https://faberrunner.github.io/MiniAgricola/imgs/logo.svg" alt="MiniAgricola" style="height:44px;width:auto;display:block" loading="eager"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="hbtn" onclick="openHist()" title="I miei ordini" style="background:transparent;border:1.5px solid var(--g);color:var(--g);border-radius:99px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer">📋 Ordini</button>
+      <button class="cbtn" onclick="openR()">🛒 <span id="ccount" class="cbadge">0</span></button>
+    </div>
+  </div>
+
 <html lang="it">
 <head>
 <meta charset="UTF-8">
@@ -11,7 +18,7 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
 :root{--g:#4a7a2e;--gl:#f0f7eb;--d:#1a1a1a;--m:#888;--b:#e8e8e8;--bg:#fafaf8}
 body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding-bottom:100px}
-.hdr{background:#000;border-bottom:1px solid #111;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.hdr{background:#fff;border-bottom:1px solid #e8e8e8;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .hlogo{font-weight:700;font-size:16px}
 .hlogo span{font-weight:300;font-size:13px;color:var(--m)}
 .cbtn{background:var(--g);color:#fff;border:none;border-radius:99px;padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
@@ -102,15 +109,9 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 
 <!-- APP -->
 <div id="app" style="display:none">
-  <div class="hdr">
-    <div class="hlogo"><img src="https://faberrunner.github.io/MiniAgricola/imgs/logo.svg" alt="MiniAgricola" style="height:52px;width:auto;display:block;border-radius:8px" loading="eager"></div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="hbtn" onclick="openHist()" title="I miei ordini" style="background:transparent;border:1.5px solid #4CAF50;color:#4CAF50;border-radius:99px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer">📋 Ordini</button>
-      <button class="cbtn" onclick="openR()">🛒 <span id="ccount" class="cbadge">0</span></button>
-    </div>
-  </div>
+
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.07.10</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.07.11</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
