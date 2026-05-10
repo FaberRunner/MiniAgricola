@@ -4,66 +4,83 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MiniAgricola — Admin</title>
-<style>
+<style>:root{
+  --bg:#fff;--bg-s:#f9f9f9;--bg-h:#f5f5f5;--bg-l:#f5f5f0;--card:#fff;
+  --text:#1a1a1a;--ts2:#444;--tm:#666;--ts:#888;--tp:#aaa;
+  --b:var(--b);--bl:var(--bl);--bm:#ccc;
+  --g:var(--g);--g-l:#a0d080;--g-d:#2d4a2d;--hdr:#1a2e1a;
+  --danger:var(--danger);--warning:#f59e0b;--w-bg:#fff8e6;
+  --purple:#7c3aed;--amber:#d97706;
+}
+[data-theme="dark"]{
+  --bg:#1e1e1e;--bg-s:#252525;--bg-h:#2a2a2a;--bg-l:#161616;--card:#252525;
+  --text:#e8e8e8;--ts2:#cccccc;--tm:#aaaaaa;--ts:#888888;--tp:#666666;
+  --b:#333333;--bl:#2a2a2a;--bm:#444444;
+  --g:#6aaa4a;--g-l:#6aaa4a;--g-d:#1a2e1a;--hdr:#0f1a0f;
+  --danger:#ef5350;--warning:#f59e0b;--w-bg:#2a1f00;
+  --purple:#9d5cff;--amber:#d97706;
+}
+
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
-body{background:#f5f5f0;color:#1a1a1a;font-size:14px;min-height:100vh}
-.header{background:#1a1a1a;color:#fff;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
+.header{background:#1a1a1a;color:var(--bg);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .logo{font-weight:700;font-size:15px}
-.badge{background:#5c8a3c;color:#fff;font-size:11px;padding:2px 10px;border-radius:99px;font-weight:700}
-.nav{display:flex;background:#fff;border-bottom:1px solid #e0e0e0;overflow-x:auto}
-.nav-btn{padding:11px 18px;border:none;background:none;cursor:pointer;font-size:13px;white-space:nowrap;border-bottom:2px solid transparent;color:#555;font-weight:400}
-.nav-btn.active{border-bottom-color:#5c8a3c;color:#5c8a3c;font-weight:700}
+.badge{background:var(--g);color:var(--bg);font-size:11px;padding:2px 10px;border-radius:99px;font-weight:700}
+.nav{display:flex;background:var(--bg);border-bottom:1px solid var(--b);overflow-x:auto}
+.nav-btn{padding:11px 18px;border:none;background:none;cursor:pointer;font-size:13px;white-space:nowrap;border-bottom:2px solid transparent;color:var(--tm);font-weight:400}
+.nav-btn.active{border-bottom-color:var(--g);color:var(--g);font-weight:700}
 .body{padding:18px 16px;max-width:860px;margin:0 auto}
-.card{background:#fff;border-radius:10px;border:1px solid #e0e0e0;margin-bottom:10px;padding:13px 15px}
+.card{background:var(--bg);border-radius:10px;border:1px solid var(--b);margin-bottom:10px;padding:13px 15px}
 .row{display:flex;align-items:center;gap:10px}
 .btn{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600}
 .btn:hover{opacity:.85}
-.btn-p{background:#5c8a3c;color:#fff}
-.btn-d{background:#e53935;color:#fff}
-.btn-s{background:#eee;color:#333}
-.btn-g{background:transparent;color:#555;border:1px solid #ddd}
-.input{width:100%;padding:8px 11px;border-radius:7px;border:1px solid #ddd;font-size:13px;outline:none}
-.input:focus{border-color:#5c8a3c}
-.label{display:block;font-size:11px;font-weight:700;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.btn-p{background:var(--g);color:var(--bg)}
+.btn-d{background:var(--danger);color:var(--bg)}
+.btn-s{background:var(--bl);color:var(--ts2)}
+.btn-g{background:transparent;color:var(--tm);border:1px solid var(--bm)}
+.input{width:100%;padding:8px 11px;border-radius:7px;border:1px solid var(--bm);font-size:13px;outline:none}
+.input:focus{border-color:var(--g)}
+.label{display:block;font-size:11px;font-weight:700;color:var(--ts);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
 .toggle{width:38px;height:22px;border-radius:99px;border:none;cursor:pointer;position:relative;flex-shrink:0}
-.knob{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s;pointer-events:none}
+.knob{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:var(--bg);transition:left .2s;pointer-events:none}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px}
 .overlay.open{display:flex}
-.modal{background:#fff;border-radius:12px;padding:22px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
+.modal{background:var(--bg);border-radius:12px;padding:22px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto}
 .mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
 .field{margin-bottom:12px}
 .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
-.sh{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.sh{font-size:11px;font-weight:700;color:var(--ts);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
 .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
-.empty{text-align:center;color:#bbb;padding:50px 20px;font-size:14px}
+.empty{text-align:center;color:var(--bm);padding:50px 20px;font-size:14px}
 </style>
 </head>
 <body>
 
 <!-- ── SCHERMATA LOGIN ADMIN ──────────────────────────────── -->
 <div id="auth-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a2e1a 0%,#2d4a2d 100%);z-index:9999;display:flex;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:20px;padding:40px 48px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.4);text-align:center">
+  <div style="background:var(--bg);border-radius:20px;padding:40px 48px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.4);text-align:center">
     <div style="font-size:40px;margin-bottom:8px">🌱</div>
     <div style="font-size:22px;font-weight:800;color:#1a2e1a;margin-bottom:4px">MiniAgricola</div>
-    <div style="font-size:13px;color:#888;margin-bottom:28px">Accesso riservato</div>
+    <div style="font-size:13px;color:var(--ts);margin-bottom:28px">Accesso riservato</div>
     <input id="auth-pwd" type="password" placeholder="Password" autocomplete="off"
       style="width:100%;padding:14px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:15px;box-sizing:border-box;margin-bottom:12px;outline:none;transition:border 0.2s"
       onfocus="this.style.border='2px solid #5c8a3c'"
       onblur="this.style.border='2px solid #e0e0e0'"
       onkeydown="if(event.key==='Enter')doAuth()">
-    <button onclick="doAuth()" style="width:100%;padding:14px;background:#5c8a3c;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">Accedi</button>
-    <div id="auth-err" style="display:none;color:#e53935;font-size:13px;margin-top:4px">⚠️ Password errata</div>
+    <button onclick="doAuth()" style="width:100%;padding:14px;background:#5c8a3c;color:var(--bg);border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px">Accedi</button>
+    <div id="auth-err" style="display:none;color:var(--danger);font-size:13px;margin-top:4px">⚠️ Password errata</div>
   </div>
 </div>
 
 <div class="header">
   <div class="logo">🌱 MINIAGRICOLA <span style="font-weight:300;font-size:13px">admin</span></div>
   <div style="display:flex;align-items:center;gap:10px">
-    <span id="ss" style="font-size:12px;color:#a0d080"></span>
-    <button onclick="clearCache();loadAll(true)" style="font-size:11px;background:transparent;border:1px solid #444;color:#aaa;border-radius:5px;padding:2px 8px;cursor:pointer" title="Forza aggiornamento dati">↺</button>
-    <button onclick="doLogout()" title="Esci" style="background:transparent;border:1px solid #888;color:#888;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:6px">⎋ Esci</button>
+    <span id="ss" style="font-size:12px;color:var(--g-l)"></span>
+    <button onclick="clearCache();loadAll(true)" style="font-size:11px;background:transparent;border:1px solid #444;color:var(--tp);border-radius:5px;padding:2px 8px;cursor:pointer" title="Forza aggiornamento dati">↺</button>
+    <button id="themeBtn" onclick="toggleTheme()" title="Cambia tema" style="background:transparent;border:1px solid var(--ts);color:var(--ts);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer">🌙</button>
+    <button onclick="doLogout()" title="Esci" style="background:transparent;border:1px solid #888;color:var(--ts);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:6px">⎋ Esci</button>
     <span class="badge">GESTIONALE</span>
-    <span style="font-size:10px;color:#666;margin-left:6px">v2.06.00</span>
+    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.08.00</span>
   </div>
 </div>
 <div class="nav">
@@ -205,7 +222,7 @@ function renderC(){
   const a=products.filter(p=>p.avail).length;
   document.getElementById('v-c').innerHTML=`
     <div class="topbar">
-      <div><div class="sh">Catalogo Prodotti</div><div style="font-size:13px;color:#888"><strong style="color:#5c8a3c">${a}</strong> attivi · ${products.length} totali</div></div>
+      <div><div class="sh">Catalogo Prodotti</div><div style="font-size:13px;color:var(--ts)"><strong style="color:var(--g)">${a}</strong> attivi · ${products.length} totali</div></div>
       <button class="btn btn-p" onclick="newP()">+ Nuovo</button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:14px">
@@ -224,13 +241,13 @@ function renderC(){
         </button>
         <div style="flex:1;min-width:0">
           <div style="font-weight:600">${esc(p.name)}</div>
-          ${p.desc?`<div style="font-size:12px;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.desc)}</div>`:''}
+          ${p.desc?`<div style="font-size:12px;color:var(--ts);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.desc)}</div>`:''}
         </div>
         <div style="text-align:right;min-width:70px">
           <div style="font-size:15px;font-weight:700">€${p.price}</div>
-          <div style="font-size:11px;color:#888">/${esc(p.unit)}</div>
+          <div style="font-size:11px;color:var(--ts)">/${esc(p.unit)}</div>
           <div style="font-size:11px;font-weight:700;color:${(p.qty||0)>0?'#5c8a3c':'#e53935'}">${(p.qty||0)>0?p.qty+' disp.':'esaurito'}</div>
-          ${p.preorder?'<div style="font-size:10px;color:#7c3aed;font-weight:700">📋 pre-ord.</div>':''}
+          ${p.preorder?'<div style="font-size:10px;color:var(--purple);font-weight:700">📋 pre-ord.</div>':''}
         </div>
         <span style="font-size:10px;font-family:monospace;background:#eee;padding:2px 7px;border-radius:99px;color:#555;white-space:nowrap">${esc(p.id)}</span>
         <button class="btn btn-s" onclick="editP('${esc(p.id)}')" style="padding:6px 10px">✏️</button>
@@ -241,7 +258,7 @@ function renderC(){
 function renderCl(){
   document.getElementById('v-cl').innerHTML=`
     <div class="topbar">
-      <div><div class="sh">Clienti</div><div style="font-size:13px;color:#888">${clients.length} registrati</div></div>
+      <div><div class="sh">Clienti</div><div style="font-size:13px;color:var(--ts)">${clients.length} registrati</div></div>
       <button class="btn btn-p" onclick="newCl()">+ Nuovo cliente</button>
     </div>
     ${clients.length===0?`<div class="card empty"><div style="font-size:32px;margin-bottom:8px">👥</div>Nessun cliente ancora.</div>`:''}
@@ -251,19 +268,19 @@ function renderCl(){
         <div class="row" style="margin-bottom:${c.address||c.phone?8:0}px">
           <div style="flex:1">
             <div style="font-weight:700;font-size:15px">${esc(c.restaurant)}</div>
-            ${c.contact?`<div style="font-size:13px;color:#666">${esc(c.contact)}</div>`:''}
+            ${c.contact?`<div style="font-size:13px;color:var(--tm)">${esc(c.contact)}</div>`:''}
           </div>
-          <span class="tag" style="background:#5c8a3c22;color:#5c8a3c">${n} ordini</span>
+          <span class="tag" style="background:#5c8a3c22;color:var(--g)">${n} ordini</span>
           <button class="btn btn-g" onclick="detCl('${esc(c.id)}')" style="padding:5px 9px;font-size:16px">👁</button>
           <button class="btn btn-s" onclick="editCl('${esc(c.id)}')" style="padding:5px 9px">✏️</button>
           <button class="btn btn-d" onclick="delCl('${esc(c.id)}')" style="padding:5px 9px">🗑</button>
         </div>
-        ${c.address||c.phone?`<div style="font-size:13px;color:#666;margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap">
-          ${c.address?`<span>📍 ${esc(c.address)} ${m?`<a href="${esc(m)}" target="_blank" style="color:#5c8a3c;font-weight:700">→ Maps</a>`:''}</span>`:''}
+        ${c.address||c.phone?`<div style="font-size:13px;color:var(--tm);margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap">
+          ${c.address?`<span>📍 ${esc(c.address)} ${m?`<a href="${esc(m)}" target="_blank" style="color:var(--g);font-weight:700">→ Maps</a>`:''}</span>`:''}
           ${c.phone?`<span>📞 ${esc(c.phone)}</span>`:''}
         </div>`:''}
-        <div style="background:#f5f5f5;border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:12px">
-          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#888">
+        <div style="background:var(--bg-h);border-radius:6px;padding:6px 10px;display:flex;align-items:center;gap:8px;font-size:12px">
+          <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ts)">
             🔗 faberrunner.github.io/MiniAgricola/ORDINE.html?id=<strong style="color:#333">${esc(c.token)}</strong>
           </span>
           <button class="btn btn-g" onclick="cpL('${esc(c.token)}',this)" style="font-size:12px;padding:2px 8px">Copia</button>
@@ -304,36 +321,36 @@ function renderO(){
         <div class="row" style="margin-bottom:10px">
           <div style="flex:1">
             <div style="font-weight:700;font-size:15px">${esc(o.restaurant||cl?.restaurant||'Sconosciuto')}</div>
-            <div style="font-size:12px;color:#888">${esc(o.id)} · ${new Date(o.createdAt).toLocaleString('it-IT')}</div>
+            <div style="font-size:12px;color:var(--ts)">${esc(o.id)} · ${new Date(o.createdAt).toLocaleString('it-IT')}</div>
           </div>
           <span class="tag" style="background:${sc}22;color:${sc}">● ${SL[o.status]||o.status}</span>
-          <button onclick="deleteOrder('${esc(o.id)}')" title="Elimina ordine" style="background:transparent;border:none;color:#ccc;font-size:18px;cursor:pointer;padding:0 4px;line-height:1;margin-left:4px" onmouseover="this.style.color='#e53935'" onmouseout="this.style.color='#ccc'">×</button>
+          <button onclick="deleteOrder('${esc(o.id)}')" title="Elimina ordine" style="background:transparent;border:none;color:var(--bm);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;margin-left:4px" onmouseover="this.style.color='#e53935'" onmouseout="this.style.color='#ccc'">×</button>
           <strong style="font-size:16px;min-width:60px;text-align:right">€${(()=>{const calc=(o.items||[]).filter(i=>!(i.omaggio===true||i.omaggio==='true')).reduce((s,i)=>s+Math.round(parseFloat(i.qty||0)*parseFloat(i.price||0)*100)/100,0);return calc.toFixed(2);})()}</strong>
         </div>
-        <div style="background:#f9f9f9;border-radius:8px;padding:8px 12px;margin-bottom:8px">
+        <div style="background:var(--bg-s);border-radius:8px;padding:8px 12px;margin-bottom:8px">
           ${(o.items||[]).map((it,i)=>{
             const isPre=it.preorder===true||it.preorder==='true';
             const isOm=it.omaggio===true||it.omaggio==='true';
             const lineTotal=Math.round(parseFloat(it.qty||0)*parseFloat(it.price||0)*100)/100;
-            const bg=isOm?';background:#fef9ec;padding:4px 8px;border-radius:4px;margin:2px 0':isPre?';background:#fff8e6;padding:4px 8px;border-radius:4px;margin:2px 0':'';
-            const badge=isOm?'<span style="font-size:10px;font-weight:700;color:#d97706;background:#fef3c7;padding:1px 5px;border-radius:3px;margin-left:4px">OMAGGIO</span>':isPre?'<span style="font-size:10px;font-weight:700;color:#f59e0b;background:#fff0c0;padding:1px 5px;border-radius:3px;margin-left:4px">PRE-ORDINE</span>':'';
+            const bg=isOm?';background:#fef9ec;padding:4px 8px;border-radius:4px;margin:2px 0':isPre?';background:var(--w-bg);padding:4px 8px;border-radius:4px;margin:2px 0':'';
+            const badge=isOm?'<span style="font-size:10px;font-weight:700;color:var(--amber);background:#fef3c7;padding:1px 5px;border-radius:3px;margin-left:4px">OMAGGIO</span>':isPre?'<span style="font-size:10px;font-weight:700;color:var(--warning);background:var(--bg)0c0;padding:1px 5px;border-radius:3px;margin-left:4px">PRE-ORDINE</span>':'';
             const priceStr=isOm?'🎁 gratuito':isPre?`${it.qty} × €${it.price} (pre-ord.) → <strong>€${lineTotal.toFixed(2)}</strong>`:`${it.qty} × €${it.price} → <strong>€${lineTotal.toFixed(2)}</strong>`;
-            return`<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;${i<(o.items.length-1)?'border-bottom:1px solid #eee':''}${bg}">
+            return`<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;${i<(o.items.length-1)?'border-bottom:1px solid var(--bl)':''}${bg}">
               <span>${esc(it.name)}${badge}</span>
               <span style="color:${isOm?'#d97706':isPre?'#f59e0b':'#888'}">${priceStr}</span>
             </div>`;}).join('')}
         </div>
-        ${o.note?`<div style="font-size:13px;color:#666;font-style:italic;margin-bottom:8px">📝 ${esc(o.note)}</div>`:''}
-        ${cl?.address?`<div style="font-size:13px;margin-bottom:10px">📍 ${esc(cl.address)} ${m?`<a href="${esc(m)}" target="_blank" style="color:#5c8a3c;font-weight:700">→ Maps</a>`:''}</div>`:''}
+        ${o.note?`<div style="font-size:13px;color:var(--tm);font-style:italic;margin-bottom:8px">📝 ${esc(o.note)}</div>`:''}
+        ${cl?.address?`<div style="font-size:13px;margin-bottom:10px">📍 ${esc(cl.address)} ${m?`<a href="${esc(m)}" target="_blank" style="color:var(--g);font-weight:700">→ Maps</a>`:''}</div>`:''}
         ${o.status==='pending'?`<div style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="btn btn-p" onclick="updS('${esc(o.id)}','confirmed')">✓ Conferma</button>
           <button class="btn btn-s" onclick="updS('${esc(o.id)}','delivered')">📦 Consegnato</button>
-          <button class="btn" style="background:#7c3aed;color:#fff" onclick="handlePreordine('${esc(o.id)}')">📋 Pre-ordine</button>
-          <button class="btn" style="background:#d97706;color:#fff" onclick="openOmaggio('${esc(o.id)}')">🎁 Omaggio</button>
+          <button class="btn" style="background:#7c3aed;color:var(--bg)" onclick="handlePreordine('${esc(o.id)}')">📋 Pre-ordine</button>
+          <button class="btn" style="background:#d97706;color:var(--bg)" onclick="openOmaggio('${esc(o.id)}')">🎁 Omaggio</button>
           <button class="btn btn-d" onclick="updS('${esc(o.id)}','cancelled')">✕ Annulla</button>
         </div>`:''}
         ${o.status==='confirmed'?`<button class="btn btn-s" onclick="updS('${esc(o.id)}','delivered')">📦 Segna consegnato</button>`:''}
-        ${o.status==='preorder'?`<button class="btn" style="background:#7c3aed;color:#fff" onclick="updS('${esc(o.id)}','delivered')">✓ Evaso</button>`:''}
+        ${o.status==='preorder'?`<button class="btn" style="background:#7c3aed;color:var(--bg)" onclick="updS('${esc(o.id)}','delivered')">✓ Evaso</button>`:''}
       </div>`;
     }).join('')}`;
 }
@@ -346,7 +363,7 @@ function cm(){document.getElementById('overlay').classList.remove('open');}
 function newP(){editing=null;pfAvail=true;pfPreorder=false;om('Nuovo prodotto',pForm({id:gid('MG',products),name:'',desc:'',price:10,avail:true,unit:'vassoio',qty:0,preorder:false,waitTime:''}));}
 function editP(id){editing=products.find(p=>p.id===id);if(!editing)return;pfAvail=editing.avail;pfPreorder=editing.preorder||false;om('Modifica prodotto',pForm(editing));}
 function pForm(p){return `
-  <div class="field"><label class="label">Codice</label><input class="input" value="${esc(p.id)}" id="pi" readonly style="background:#f5f5f5"></div>
+  <div class="field"><label class="label">Codice</label><input class="input" value="${esc(p.id)}" id="pi" readonly style="background:var(--bg-h)"></div>
   <div class="field"><label class="label">Nome *</label><input class="input" value="${esc(p.name)}" id="pn" placeholder="Es. Crescione" autofocus></div>
   <div class="field"><label class="label">Descrizione</label><input class="input" value="${esc(p.desc)}" id="pd" placeholder="Breve nota per il cliente"></div>
   <div style="display:flex;gap:10px;margin-bottom:12px">
@@ -365,13 +382,13 @@ function pForm(p){return `
     <button class="toggle" id="ptog" style="background:${p.avail?'#5c8a3c':'#ccc'}" onclick="tpA()" type="button">
       <span class="knob" id="pknob" style="left:${p.avail?19:3}px"></span>
     </button>
-    <span id="palbl" style="font-size:13px;color:#888">${p.avail?'Visibile ai clienti':'Non visibile ai clienti'}</span>
+    <span id="palbl" style="font-size:13px;color:var(--ts)">${p.avail?'Visibile ai clienti':'Non visibile ai clienti'}</span>
   </div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
     <button class="toggle" id="ptog2" style="background:${(p.preorder||false)?'#7c3aed':'#ccc'}" onclick="tpP()" type="button">
       <span class="knob" id="pknob2" style="left:${(p.preorder||false)?19:3}px"></span>
     </button>
-    <span id="palbl2" style="font-size:13px;color:#888">${(p.preorder||false)?'Accetta pre-ordini':'Pre-ordini non attivi'}</span>
+    <span id="palbl2" style="font-size:13px;color:var(--ts)">${(p.preorder||false)?'Accetta pre-ordini':'Pre-ordini non attivi'}</span>
   </div>
   <div style="display:flex;gap:10px">
     <button class="btn btn-p" onclick="saveP()" style="flex:1">Salva</button>
@@ -398,14 +415,14 @@ function detCl(id){
     ${c.contact?`<div><strong>Referente:</strong> ${esc(c.contact)}</div>`:''}
     ${c.phone?`<div><strong>Tel:</strong> ${esc(c.phone)}</div>`:''}
     ${c.email?`<div><strong>Email:</strong> ${esc(c.email)}</div>`:''}
-    ${c.address?`<div><strong>Indirizzo:</strong> ${esc(c.address)}<br><a href="${esc(maps(c.address))}" target="_blank" style="color:#5c8a3c">→ Google Maps</a></div>`:''}
+    ${c.address?`<div><strong>Indirizzo:</strong> ${esc(c.address)}<br><a href="${esc(maps(c.address))}" target="_blank" style="color:var(--g)">→ Google Maps</a></div>`:''}
     <div><strong>Ordini totali:</strong> ${n}</div>
-    <div style="font-size:12px;color:#aaa">Token: ${esc(c.token)}</div>
+    <div style="font-size:12px;color:var(--tp)">Token: ${esc(c.token)}</div>
   </div>`);}
 function clForm(c){return `
   <div style="display:flex;gap:10px;margin-bottom:12px">
     <div style="flex:2"><label class="label">Ristorante *</label><input class="input" id="cr" value="${esc(c.restaurant||'')}" placeholder="Es. Da Mario" autofocus></div>
-    <div style="flex:1"><label class="label">ID</label><input class="input" id="cid" value="${esc(c.id)}" readonly style="background:#f5f5f5"></div>
+    <div style="flex:1"><label class="label">ID</label><input class="input" id="cid" value="${esc(c.id)}" readonly style="background:var(--bg-h)"></div>
   </div>
   <div class="field"><label class="label">Referente</label><input class="input" id="cc" value="${esc(c.contact||'')}" placeholder="Nome chef"></div>
   <div class="field"><label class="label">Email cliente</label><input class="input" type="email" id="ce" value="${esc(c.email||'')}" placeholder="chef@ristorante.it"></div>
@@ -416,7 +433,7 @@ function clForm(c){return `
   </div>
   <div class="field"><label class="label">Token link ordine</label>
     <div style="display:flex;gap:8px">
-      <input class="input" id="ct" value="${esc(c.token)}" readonly style="background:#f5f5f5;font-family:monospace;flex:1">
+      <input class="input" id="ct" value="${esc(c.token)}" readonly style="background:var(--bg-h);font-family:monospace;flex:1">
       <button class="btn btn-s" onclick="document.getElementById('ct').value=gtok()" type="button">↻</button>
     </div>
   </div>
@@ -424,7 +441,7 @@ function clForm(c){return `
     <button class="btn btn-p" onclick="saveCl()" style="flex:1">Salva</button>
     <button class="btn btn-s" onclick="cm()" style="flex:1">Annulla</button>
   </div>`;}
-function upMP(){const a=(document.getElementById('ca')||{}).value||'';const e=document.getElementById('mp');if(e)e.innerHTML=a?`<a href="${esc(maps(a))}" target="_blank" style="color:#5c8a3c">→ Anteprima Maps</a>`:'';}
+function upMP(){const a=(document.getElementById('ca')||{}).value||'';const e=document.getElementById('mp');if(e)e.innerHTML=a?`<a href="${esc(maps(a))}" target="_blank" style="color:var(--g)">→ Anteprima Maps</a>`:'';}
 async function saveCl(){
   const restaurant=document.getElementById('cr').value.trim();if(!restaurant){alert('Inserisci il ristorante');return;}
   const obj={id:document.getElementById('cid').value,restaurant,contact:document.getElementById('cc').value,phone:document.getElementById('cph').value,email:document.getElementById('ce').value||'',address:document.getElementById('ca').value,token:document.getElementById('ct').value,createdAt:editing?.createdAt||new Date().toISOString().split('T')[0]};
@@ -480,14 +497,14 @@ function renderG(){
       <div class="field"><label class="label">Numero vassoi da produrre</label>
         <input class="input" type="number" id="g-vassoi" min="1" step="1" value="1" oninput="onGProdChange()">
       </div>
-      <div id="g-preview" style="background:#f9f9f9;border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;display:none"></div>
+      <div id="g-preview" style="background:var(--bg-s);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;display:none"></div>
       <button class="btn btn-p" id="g-confirm" onclick="confermaProduzione()" disabled style="width:100%">Conferma produzione</button>
     </div>
 
     <div class="sh" style="margin-top:20px">Magazzino Materie Prime</div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
-      <input class="input" id="mp-search" placeholder="🔍 Cerca..." oninput="updateMPTable()" style="flex:1;background:#fff;color:#1a1a1a">
-      <select class="input" id="mp-cat" onchange="updateMPTable()" style="width:auto;background:#fff;color:#1a1a1a">
+      <input class="input" id="mp-search" placeholder="🔍 Cerca..." oninput="updateMPTable()" style="flex:1;background:var(--bg);color:var(--text)">
+      <select class="input" id="mp-cat" onchange="updateMPTable()" style="width:auto;background:var(--bg);color:var(--text)">
         <option value="all">Tutte</option>
         <option value="Semi">Semi</option>
         <option value="Vaschette">Vaschette</option>
@@ -521,11 +538,11 @@ function renderMPTable(){
       <div class="row">
         <div style="flex:1;min-width:0">
           <div style="font-weight:600;font-size:13px">${esc(m.nome)}</div>
-          <div style="font-size:11px;color:#888">${esc(m.codice)} · ${esc(m.categoria)}</div>
+          <div style="font-size:11px;color:var(--ts)">${esc(m.codice)} · ${esc(m.categoria)}</div>
         </div>
         <div style="text-align:right;min-width:80px">
           <div style="font-size:15px;font-weight:700;color:${col}">${res}${esc(m.unita)}</div>
-          <div style="font-size:11px;color:#888">di ${acq}${esc(m.unita)}</div>
+          <div style="font-size:11px;color:var(--ts)">di ${acq}${esc(m.unita)}</div>
         </div>
         <button class="btn btn-s" onclick="openAcquisto('${esc(m.codice)}','${esc(m.nome)}','${esc(m.unita)}')" style="padding:5px 10px;font-size:12px">+ Acquisto</button>
       </div>
@@ -583,9 +600,9 @@ function onGProdChange(){
         <div style="color:${okVasch?'#1a1a1a':'#e53935'}">🪣 Vaschetta FREE (MA042642): −${vaschetteQty} pz ${mpVasch?`(stock: ${mpVasch.stockResiduo})`:''} ${okVasch?'✓':'⚠ insufficiente'}</div>
         <div style="color:${okTerr?'#1a1a1a':'#e53935'}">🌱 Terreno Completo (MA042644): −${terrenoQty}g ${mpTerr?`(stock: ${mpTerr.stockResiduo}g)`:''} ${okTerr?'✓':'⚠ insufficiente'}</div>
         <div style="color:${okSeme?'#1a1a1a':'#e53935'}">🌿 ${esc(mpSeme?.nome||ric.semeMP)} (${ric.semeMP}): −${semeQty}g ${mpSeme?`(stock: ${mpSeme.stockResiduo}g)`:''} ${okSeme?'✓':'⚠ insufficiente'}</div>
-        <div style="margin-top:8px;color:#5c8a3c;font-weight:600">→ ${esc(nome)}: +${n} vasoio${n>1?'i':''} disponibil${n>1?'i':'e'}</div>
-        <div style="margin-top:4px;font-size:12px;color:#888">Costo stimato: €${calcolaCostoVassoi(ric.semeMP,semeQty,n).toFixed(2)} totale · €${(calcolaCostoVassoi(ric.semeMP,semeQty,n)/n).toFixed(2)} per vassoio</div>
-        <div style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border-left:3px solid #5c8a3c;font-size:12px;color:#444">📦 Con lo stock attuale puoi produrre massimo <strong style="color:#5c8a3c">${materiePrime.length>0?calcolaMaxVassoi(ric.semeMP,ric.qtyPerVassoio)+' vassoi':'— (dati MP in caricamento)'}</strong></div>
+        <div style="margin-top:8px;color:var(--g);font-weight:600">→ ${esc(nome)}: +${n} vasoio${n>1?'i':''} disponibil${n>1?'i':'e'}</div>
+        <div style="margin-top:4px;font-size:12px;color:var(--ts)">Costo stimato: €${calcolaCostoVassoi(ric.semeMP,semeQty,n).toFixed(2)} totale · €${(calcolaCostoVassoi(ric.semeMP,semeQty,n)/n).toFixed(2)} per vassoio</div>
+        <div style="margin-top:8px;padding:8px;background:var(--bg);border-radius:6px;border-left:3px solid #5c8a3c;font-size:12px;color:var(--ts2)">📦 Con lo stock attuale puoi produrre massimo <strong style="color:var(--g)">${materiePrime.length>0?calcolaMaxVassoi(ric.semeMP,ric.qtyPerVassoio)+' vassoi':'— (dati MP in caricamento)'}</strong></div>
       </div>`;
   }
   if(btn)btn.disabled=!allOk;
@@ -610,7 +627,7 @@ async function confermaProduzione(){
 
 function openAcquisto(codice,nome,unita){
   om('Acquisto — '+nome,`
-    <div class="field"><label class="label">Codice MP</label><input class="input" value="${esc(codice)}" id="aq-cod" readonly style="background:#f5f5f5;font-family:monospace"></div>
+    <div class="field"><label class="label">Codice MP</label><input class="input" value="${esc(codice)}" id="aq-cod" readonly style="background:var(--bg-h);font-family:monospace"></div>
     <div class="field"><label class="label">Quantità acquistata (${esc(unita)})</label><input class="input" type="number" min="0" step="0.1" id="aq-qty" placeholder="Es. 250" autofocus></div>
     <div class="field"><label class="label">Prezzo totale (€)</label><input class="input" type="number" min="0" step="0.01" id="aq-prez" placeholder="Es. 12.50"></div>
     <div style="display:flex;gap:10px;margin-top:8px">
@@ -653,11 +670,11 @@ function openOmaggio(orderId){
     <div class="field"><label class="label">Quantità vaschette</label>
       <input class="input" type="number" id="om-qty" min="1" step="1" value="1">
     </div>
-    <div style="background:#fff8ec;border-radius:8px;padding:10px;font-size:12px;color:#92400e;margin-bottom:16px">
+    <div style="background:var(--bg)8ec;border-radius:8px;padding:10px;font-size:12px;color:#92400e;margin-bottom:16px">
       🎁 Le vaschette omaggio non scalano lo stock e appaiono gratuitamente nel riepilogo del cliente.
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn" style="background:#d97706;color:#fff;flex:1" onclick="confermaOmaggio('${esc(orderId)}')">Aggiungi omaggio</button>
+      <button class="btn" style="background:#d97706;color:var(--bg);flex:1" onclick="confermaOmaggio('${esc(orderId)}')">Aggiungi omaggio</button>
       <button class="btn btn-s" onclick="cm()" style="flex:1">Annulla</button>
     </div>
   `);
@@ -692,6 +709,19 @@ async function handlePreordine(id){
   }
   renderAll();await saveOrd();
 }
+
+// ── DARK THEME ──────────────────────────────────────────────
+function applyTheme(dark){
+  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  const b=document.getElementById('themeBtn');
+  if(b)b.textContent=dark?'☀️':'🌙';
+}
+function toggleTheme(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  localStorage.setItem('ma_theme',isDark?'light':'dark');
+  applyTheme(!isDark);
+}
+(function(){applyTheme(localStorage.getItem('ma_theme')==='dark');})();
 
 // ── AUTENTICAZIONE ADMIN ─────────────────────────────────────
 const ADMIN_HASH='bbfdb4e5daf324f5ea4abc7b089f915d90cc0b9dcad2806d0d1faa17116c8fc9';
