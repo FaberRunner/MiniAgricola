@@ -80,7 +80,7 @@ body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
     <button id="themeBtn" onclick="toggleTheme()" title="Cambia tema" style="background:transparent;border:1px solid var(--ts);color:var(--ts);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer">🌙</button>
     <button onclick="doLogout()" title="Esci" style="background:transparent;border:1px solid #888;color:var(--ts);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:6px">⎋ Esci</button>
     <span class="badge">GESTIONALE</span>
-    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.08.00</span>
+    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.09.00</span>
   </div>
 </div>
 <div class="nav">
@@ -350,7 +350,12 @@ function renderO(){
           <button class="btn btn-d" onclick="updS('${esc(o.id)}','cancelled')">✕ Annulla</button>
         </div>`:''}
         ${o.status==='confirmed'?`<button class="btn btn-s" onclick="updS('${esc(o.id)}','delivered')">📦 Segna consegnato</button>`:''}
-        ${o.status==='preorder'?`<button class="btn" style="background:#7c3aed;color:var(--bg)" onclick="updS('${esc(o.id)}','delivered')">✓ Evaso</button>`:''}
+        ${o.status==='preorder'?`<div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-p" onclick="updS('${esc(o.id)}','confirmed')">✓ Conferma</button>
+          <button class="btn" style="background:var(--amber);color:var(--bg)" onclick="openOmaggio('${esc(o.id)}')">🎁 Omaggio</button>
+          <button class="btn" style="background:#7c3aed;color:var(--bg)" onclick="updS('${esc(o.id)}','delivered')">✓ Evaso</button>
+          <button class="btn btn-d" onclick="updS('${esc(o.id)}','cancelled')">✕ Annulla</button>
+        </div>`:''}
       </div>`;
     }).join('')}`;
 }
