@@ -76,6 +76,20 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 .cname{font-size:18px;font-weight:900;letter-spacing:1px;color:#1a2e1a;text-transform:uppercase}
 .cgrp{font-size:13px;font-weight:700;color:#5c8a3c;letter-spacing:0.5px;padding:10px 16px 4px;border-left:3px solid #5c8a3c;margin:8px 0 2px 8px}
 @keyframes spin{to{transform:rotate(360deg)}}
+#wa-fixed{
+  position:fixed;bottom:64px;left:0;right:0;z-index:90;
+  display:none;
+  background:#25D366;
+  padding:10px 16px;
+  box-shadow:0 -2px 8px rgba(0,0,0,.15);
+}
+#wa-fixed a{
+  display:flex;align-items:center;gap:10px;
+  color:#fff;text-decoration:none;
+  font-size:13px;font-weight:700;
+  max-width:600px;margin:0 auto;
+}
+#wa-fixed a span.wa-arrow{margin-left:auto;font-size:16px}
 /* Tasto conferma disabilitato */
 .cfbtn:disabled{background:#ccc;cursor:not-allowed;opacity:.7}
 /* Totale prodotto sulla card */
@@ -120,7 +134,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.09.01</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.09.02</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -164,6 +178,15 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
       <span id="cbartot">€0.00</span>
     </button>
   </div>
+</div>
+
+<!-- WA STRISCIA FISSA -->
+<div id="wa-fixed">
+  <a href="https://wa.me/393757350178" target="_blank">
+    <span style="font-size:20px">💬</span>
+    <span>Hai bisogno di una fornitura settimanale? Scrivici su WhatsApp</span>
+    <span class="wa-arrow">→</span>
+  </a>
 </div>
 
 <!-- RIEPILOGO -->
@@ -700,6 +723,8 @@ function showApp(name){
   document.getElementById('searchbar').style.display='block';
   const waCat=document.getElementById('wa-cat');
   if(waCat)waCat.style.display='block';
+  const waFixed=document.getElementById('wa-fixed');
+  if(waFixed)waFixed.style.display='block';
   document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('gbar').textContent='Ciao, '+name+' 👋';
@@ -991,6 +1016,8 @@ function updateCart(){
 }
 
 function openR(){
+  const waF=document.getElementById('wa-fixed');
+  if(waF)waF.style.display='none';
   const items=cartItems(),pItems=preCartItems();if(!items.length&&!pItems.length)return;
   const totQty=items.reduce((s,i)=>s+i.qty,0)+pItems.reduce((s,i)=>s+i.qty,0);
   const MIN=6;
@@ -1067,7 +1094,9 @@ function openR(){
   if(btn){btn.disabled=false;btn.textContent='Conferma ordine';}
   document.getElementById('rscr').classList.add('open');
 }
-function closeR(){document.getElementById('rscr').classList.remove('open');}
+function closeR(){
+  const waF=document.getElementById('wa-fixed');
+  if(waF&&client)waF.style.display='block';document.getElementById('rscr').classList.remove('open');}
 
 async function openHist(){
   const scr=document.getElementById('histscr');
