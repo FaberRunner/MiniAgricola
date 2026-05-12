@@ -120,7 +120,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.09.00</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.09.01</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -146,6 +146,14 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
     </div>
   </div>
   <div class="body" id="cat"></div>
+<div id="wa-cat" style="display:none;padding:0 16px 16px"><a href="https://wa.me/393757350178" target="_blank" style="display:flex;align-items:center;gap:12px;background:#25D366;color:#fff;text-decoration:none;border-radius:14px;padding:14px 18px;margin:16px 0;box-shadow:0 2px 8px rgba(37,211,102,.3)">
+  <span style="font-size:28px">💬</span>
+  <div>
+    <div style="font-weight:800;font-size:14px">Hai bisogno di una fornitura settimanale?</div>
+    <div style="font-size:12px;opacity:.9;margin-top:2px">Scrivici su WhatsApp — ti prepariamo un piano su misura 🌱</div>
+  </div>
+  <span style="margin-left:auto;font-size:20px">→</span>
+</a></div>
 </div>
 
 <!-- CARRELLO FISSO -->
@@ -182,6 +190,14 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
     <div id="note-min" style="display:none;background:#fff8e6;border:1px solid #f0d080;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#8a6800;font-weight:600">
       ⚠️ Ordine minimo 6 vaschette — aggiungine ancora <span id="note-min-count"></span>
     </div>
+    <a href="https://wa.me/393757350178" target="_blank" style="display:flex;align-items:center;gap:12px;background:#25D366;color:#fff;text-decoration:none;border-radius:14px;padding:12px 16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(37,211,102,.3)">
+      <span style="font-size:22px">💬</span>
+      <div style="flex:1">
+        <div style="font-weight:800;font-size:13px">Fornitura settimanale?</div>
+        <div style="font-size:11px;opacity:.9">Scrivici su WhatsApp 🌱</div>
+      </div>
+      <span style="font-size:16px">→</span>
+    </a>
     <div class="rsec">Note per la consegna</div>
     <textarea class="ninp" id="note" rows="3" placeholder="Es. consegna mercoledì mattina..."></textarea>
     <button class="cfbtn" id="cfbtn" onclick="confirm_()">Conferma ordine</button>
@@ -682,6 +698,8 @@ function showApp(name){
   if(al)al.style.display='none';
   document.getElementById('ver').style.display='block';
   document.getElementById('searchbar').style.display='block';
+  const waCat=document.getElementById('wa-cat');
+  if(waCat)waCat.style.display='block';
   document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('gbar').textContent='Ciao, '+name+' 👋';
