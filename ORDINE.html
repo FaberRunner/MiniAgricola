@@ -76,6 +76,22 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 .cname{font-size:18px;font-weight:900;letter-spacing:1px;color:#1a2e1a;text-transform:uppercase}
 .cgrp{font-size:13px;font-weight:700;color:#5c8a3c;letter-spacing:0.5px;padding:10px 16px 4px;border-left:3px solid #5c8a3c;margin:8px 0 2px 8px}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* Tasto conferma disabilitato */
+.cfbtn:disabled{background:#ccc;cursor:not-allowed;opacity:.7}
+/* Totale prodotto sulla card */
+.pqtot{font-size:13px;font-weight:700;color:var(--g);margin-top:4px}
+/* Barra carrello attiva */
+.cbarbtn.active{background:var(--g-d,#1a2e1a) !important;border-color:transparent}
+.cbarbtn.active #cbarlbl{color:#fff;font-weight:700}
+.cbarbtn.active #cbartot{color:#a0d080;font-size:16px;font-weight:800}
+/* Alert soglia */
+.cart-alert{background:#fff3cd;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:#7a4f00;font-weight:600;display:flex;gap:8px;align-items:flex-start}
+/* Riepilogo item più chiaro */
+.ritem-detail{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:8px;background:var(--bg-s,#f9f9f9);margin-bottom:6px}
+.ritem-detail .ri-name{font-weight:600;font-size:14px;flex:1}
+.ritem-detail .ri-qty{font-size:13px;color:var(--ts,#888);margin:0 12px}
+.ritem-detail .ri-tot{font-weight:700;font-size:15px;color:var(--g)}
+
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
 </style>
 </head>
@@ -104,7 +120,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.07.15</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.08.01</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -154,6 +170,9 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
     <div class="rtot">
       <span style="font-weight:600;font-size:15px">Subtotale</span>
       <span style="font-weight:800;font-size:20px;color:var(--g)" id="rtot">€0.00</span>
+    </div>
+    <div id="cart-alert" style="display:none" class="cart-alert">
+      ⚠️ Stai per ordinare un importo elevato.<br>Controlla bene le quantità prima di confermare.
     </div>
     <div id="delivery-cost" style="font-size:13px;color:#555;margin-bottom:8px;padding:0 2px"></div>
     <div class="rtot" style="background:#f0f7eb">
@@ -924,20 +943,46 @@ function updateCart(){
   const pCount=pItems.reduce((s,i)=>s+i.qty,0);
   const tot=cartTotal();
   const totCount=count+pCount;
+  const MIN_ORDER=6;
   document.getElementById('ccount').textContent=totCount;
-  document.getElementById('cbarlbl').textContent=totCount>0?`Vai all'ordine · ${totCount} vasch.`:"Carrello vuoto";
-  document.getElementById('cbartot').textContent='€'+tot.toFixed(2);
-  document.getElementById('cbarbtn').disabled=totCount===0;
+  // Barra carrello impattante
+  const btn=document.getElementById('cbarbtn');
+  if(totCount>0){
+    document.getElementById('cbarlbl').textContent=`🛒 ${totCount} vaschett${totCount===1?'a':'e'}`;
+    document.getElementById('cbartot').textContent='€'+tot.toFixed(2);
+    btn.disabled=false;
+    btn.classList.add('active');
+  }else{
+    document.getElementById('cbarlbl').textContent='Carrello vuoto';
+    document.getElementById('cbartot').textContent='€0.00';
+    btn.disabled=true;
+    btn.classList.remove('active');
+  }
+  // Totale per prodotto: aggiorna testo pulsante
+  [...cartItems(),...preCartItems()].forEach(it=>{
+    const btn=document.getElementById('ab-'+it.id);
+    if(!btn)return;
+    const isPreorder=it.preorder;
+    if(it.qty>0){
+      const tot=(it.qty*it.price).toFixed(2);
+      const line='€'+tot;
+      btn.innerHTML=(isPreorder?'📋 Pre-ordine ('+it.qty+')':'✓ Nel carrello ('+it.qty+')')+
+        ' <span style="font-size:11px;opacity:.8;margin-left:4px">= '+line+'</span>';
+    }
+  });
 }
 
 function openR(){
   const items=cartItems(),pItems=preCartItems();if(!items.length&&!pItems.length)return;
-  const realHtml=items.map(it=>`
-    <div class="ritem">
-      <div style="flex:1;font-weight:600;font-size:14px">${esc(it.name)}</div>
-      <div style="font-size:13px;color:var(--m)">${it.qty} × €${it.price}</div>
-      <div style="font-weight:700;font-size:14px">€${(it.qty*it.price).toFixed(2)}</div>
-    </div>`).join('');
+  const totQty=items.reduce((s,i)=>s+i.qty,0)+pItems.reduce((s,i)=>s+i.qty,0);
+  const MIN=6;
+  const realHtml=items.map(it=>{
+    const lt=(it.qty*it.price).toFixed(2);
+    return`<div class="ritem-detail">
+      <span class="ri-name">${esc(it.name)}</span>
+      <span class="ri-qty">${it.qty} × €${it.price}</span>
+      <span class="ri-tot">€${lt}</span>
+    </div>`;}).join('');
   const preHtml=pItems.length>0?
     '<div style="font-size:11px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">📋 Pre-ordini (consegna appena disponibili)</div>'+
     pItems.map(it=>`
@@ -947,11 +992,29 @@ function openR(){
       <div style="font-weight:700;font-size:14px;color:#8a6800">€${(it.qty*it.price).toFixed(2)}</div>
     </div>`).join(''):'';
   document.getElementById('ritems').innerHTML=realHtml+preHtml;
-  document.getElementById('rtot').textContent='€'+cartTotal().toFixed(2);
+  const subTotVal=cartTotal();
+  document.getElementById('rtot').textContent='€'+subTotVal.toFixed(2);
+  const alertEl=document.getElementById('cart-alert');
+  if(alertEl)alertEl.style.display=subTotVal>80?'flex':'none';
   // Nota minimo ordine
   const totQtyPreview=(items.reduce((s,i)=>s+i.qty,0))+(pItems.reduce((s,i)=>s+i.qty,0));
   const noteMin=document.getElementById('note-min');
   if(noteMin)noteMin.style.display=totQtyPreview<6?'block':'none';
+  // Tasto conferma: disabilitato se < 6 vaschette
+  const cfbtn=document.getElementById('cfbtn');
+  if(cfbtn){
+    if(totQtyPreview<6){
+      cfbtn.disabled=true;
+      cfbtn.textContent='⚠️ Ordine minimo 6 vaschette';
+      cfbtn.style.background='#aaa';
+      cfbtn.style.cursor='not-allowed';
+    }else{
+      cfbtn.disabled=false;
+      cfbtn.textContent='Conferma ordine';
+      cfbtn.style.background='';
+      cfbtn.style.cursor='';
+    }
+  }
   // Calcolo consegna
   const delEl=document.getElementById('delivery-cost');
   const delTotEl=document.getElementById('recap-grand-total');
