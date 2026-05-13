@@ -93,8 +93,8 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 .pd-empty{font-size:13px;color:var(--tp,#aaa);font-style:italic;text-align:center;padding:20px 0}
 .pd-hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;position:sticky;top:0;background:var(--bg,#fff);border-bottom:1px solid var(--bl,#eee);z-index:10}
 .pd-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--ts,#888);line-height:1}
-.pimg-clickable{cursor:pointer;transition:opacity .15s}
-.pimg-clickable:active{opacity:.8}
+.pimg-clickable{cursor:pointer;transition:opacity .15s;touch-action:manipulation;-webkit-tap-highlight-color:rgba(106,27,154,.15)}
+.pimg-clickable:active{opacity:.75}
 /* Pannello Catalogo */
 #catscr{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:none;align-items:flex-end}
 #catscr.open{display:flex}
@@ -833,8 +833,8 @@ function clearSearch(){
 function pimgHtml(p,em,bg){
   const src=IMGS[p.id];
   // onclick sempre presente — il check catalogo è dentro openProdDetail
-  const clk='onclick="openProdDetail(this)" data-prodid="'+p.id+'" class="pimg-clickable"';
-  if(src) return '<div class="pimg pimg-real" '+clk+'><img src="'+src+'" alt="'+esc(p.name)+'" style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none" loading="lazy" onError="onImgErr(this)"></div>';
+  const clk='data-prodid="'+p.id+'" class="pimg-clickable"';
+  if(src) return '<div class="pimg pimg-real" '+clk+'><img src="'+src+'" alt="'+esc(p.name)+'" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy" onError="onImgErr(this)"></div>';
   return '<div class="pimg" style="background:'+bg+';font-size:52px" '+clk+'>'+em+'</div>';
 }
 function onImgErr(img){img.style.display="none";var p=img.parentNode;p.className="pimg";p.style.background=img.dataset.fallbackBg;p.style.fontSize="52px";p.innerHTML=img.dataset.fallbackEm;}
@@ -991,6 +991,11 @@ function renderCat(){
     });
     h+=`</div></div>`;
   });
+  // Event delegation per popup — più affidabile su mobile
+  document.getElementById('cat').addEventListener('click',function(e){
+    const el=e.target.closest('.pimg-clickable');
+    if(el)openProdDetail(el);
+  },{once:true});
   if(_searchQuery&&!h.includes('pcard')){
     h='<div style="text-align:center;padding:60px 20px;color:var(--m)">'+
        '<div style="font-size:40px;margin-bottom:12px">🔍</div>'+
