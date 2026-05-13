@@ -152,7 +152,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.10.01</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.10.02</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -255,6 +255,9 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
       </div>
       <span style="font-size:16px">→</span>
     </a>
+    <div style="background:#e8f5e9;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;color:#1a2e1a;font-weight:600;display:flex;align-items:center;gap:8px">
+      🚚 <span>Giorno di consegna: <strong>Mercoledì</strong></span>
+    </div>
     <div class="rsec">Note per la consegna</div>
     <textarea class="ninp" id="note" rows="3" placeholder="Es. consegna mercoledì mattina..."></textarea>
     <button class="cfbtn" id="cfbtn" onclick="confirm_()">Conferma ordine</button>
@@ -759,6 +762,9 @@ function showApp(name){
   if(waCat)waCat.style.display='block';
   const waFixed=document.getElementById('wa-fixed');
   if(waFixed)waFixed.style.display='block';
+  // Mostra catalogo solo se abilitato dall'admin
+  const catWrap=document.getElementById('cat-btn-wrap');
+  if(catWrap)catWrap.style.display=localStorage.getItem('ma_cat_visible')==='1'?'block':'none';
   document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('gbar').textContent='Ciao, '+name+' 👋';

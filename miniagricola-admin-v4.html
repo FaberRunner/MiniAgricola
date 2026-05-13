@@ -81,7 +81,7 @@ body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
     <button id="themeBtn" onclick="toggleTheme()" title="Cambia tema" style="background:transparent;border:1px solid var(--ts);color:var(--ts);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer">🌙</button>
     <button onclick="doLogout()" title="Esci" style="background:transparent;border:1px solid #888;color:var(--ts);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:6px">⎋ Esci</button>
     <span class="badge">GESTIONALE</span>
-    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.10.01</span>
+    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.10.02</span>
   </div>
 </div>
 <div class="nav">
@@ -225,6 +225,10 @@ function renderC(){
     <div class="topbar">
       <div><div class="sh">Catalogo Prodotti</div><div style="font-size:13px;color:var(--ts)"><strong style="color:var(--g)">${a}</strong> attivi · ${products.length} totali</div></div>
       <button class="btn btn-p" onclick="newP()">+ Nuovo</button>
+      <button onclick="toggleCatalogo()" id="cat-toggle-btn"
+        style="font-size:12px;padding:5px 12px;border-radius:6px;border:1.5px solid #6A1B9A;color:#6A1B9A;background:transparent;cursor:pointer;font-weight:600">
+        📖 <span id="cat-toggle-lbl">Catalogo OFF</span>
+      </button>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <input class="input" id="cs" placeholder="🔍 Cerca..." value="${esc(s)}" oninput="renderC()" style="flex:1">
@@ -790,6 +794,30 @@ async function deleteOrder(id){
   await saveOrd();
   ss('ok','✓ Ordine eliminato');
 }
+
+// ── TOGGLE CATALOGO VISIBILITÀ ──────────────────────────────
+function toggleCatalogo(){
+  // Comunica al client via localStorage se è aperto in un'altra tab
+  // Ma principalmente serve per test interni: apri ORDINE.html e vedi il catalogo
+  const current=localStorage.getItem('ma_cat_visible')==='1';
+  const next=!current;
+  localStorage.setItem('ma_cat_visible', next?'1':'0');
+  const lbl=document.getElementById('cat-toggle-lbl');
+  if(lbl)lbl.textContent=next?'Visibile':'Nascosto';
+  // Istruzione per l'admin
+  om('📖 Visibilità Catalogo',
+    '<div style="padding:8px 0;font-size:14px;line-height:1.8">'+(next?
+      '<div style="color:#4CAF50;font-weight:700;font-size:16px;margin-bottom:12px">✓ Catalogo attivato</div>Il pulsante "📖 Catalogo" è ora visibile ai clienti.<br>Ricarica la pagina cliente per vederlo.':
+      '<div style="color:#e53935;font-weight:700;font-size:16px;margin-bottom:12px">✕ Catalogo nascosto</div>Il pulsante catalogo non è più visibile ai clienti.')+
+    '</div><button class="btn btn-p" onclick="cm()" style="margin-top:12px;width:100%">OK</button>'
+  );
+}
+// Aggiorna label al caricamento
+(function(){
+  const v=localStorage.getItem('ma_cat_visible')==='1';
+  const lbl=document.getElementById('cat-toggle-lbl');
+  if(lbl)lbl.textContent=v?'Visibile':'Nascosto';
+})();
 
 // ── AUTO-REFRESH ORDINI ogni 30 secondi
 setInterval(async()=>{
