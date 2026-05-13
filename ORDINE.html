@@ -76,6 +76,24 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 .cname{font-size:18px;font-weight:900;letter-spacing:1px;color:#1a2e1a;text-transform:uppercase}
 .cgrp{font-size:13px;font-weight:700;color:#5c8a3c;letter-spacing:0.5px;padding:10px 16px 4px;border-left:3px solid #5c8a3c;margin:8px 0 2px 8px}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* Pannello Catalogo */
+#catscr{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:none;align-items:flex-end}
+#catscr.open{display:flex}
+#catpanel{background:var(--bg,#fff);width:100%;max-height:92vh;border-radius:20px 20px 0 0;overflow-y:auto;padding-bottom:32px}
+.cat-hdr{position:sticky;top:0;background:var(--bg,#fff);border-bottom:1px solid var(--bl,#eee);padding:16px 20px 12px;display:flex;justify-content:space-between;align-items:center;z-index:10}
+.cat-hdr h2{font-size:18px;font-weight:900;color:#6A1B9A;letter-spacing:.5px;margin:0}
+.cat-hdr button{background:none;border:none;font-size:22px;cursor:pointer;color:var(--ts,#888)}
+.cat-section{padding:16px 20px 4px;font-size:13px;font-weight:800;letter-spacing:1.5px;color:#6A1B9A;text-transform:uppercase;border-bottom:2px solid #f0e6ff}
+.cat-card{margin:12px 16px;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);background:var(--card,#fff)}
+.cat-card-img{width:100%;height:180px;object-fit:cover;display:block;background:#f5f5f5}
+.cat-card-img-emoji{width:100%;height:180px;display:flex;align-items:center;justify-content:center;font-size:72px;background:#f5f0ff}
+.cat-card-body{padding:16px}
+.cat-card-name{font-size:20px;font-weight:900;color:#6A1B9A;margin-bottom:4px}
+.cat-card-price{font-size:14px;font-weight:600;color:#4CAF50;margin-bottom:12px}
+.cat-card-section{font-size:12px;font-weight:800;color:#1a2e1a;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px;padding-bottom:4px;border-bottom:1.5px solid #e8f5e9}
+.cat-card-item{font-size:13px;color:var(--text,#1a1a1a);padding:3px 0;padding-left:16px;position:relative}
+.cat-card-item::before{content:'·';position:absolute;left:4px;color:#4CAF50;font-weight:900}
+.cat-card-empty{text-align:center;padding:40px;color:var(--ts,#888);font-size:14px}
 #wa-fixed{
   position:fixed;bottom:64px;left:0;right:0;z-index:90;
   display:none;
@@ -134,7 +152,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.09.02</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.10.01</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -178,6 +196,22 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
       <span id="cbartot">€0.00</span>
     </button>
   </div>
+</div>
+
+<!-- CATALOGO PRODOTTI (nascosto fino a completamento) -->
+<div id="catscr">
+  <div id="catpanel">
+    <div class="cat-hdr">
+      <h2>📖 Catalogo</h2>
+      <button onclick="closeCat()">✕</button>
+    </div>
+    <div id="catbody"></div>
+  </div>
+</div>
+
+<!-- PULSANTE CATALOGO (nascosto) -->
+<div id="cat-btn-wrap" style="display:none">
+  <button onclick="openCat()" style="position:fixed;bottom:120px;right:16px;z-index:89;background:#6A1B9A;color:#fff;border:none;border-radius:99px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(106,27,154,.4)">📖 Catalogo</button>
 </div>
 
 <!-- WA STRISCIA FISSA -->
@@ -656,7 +690,7 @@ async function init(){
             price:pp(o.price),avail:String(o.avail).toLowerCase()==='true',
             unit:String(o.unit||'vassoio'),qty:parseInt(o.qty)||0,
             preorder:String(o.preorder).toLowerCase()==='true',
-            waitTime:String(o.waitTime||'')};
+            waitTime:String(o.waitTime||''),caratteristiche:String(o.caratteristiche||''),uso:String(o.uso||'')};
         });
         try{localStorage.setItem('ma_op',JSON.stringify({ts:Date.now(),data:products}));}catch(e){}
       }
@@ -1182,6 +1216,55 @@ async function openHist(){
 }
 
 function closeHist(){document.getElementById('histscr').classList.remove('open');}
+
+// ── CATALOGO PRODOTTI ────────────────────────────────────────
+function openCat(){
+  renderCatalog();
+  document.getElementById('catscr').classList.add('open');
+}
+function closeCat(){
+  document.getElementById('catscr').classList.remove('open');
+}
+
+function renderCatalog(){
+  const body=document.getElementById('catbody');
+  if(!body)return;
+  const pm={};products.forEach(p=>pm[p.id]=p);
+  const IMG_BASE='https://faberrunner.github.io/MiniAgricola/imgs/';
+  let h='';
+  CATS.forEach(cat=>{
+    // Raccogli tutti i prodotti della categoria (inclusi gruppi)
+    let ids=[];
+    if(cat.groups)cat.groups.forEach(g=>ids=ids.concat(g.ids));
+    else ids=cat.ids||[];
+    const prods=ids.map(id=>pm[id]).filter(Boolean);
+    if(!prods.length)return;
+    h+=`<div class="cat-section">${cat.emoji||''} ${esc(cat.name)}</div>`;
+    prods.forEach(p=>{
+      const imgSrc=IMGS[p.id];
+      const em=EMO[p.id]||'🌿';
+      const imgHtml=imgSrc
+        ?`<img src="${IMG_BASE+imgSrc.split('/').pop()}" alt="${esc(p.name)}" class="cat-card-img" loading="lazy" onerror="this.style.display='none'">`
+        :`<div class="cat-card-img-emoji">${em}</div>`;
+      const carat=(p.caratteristiche||'').trim();
+      const uso=(p.uso||'').trim();
+      const caratHtml=carat?`<div class="cat-card-section">Caratteristiche</div>`+
+        carat.split('·').join('\n').split('\n').map(s=>s.trim()).filter(Boolean).map(s=>`<div class="cat-card-item">${esc(s)}</div>`).join(''):'';
+      const usoHtml=uso?`<div class="cat-card-section">Consigli d'uso</div>`+
+        uso.split('·').join('\n').split('\n').map(s=>s.trim()).filter(Boolean).map(s=>`<div class="cat-card-item">${esc(s)}</div>`).join(''):'';
+      h+=`<div class="cat-card">
+        ${imgHtml}
+        <div class="cat-card-body">
+          <div class="cat-card-name">${esc(p.name)}</div>
+          <div class="cat-card-price">€${p.price} / ${esc(p.unit)}</div>
+          ${caratHtml}${usoHtml}
+          ${!caratHtml&&!usoHtml?'<div style="font-size:12px;color:var(--tp,#aaa);font-style:italic">Scheda in preparazione 🌱</div>':''}
+        </div>
+      </div>`;
+    });
+  });
+  body.innerHTML=h||'<div class="cat-card-empty">Nessun prodotto disponibile</div>';
+}
 
 function ripetiOrdineDaId(idx){
   const cached=window._histCache&&window._histCache[parseInt(idx)];

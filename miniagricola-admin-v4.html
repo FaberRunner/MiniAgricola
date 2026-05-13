@@ -81,7 +81,7 @@ body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
     <button id="themeBtn" onclick="toggleTheme()" title="Cambia tema" style="background:transparent;border:1px solid var(--ts);color:var(--ts);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer">🌙</button>
     <button onclick="doLogout()" title="Esci" style="background:transparent;border:1px solid #888;color:var(--ts);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:6px">⎋ Esci</button>
     <span class="badge">GESTIONALE</span>
-    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.10.00</span>
+    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.10.01</span>
   </div>
 </div>
 <div class="nav">
@@ -108,7 +108,7 @@ body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
 <script>
 const API='https://script.google.com/macros/s/AKfycbz5jt_DB2DBRwrkEsY1efzx8J-t_aDH66HKfbl0Q0KVWqNQgN-4jy9tsFKydvu5-sXejQ/exec';
 // Schema Sheet (deve corrispondere esattamente alle intestazioni su Google Sheet)
-const PROD_H=['id','name','desc','price','avail','unit','qty','preorder','waitTime'];
+const PROD_H=['id','name','desc','price','avail','unit','qty','preorder','waitTime','caratteristiche','uso'];
 const CLIE_H=['id','restaurant','contact','phone','email','address','token','createdAt'];
 const ORDI_H=['id','clientId','restaurant','itemsJson','total','note','status','createdAt'];
 
@@ -153,7 +153,7 @@ async function loadAll(force=false){
   const cM=!force&&loadCache('ma_cm');
   const cO=!force&&loadCache('ma_co');
   const cC=!force&&loadCache('ma_cc');
-  if(cP){products=rows2obj(cP,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true',waitTime:String(p.waitTime||'')}));}
+  if(cP){products=rows2obj(cP,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true',waitTime:String(p.waitTime||''),caratteristiche:String(p.caratteristiche||''),uso:String(p.uso||'')}));}
   if(cC){clients=rows2obj(cC,CLIE_H);}
   if(cO){orders=rows2obj(cO,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));}
   if(cR){const rH=cR[0]?.map(h=>String(h).trim())||[];ricette=cR.slice(1).filter(r=>r[0]).map(row=>{const o={};rH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtyPerVassoio:pp(o.qtyPerVassoio)};});}
@@ -164,7 +164,7 @@ async function loadAll(force=false){
     const all=await get('getAllAdmin');
     if(!all||all.error)throw new Error(all?.error||'Risposta non valida');
     const pr=all.products, cl=all.clients, or=all.orders, ric=all.ricette, mp=all.mp;
-    if(pr){products=rows2obj(pr,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true',waitTime:String(p.waitTime||'')}));saveCache('ma_cp',pr);localStorage.removeItem('ma_cp_v');saveCache('ma_cp',pr);}
+    if(pr){products=rows2obj(pr,PROD_H).map(p=>({...p,price:pp(p.price),avail:String(p.avail).toLowerCase()==='true',qty:parseInt(p.qty)||0,preorder:String(p.preorder).toLowerCase()==='true',waitTime:String(p.waitTime||''),caratteristiche:String(p.caratteristiche||''),uso:String(p.uso||'')}));saveCache('ma_cp',pr);localStorage.removeItem('ma_cp_v');saveCache('ma_cp',pr);}
     if(cl){clients=rows2obj(cl,CLIE_H);saveCache('ma_cc',cl);}
     if(or){orders=rows2obj(or,ORDI_H).map(o=>({...o,total:pp(o.total),items:(()=>{try{return JSON.parse(o.itemsJson||'[]');}catch{return[];}})()}));saveCache('ma_co',or);}
     if(ric&&ric.length>1){const rH=ric[0].map(h=>String(h).trim());ricette=ric.slice(1).filter(r=>r[0]).map(row=>{const o={};rH.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});return{...o,qtyPerVassoio:pp(o.qtyPerVassoio)};});saveCache('ma_cr',ric);}
@@ -384,6 +384,8 @@ function pForm(p){return `
   </div>
   <div class="field"><label class="label">Quantità disponibile (vaschette)</label><input class="input" type="number" min="0" step="1" value="${p.qty||0}" id="pq"></div>
   <div class="field"><label class="label">Tempi attesa pre-ordine</label><input class="input" value="${esc(p.waitTime||'')}" id="pwt" placeholder="Es. 6-7 giorni"></div>
+  <div class="field"><label class="label">Caratteristiche (catalogo)</label><textarea class="input" id="pcarat" rows="3" placeholder="Es. Sapore fresco · Ricco di vitamina C" style="resize:vertical;font-family:inherit;font-size:13px">${esc(p.caratteristiche||'')}</textarea></div>
+  <div class="field"><label class="label">Consigli d'uso (catalogo)</label><textarea class="input" id="puso" rows="3" placeholder="Es. Perfetto su carpacci · Ideale per cocktail" style="resize:vertical;font-family:inherit;font-size:13px">${esc(p.uso||'')}</textarea></div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
     <button class="toggle" id="ptog" style="background:${p.avail?'#5c8a3c':'#ccc'}" onclick="tpA()" type="button">
       <span class="knob" id="pknob" style="left:${p.avail?19:3}px"></span>
@@ -404,7 +406,7 @@ function tpA(){pfAvail=!pfAvail;document.getElementById('ptog').style.background
 function tpP(){pfPreorder=!pfPreorder;document.getElementById('ptog2').style.background=pfPreorder?'#7c3aed':'#ccc';document.getElementById('pknob2').style.left=pfPreorder?'19px':'3px';document.getElementById('palbl2').textContent=pfPreorder?'Accetta pre-ordini':'Pre-ordini non attivi';}
 async function saveP(){
   const name=document.getElementById('pn').value.trim();if(!name){alert('Inserisci il nome');return;}
-  const obj={id:document.getElementById('pi').value,name,desc:document.getElementById('pd').value,price:parseFloat(document.getElementById('ppr').value)||0,unit:document.getElementById('pu').value,qty:parseInt(document.getElementById('pq').value)||0,avail:pfAvail,preorder:pfPreorder,waitTime:document.getElementById('pwt')?.value||''};
+  const obj={id:document.getElementById('pi').value,name,desc:document.getElementById('pd').value,price:parseFloat(document.getElementById('ppr').value)||0,unit:document.getElementById('pu').value,qty:parseInt(document.getElementById('pq').value)||0,avail:pfAvail,preorder:pfPreorder,waitTime:document.getElementById('pwt')?.value||'',caratteristiche:document.getElementById('pcarat')?.value||'',uso:document.getElementById('puso')?.value||''};
   products=editing?products.map(p=>p.id===obj.id?obj:p):[...products,obj];
   cm();renderAll();await saveProd();
 }
