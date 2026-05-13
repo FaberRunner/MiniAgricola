@@ -797,6 +797,12 @@ function showApp(name){
   if(catWrap)catWrap.style.display=localStorage.getItem('ma_cat_visible')==='1'?'block':'none';
   // Re-render catalogo per aggiornare gli onclick sulle immagini
   if(typeof renderCat==='function')renderCat();
+  // Ascolta cambiamenti localStorage da altre tab (admin toggle)
+  window.addEventListener('storage',function(e){
+    if(e.key==='ma_cat_visible'&&typeof renderCat==='function'){
+      renderCat();
+    }
+  });
   document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('gbar').textContent='Ciao, '+name+' 👋';

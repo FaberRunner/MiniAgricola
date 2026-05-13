@@ -258,6 +258,8 @@ function renderC(){
         <button class="btn btn-s" onclick="editP('${esc(p.id)}')" style="padding:6px 10px">✏️</button>
         <button class="btn btn-d" onclick="delP('${esc(p.id)}')" style="padding:6px 10px">🗑</button>
       </div>`).join('')}`;
+  // Aggiorna label toggle catalogo
+  {const v=localStorage.getItem('ma_cat_visible')==='1';const l=document.getElementById('cat-toggle-lbl');if(l)l.textContent=v?'Catalogo ON':'Catalogo OFF';}
 }
 
 function renderCl(){
@@ -802,8 +804,10 @@ function toggleCatalogo(){
   const current=localStorage.getItem('ma_cat_visible')==='1';
   const next=!current;
   localStorage.setItem('ma_cat_visible', next?'1':'0');
-  const lbl=document.getElementById('cat-toggle-lbl');
-  if(lbl)lbl.textContent=next?'Visibile':'Nascosto';
+  setTimeout(function(){
+    const lbl=document.getElementById('cat-toggle-lbl');
+    if(lbl)lbl.textContent=next?'Catalogo ON':'Catalogo OFF';
+  },50);
   // Istruzione per l'admin
   om('📖 Visibilità Catalogo',
     '<div style="padding:8px 0;font-size:14px;line-height:1.8">'+(next?
@@ -812,12 +816,7 @@ function toggleCatalogo(){
     '</div><button class="btn btn-p" onclick="cm()" style="margin-top:12px;width:100%">OK</button>'
   );
 }
-// Aggiorna label al caricamento
-(function(){
-  const v=localStorage.getItem('ma_cat_visible')==='1';
-  const lbl=document.getElementById('cat-toggle-lbl');
-  if(lbl)lbl.textContent=v?'Visibile':'Nascosto';
-})();
+// Label aggiornata in renderC() dopo il render del DOM
 
 // ── AUTO-REFRESH ORDINI ogni 30 secondi
 setInterval(async()=>{
