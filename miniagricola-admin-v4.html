@@ -34,7 +34,8 @@ body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
 .row{display:flex;align-items:center;gap:10px}
 .btn{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600}
 .btn:hover{opacity:.85}
-.btn-p{background:var(--g);color:#fff;font-weight:700}
+.btn-p{background:#4CAF50 !important;color:#fff !important;font-weight:700;border:none}
+[data-theme="dark"] .btn-p{background:#4CAF50 !important;color:#fff !important}
 .btn-d{background:var(--danger);color:var(--bg)}
 .btn-s{background:var(--bl);color:var(--ts2)}
 .btn-g{background:transparent;color:var(--tm);border:1px solid var(--bm)}
@@ -80,7 +81,7 @@ body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
     <button id="themeBtn" onclick="toggleTheme()" title="Cambia tema" style="background:transparent;border:1px solid var(--ts);color:var(--ts);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer">🌙</button>
     <button onclick="doLogout()" title="Esci" style="background:transparent;border:1px solid #888;color:var(--ts);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:6px">⎋ Esci</button>
     <span class="badge">GESTIONALE</span>
-    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.09.03</span>
+    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.10.00</span>
   </div>
 </div>
 <div class="nav">
