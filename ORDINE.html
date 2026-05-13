@@ -171,7 +171,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.10.03</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.11.00</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -609,35 +609,34 @@ async function post_(a,d){const r=await fetch(API,{method:'POST',headers:{'Conte
 // Immagini catalogo (cartella cat/)
 const CAT_IMGS={
   'MG-0024':'https://faberrunner.github.io/MiniAgricola/cat/Acetosa.jpeg',
-  'MG-0009':'https://faberrunner.github.io/MiniAgricola/cat/Basilico Thailandese.jpeg',
-  'MG-0008':'https://faberrunner.github.io/MiniAgricola/cat/Basilico limone.jpeg',
-  'MG-0007':'https://faberrunner.github.io/MiniAgricola/cat/Basilico verde.jpeg',
-  'MG-0012':'https://faberrunner.github.io/MiniAgricola/cat/Bieta gialla.jpeg',
+  'MG-0009':'https://faberrunner.github.io/MiniAgricola/cat/Basilico%20Thailandese.jpeg',
+  'MG-0008':'https://faberrunner.github.io/MiniAgricola/cat/Basilico%20limone.jpeg',
+  'MG-0007':'https://faberrunner.github.io/MiniAgricola/cat/Basilico%20verde.jpeg',
+  'MG-0012':'https://faberrunner.github.io/MiniAgricola/cat/Bieta%20gialla.jpeg',
   'MG-0022':'https://faberrunner.github.io/MiniAgricola/cat/Borragine.jpeg',
-  'MG-0019':'https://faberrunner.github.io/MiniAgricola/cat/Cavolo Rosa.jpeg',
-  'MG-0018':'https://faberrunner.github.io/MiniAgricola/cat/Cavolo Rosso.jpeg',
-  'MG-0020':'https://faberrunner.github.io/MiniAgricola/cat/Cavolo nero.jpeg',
+  'MG-0019':'https://faberrunner.github.io/MiniAgricola/cat/Cavolo%20Rosa.jpeg',
+  'MG-0018':'https://faberrunner.github.io/MiniAgricola/cat/Cavolo%20Rosso.jpeg',
+  'MG-0020':'https://faberrunner.github.io/MiniAgricola/cat/Cavolo%20nero.jpeg',
   'MG-0027':'https://faberrunner.github.io/MiniAgricola/cat/Cipolla.jpeg',
-  'MG-0032':'https://faberrunner.github.io/MiniAgricola/cat/Grano saraceno.jpeg',
+  'MG-0032':'https://faberrunner.github.io/MiniAgricola/cat/Grano%20saraceno.jpeg',
   'MG-0033':'https://faberrunner.github.io/MiniAgricola/cat/Lenticchia.jpeg',
   'MG-0025':'https://faberrunner.github.io/MiniAgricola/cat/Malva.jpeg',
   'MG-0023':'https://faberrunner.github.io/MiniAgricola/cat/Nasturzio.jpeg',
-  'MG-0017':'https://faberrunner.github.io/MiniAgricola/cat/Pisello verde.jpeg',
+  'MG-0017':'https://faberrunner.github.io/MiniAgricola/cat/Pisello%20verde.jpeg',
   'MG-0028':'https://faberrunner.github.io/MiniAgricola/cat/Porro.jpeg',
   'MG-0029':'https://faberrunner.github.io/MiniAgricola/cat/Prezzemolo.jpeg',
-  'MG-0013':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello china rose.jpeg',
-  'MG-0015':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello nero.jpeg',
-  'MG-0016':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello venom.jpeg',
-  'MG-0014':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello vulcano.jpeg',
+  'MG-0013':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello%20china%20rose.jpeg',
+  'MG-0015':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello%20nero.jpeg',
+  'MG-0016':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello%20venom.jpeg',
+  'MG-0014':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello%20vulcano.jpeg',
   'MG-0006':'https://faberrunner.github.io/MiniAgricola/cat/Rucola.jpeg',
-  'MG-0002':'https://faberrunner.github.io/MiniAgricola/cat/Senape bianca.jpeg',
-  'MG-0004':'https://faberrunner.github.io/MiniAgricola/cat/Senape rossa frastagliata.jpeg',
-  'MG-0003':'https://faberrunner.github.io/MiniAgricola/cat/Senape rossa.jpeg',
-  'MG-0005':'https://faberrunner.github.io/MiniAgricola/cat/Senape verde.jpeg',
-  'MG-0010':'https://faberrunner.github.io/MiniAgricola/cat/basilico rosso dark opal.jpeg',
-  'MG-0011':'https://faberrunner.github.io/MiniAgricola/cat/bieta rossa.jpeg',
+  'MG-0002':'https://faberrunner.github.io/MiniAgricola/cat/Senape%20bianca.jpeg',
+  'MG-0004':'https://faberrunner.github.io/MiniAgricola/cat/Senape%20rossa%20frastagliata.jpeg',
+  'MG-0003':'https://faberrunner.github.io/MiniAgricola/cat/Senape%20rossa.jpeg',
+  'MG-0005':'https://faberrunner.github.io/MiniAgricola/cat/Senape%20verde.jpeg',
+  'MG-0010':'https://faberrunner.github.io/MiniAgricola/cat/basilico%20rosso%20dark%20opal.jpeg',
+  'MG-0011':'https://faberrunner.github.io/MiniAgricola/cat/bieta%20rossa.jpeg',
 };
-
 // ── CALCOLO DISTANZA CONSEGNA (CAP-based, zero dipendenze) ───
 // Coordinate origine MiniAgricola: via Varcaturiello 43, 80014 Lago Patria
 const ORIGIN_LAT=40.9317, ORIGIN_LON=14.0486;
@@ -1024,10 +1023,15 @@ function renderCat(){
     h+=`</div></div>`;
   });
   // Event delegation per popup — più affidabile su mobile
-  document.getElementById('cat').addEventListener('click',function(e){
-    const el=e.target.closest('.pimg-clickable');
-    if(el)openProdDetail(el);
-  },{once:true});
+  // Event listener delegato — rimane attivo per tutti i click
+  const catEl=document.getElementById('cat');
+  if(catEl&&!catEl._pdListener){
+    catEl.addEventListener('click',function(e){
+      const el=e.target.closest('.pimg-clickable');
+      if(el)openProdDetail(el);
+    });
+    catEl._pdListener=true;
+  }
   if(_searchQuery&&!h.includes('pcard')){
     h='<div style="text-align:center;padding:60px 20px;color:var(--m)">'+
        '<div style="font-size:40px;margin-bottom:12px">🔍</div>'+
