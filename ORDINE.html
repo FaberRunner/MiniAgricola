@@ -795,6 +795,8 @@ function showApp(name){
   // Mostra catalogo solo se abilitato dall'admin
   const catWrap=document.getElementById('cat-btn-wrap');
   if(catWrap)catWrap.style.display=localStorage.getItem('ma_cat_visible')==='1'?'block':'none';
+  // Re-render catalogo per aggiornare gli onclick sulle immagini
+  if(typeof renderCat==='function')renderCat();
   document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('gbar').textContent='Ciao, '+name+' 👋';
@@ -824,9 +826,9 @@ function clearSearch(){
 
 function pimgHtml(p,em,bg){
   const src=IMGS[p.id];
-  const clickable=localStorage.getItem('ma_cat_visible')==='1';
-  const clk=clickable?'onclick="openProdDetail(\''+p.id+'\')" class="pimg-clickable"':'';
-  if(src) return '<div class="pimg pimg-real" '+clk+'><img src="'+src+'" alt="'+esc(p.name)+'" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy" class="prod-img" data-fallback-em="'+em+'" data-fallback-bg="'+bg+'" onError="onImgErr(this)"></div>';
+  // onclick sempre presente — il check catalogo è dentro openProdDetail
+  const clk='onclick="openProdDetail(this)" data-prodid="'+p.id+'" class="pimg-clickable"';
+  if(src) return '<div class="pimg pimg-real" '+clk+'><img src="'+src+'" alt="'+esc(p.name)+'" style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none" loading="lazy" onError="onImgErr(this)"></div>';
   return '<div class="pimg" style="background:'+bg+';font-size:52px" '+clk+'>'+em+'</div>';
 }
 function onImgErr(img){img.style.display="none";var p=img.parentNode;p.className="pimg";p.style.background=img.dataset.fallbackBg;p.style.fontSize="52px";p.innerHTML=img.dataset.fallbackEm;}
@@ -1264,9 +1266,10 @@ function closeCat(){
   document.getElementById('catscr').classList.remove('open');
 }
 
-function openProdDetail(prodId){
+function openProdDetail(el){
   // Controlla se il catalogo è attivo
   if(localStorage.getItem('ma_cat_visible')!=='1')return;
+  const prodId=el.dataset?el.dataset.prodid:el;
   const p=products.find(x=>x.id===prodId);
   if(!p)return;
   const imgSrc=IMGS[p.id];
