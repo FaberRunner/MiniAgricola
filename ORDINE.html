@@ -76,6 +76,25 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 .cname{font-size:18px;font-weight:900;letter-spacing:1px;color:#1a2e1a;text-transform:uppercase}
 .cgrp{font-size:13px;font-weight:700;color:#5c8a3c;letter-spacing:0.5px;padding:10px 16px 4px;border-left:3px solid #5c8a3c;margin:8px 0 2px 8px}
 @keyframes spin{to{transform:rotate(360deg)}}
+/* Popup dettaglio prodotto */
+#prod-detail-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center}
+#prod-detail-overlay.open{display:flex}
+#prod-detail-panel{background:var(--bg,#fff);width:100%;max-width:540px;max-height:88vh;border-radius:22px 22px 0 0;overflow-y:auto;padding-bottom:32px;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.pd-img{width:100%;height:220px;object-fit:cover;display:block;background:#f5f0ff}
+.pd-img-emoji{width:100%;height:220px;display:flex;align-items:center;justify-content:center;font-size:80px;background:#f5f0ff}
+.pd-body{padding:20px}
+.pd-name{font-size:24px;font-weight:900;color:#6A1B9A;margin-bottom:4px}
+.pd-price{font-size:15px;font-weight:700;color:#4CAF50;margin-bottom:6px}
+.pd-desc{font-size:13px;color:var(--tm,#666);margin-bottom:14px;line-height:1.5;font-style:italic}
+.pd-section{font-size:11px;font-weight:900;letter-spacing:1.5px;color:#1a2e1a;text-transform:uppercase;margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid #e8f5e9}
+.pd-item{font-size:14px;color:var(--text,#1a1a1a);padding:4px 0 4px 18px;position:relative;line-height:1.5}
+.pd-item::before{content:'·';position:absolute;left:4px;color:#4CAF50;font-weight:900;font-size:16px}
+.pd-empty{font-size:13px;color:var(--tp,#aaa);font-style:italic;text-align:center;padding:20px 0}
+.pd-hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 20px 12px;position:sticky;top:0;background:var(--bg,#fff);border-bottom:1px solid var(--bl,#eee);z-index:10}
+.pd-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--ts,#888);line-height:1}
+.pimg-clickable{cursor:pointer;transition:opacity .15s}
+.pimg-clickable:active{opacity:.8}
 /* Pannello Catalogo */
 #catscr{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:none;align-items:flex-end}
 #catscr.open{display:flex}
@@ -152,7 +171,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.10.02</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.10.03</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -221,6 +240,17 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
     <span>Hai bisogno di una fornitura settimanale? Scrivici su WhatsApp</span>
     <span class="wa-arrow">→</span>
   </a>
+</div>
+
+<!-- POPUP DETTAGLIO PRODOTTO -->
+<div id="prod-detail-overlay" onclick="if(event.target===this)closeProdDetail()">
+  <div id="prod-detail-panel">
+    <div class="pd-hdr">
+      <span style="font-size:13px;font-weight:600;color:var(--ts)">Scheda prodotto</span>
+      <button class="pd-close" onclick="closeProdDetail()">✕</button>
+    </div>
+    <div id="pd-content"></div>
+  </div>
 </div>
 
 <!-- RIEPILOGO -->
@@ -794,8 +824,10 @@ function clearSearch(){
 
 function pimgHtml(p,em,bg){
   const src=IMGS[p.id];
-  if(src) return '<div class="pimg pimg-real"><img src="'+src+'" alt="'+esc(p.name)+'" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy" class="prod-img" data-fallback-em="'+em+'" data-fallback-bg="'+bg+'" onError="onImgErr(this)"></div>';
-  return '<div class="pimg" style="background:'+bg+';font-size:52px">'+em+'</div>';
+  const clickable=localStorage.getItem('ma_cat_visible')==='1';
+  const clk=clickable?'onclick="openProdDetail(\''+p.id+'\')" class="pimg-clickable"':'';
+  if(src) return '<div class="pimg pimg-real" '+clk+'><img src="'+src+'" alt="'+esc(p.name)+'" style="width:100%;height:100%;object-fit:cover;display:block" loading="lazy" class="prod-img" data-fallback-em="'+em+'" data-fallback-bg="'+bg+'" onError="onImgErr(this)"></div>';
+  return '<div class="pimg" style="background:'+bg+';font-size:52px" '+clk+'>'+em+'</div>';
 }
 function onImgErr(img){img.style.display="none";var p=img.parentNode;p.className="pimg";p.style.background=img.dataset.fallbackBg;p.style.fontSize="52px";p.innerHTML=img.dataset.fallbackEm;}
 
@@ -1230,6 +1262,46 @@ function openCat(){
 }
 function closeCat(){
   document.getElementById('catscr').classList.remove('open');
+}
+
+function openProdDetail(prodId){
+  // Controlla se il catalogo è attivo
+  if(localStorage.getItem('ma_cat_visible')!=='1')return;
+  const p=products.find(x=>x.id===prodId);
+  if(!p)return;
+  const imgSrc=IMGS[p.id];
+  const em=EMO[p.id]||'🌿';
+  const imgHtml=imgSrc
+    ?`<img src="${imgSrc}" alt="${esc(p.name)}" class="pd-img" loading="eager">`
+    :`<div class="pd-img-emoji">${em}</div>`;
+  const desc=(p.desc||'').trim();
+  const carat=(p.caratteristiche||'').trim();
+  const uso=(p.uso||'').trim();
+  const caratItems=carat?carat.split('·').join('|').split('|').map(s=>s.trim()).filter(Boolean):[]; 
+  const usoItems=uso?uso.split('·').join('|').split('|').map(s=>s.trim()).filter(Boolean):[];
+  const hasContent=desc||carat||uso;
+  let html=imgHtml+'<div class="pd-body">';
+  html+=`<div class="pd-name">${esc(p.name)}</div>`;
+  html+=`<div class="pd-price">€${p.price} / ${esc(p.unit)}</div>`;
+  if(desc)html+=`<div class="pd-desc">${esc(desc)}</div>`;
+  if(caratItems.length){
+    html+='<div class="pd-section">Caratteristiche</div>';
+    caratItems.forEach(s=>{html+=`<div class="pd-item">${esc(s)}</div>`;});
+  }
+  if(usoItems.length){
+    html+='<div class="pd-section">Consigli d\'uso</div>';
+    usoItems.forEach(s=>{html+=`<div class="pd-item">${esc(s)}</div>`;});
+  }
+  if(!hasContent){
+    html+='<div class="pd-empty">🌱 Scheda in preparazione<br><span style="font-size:12px">Le informazioni su questo prodotto saranno disponibili presto.</span></div>';
+  }
+  html+='</div>';
+  document.getElementById('pd-content').innerHTML=html;
+  document.getElementById('prod-detail-overlay').classList.add('open');
+}
+
+function closeProdDetail(){
+  document.getElementById('prod-detail-overlay').classList.remove('open');
 }
 
 function renderCatalog(){
