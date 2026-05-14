@@ -874,7 +874,7 @@ function renderCat(){
             ${q>0?'✓ Nel carrello ('+q+')':'Aggiungi al carrello'}
           </button>
         </div>`;
-      }else if(p.preorder){
+      }else if(p.avail&&p.preorder){
         const qp=preCart[p.id]||0;
         ph+=`<div class="pcard">
           ${pimgHtml(p,em,bg)}
@@ -964,7 +964,7 @@ function renderCat(){
             ${q>0?`✓ Nel carrello (${q})`:'Aggiungi al carrello'}
           </button>
         </div>`;
-      }else if(p.preorder){
+      }else if(p.avail&&p.preorder){
         // Prodotto esaurito ma con pre-ordine attivo
         const q=preCart[p.id]||0;
         h+=`<div class="pcard">
@@ -1347,7 +1347,7 @@ function ripetiOrdine(items){
         const realQty=Math.min(qty,p.qty);
         cart[p.id]=realQty;
         if(realQty<qty&&p.preorder){preCart[p.id]=(preCart[p.id]||0)+(qty-realQty);}
-      }else if(p.preorder){
+      }else if(p.avail&&p.preorder){
         preCart[p.id]=(preCart[p.id]||0)+qty;
       }else{
         skipped.push(p.name);
