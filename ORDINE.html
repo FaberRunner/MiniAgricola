@@ -171,7 +171,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.11.01</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.11.02</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -825,15 +825,9 @@ function showApp(name){
   if(waFixed)waFixed.style.display='block';
   // Mostra catalogo solo se abilitato dall'admin
   const catWrap=document.getElementById('cat-btn-wrap');
-  if(catWrap)catWrap.style.display=localStorage.getItem('ma_cat_visible')==='1'?'block':'none';
+  if(catWrap)catWrap.style.display='block';
   // Re-render catalogo per aggiornare gli onclick sulle immagini
   if(typeof renderCat==='function')renderCat();
-  // Ascolta cambiamenti localStorage da altre tab (admin toggle)
-  window.addEventListener('storage',function(e){
-    if(e.key==='ma_cat_visible'&&typeof renderCat==='function'){
-      renderCat();
-    }
-  });
   document.getElementById('lscr').style.display='none';
   document.getElementById('app').style.display='block';
   document.getElementById('gbar').textContent='Ciao, '+name+' 👋';
@@ -1023,6 +1017,14 @@ function renderCat(){
     h+=`</div></div>`;
   });
   // Event delegation per popup — più affidabile su mobile
+  if(_searchQuery&&!h.includes('pcard')){
+    h='<div style="text-align:center;padding:60px 20px;color:var(--m)">'+
+       '<div style="font-size:40px;margin-bottom:12px">🔍</div>'+
+       '<div style="font-size:16px;font-weight:600">Nessun prodotto trovato</div>'+
+       '<div style="font-size:13px;margin-top:6px">per "<strong>'+_searchQuery+'</strong>"</div>'+
+       '</div>';
+  }
+  document.getElementById('cat').innerHTML=h;
   // Event listener delegato — rimane attivo per tutti i click
   const catEl=document.getElementById('cat');
   if(catEl&&!catEl._pdListener){
@@ -1032,14 +1034,6 @@ function renderCat(){
     });
     catEl._pdListener=true;
   }
-  if(_searchQuery&&!h.includes('pcard')){
-    h='<div style="text-align:center;padding:60px 20px;color:var(--m)">'+
-       '<div style="font-size:40px;margin-bottom:12px">🔍</div>'+
-       '<div style="font-size:16px;font-weight:600">Nessun prodotto trovato</div>'+
-       '<div style="font-size:13px;margin-top:6px">per "<strong>'+_searchQuery+'</strong>"</div>'+
-       '</div>';
-  }
-  document.getElementById('cat').innerHTML=h;
 }
 
 function chQ(id,d){const el=document.getElementById('q-'+id);if(!el)return;el.value=Math.max(0,(parseInt(el.value)||0)+d);}
