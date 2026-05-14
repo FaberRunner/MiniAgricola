@@ -1291,8 +1291,8 @@ function openProdDetail(el){
   const desc=(p.desc||'').trim();
   const carat=(p.caratteristiche||'').trim();
   const uso=(p.uso||'').trim();
-  const caratItems=carat?carat.split('·').join('|').split('|').map(function(s){return s.trim();}).filter(Boolean):[];
-  const usoItems=uso?uso.split('·').join('|').split('|').map(function(s){return s.trim();}).filter(Boolean):[];
+  const caratItems=carat?carat.replace(/\n/g,'·').split('·').map(function(s){return s.trim();}).filter(Boolean):[];
+  const usoItems=uso?uso.replace(/\n/g,'·').split('·').map(function(s){return s.trim();}).filter(Boolean):[];
   var html=imgHtml+'<div class="pd-body">';
   html+='<div class="pd-name">'+esc(p.name)+'</div>';
   html+='<div class="pd-price">€'+p.price+' / '+esc(p.unit)+'</div>';
