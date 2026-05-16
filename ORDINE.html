@@ -179,7 +179,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.13.02</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.13.03</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -1134,12 +1134,13 @@ function openR(){
     </div>`;}).join('');
   const preHtml=pItems.length>0?
     '<div style="font-size:11px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:1px;margin:12px 0 6px">📋 Pre-ordini (consegna appena disponibili)</div>'+
-    pItems.map(it=>`
+    pItems.map(it=>{const pp=products.find(x=>x.name===it.name);const ppid=pp?pp.id:'';return`
     <div class="ritem" style="border-color:#f59e0b22;background:#fff8e6">
+      <button onclick="rimuoviDaRiepilogo('${ppid}',true)" style="background:none;border:none;color:#e53935;font-size:16px;cursor:pointer;padding:0 6px 0 0;flex-shrink:0">×</button>
       <div style="flex:1;font-weight:600;font-size:14px;color:#8a6800">${esc(it.name)}</div>
       <div style="font-size:13px;color:#f59e0b">${it.qty} × €${it.price} <span style="font-size:11px">(pre-ordine)</span></div>
       <div style="font-weight:700;font-size:14px;color:#8a6800">€${(it.qty*it.price).toFixed(2)}</div>
-    </div>`).join(''):'';
+    </div>`;}).join(''):'';
   document.getElementById('ritems').innerHTML=realHtml+preHtml;
   const subTotVal=cartTotal();
   document.getElementById('rtot').textContent='€'+subTotVal.toFixed(2);
@@ -1198,6 +1199,19 @@ function openR(){
   if(btn){btn.disabled=false;btn.textContent='Conferma ordine';}
   document.getElementById('rscr').classList.add('open');
 }
+function rimuoviDaRiepilogo(id,isPreorder){
+  if(!id)return;
+  if(isPreorder)delete preCart[id]; else delete cart[id];
+  // Azzera input
+  const el=document.getElementById('q-'+id);
+  if(el)el.value=0;
+  updateCart();
+  // Riapri riepilogo aggiornato
+  const items=cartItems(),pItems=preCartItems();
+  if(!items.length&&!pItems.length){closeR();return;}
+  openR();
+}
+
 function closeR(){
   const waF=document.getElementById('wa-fixed');
   if(waF&&client)waF.style.display='block';document.getElementById('rscr').classList.remove('open');}
