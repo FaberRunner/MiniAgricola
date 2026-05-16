@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MiniAgricola — Catalogo</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+:root{--g:#4a7a2e;--gl:#f0f7eb;--d:#1a1a1a;--m:#888;--b:#e8e8e8;--bg:#fafaf8}
+body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding-bottom:80px}
+
+/* HEADER */
+.hdr{background:#fff;border-bottom:1px solid #e8e8e8;position:sticky;top:0;z-index:50;padding:6px 16px;display:flex;align-items:center;justify-content:space-between}
+
+/* SEARCH */
+.searchbar{padding:10px 16px;background:#fff;border-bottom:1px solid var(--b)}
+
+/* BODY */
+.body{padding:0 12px;max-width:700px;margin:0 auto}
+
+/* CATEGORIE */
+.catsec{margin-top:8px}
+.cattl{font-size:18px;font-weight:900;color:#1a2e1a;text-transform:uppercase;letter-spacing:1px;padding:24px 16px 12px;display:flex;align-items:center;gap:10px}
+.cattl::after{content:'';flex:1;height:1px;background:var(--b)}
+.csec{display:flex;align-items:center;gap:10px;padding:24px 16px 12px}
+.cemi{font-size:22px}
+.cname{font-size:18px;font-weight:900;letter-spacing:1px;color:#1a2e1a;text-transform:uppercase}
+.cgrp{font-size:13px;font-weight:700;color:#5c8a3c;letter-spacing:0.5px;padding:10px 16px 4px;border-left:3px solid #5c8a3c;margin:8px 0 2px 8px}
+
+/* GRIGLIA */
+.pgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:500px){.pgrid{grid-template-columns:repeat(3,1fr)}}
+
+/* CARD */
+.pcard{background:#fff;border-radius:12px;border:1px solid var(--b);overflow:hidden;display:flex;flex-direction:column}
+.pcard.na{opacity:.5}
+.pimg{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:48px;background:var(--gl)}
+.pimg-real{padding:0;overflow:hidden;background:#fff}
+.pinfo{padding:10px 10px 12px}
+.pname{font-weight:700;font-size:13px;line-height:1.3;margin-bottom:3px}
+.pprice{font-size:13px;font-weight:800;color:var(--g)}
+.punit{font-size:11px;color:var(--m)}
+.pdesc{font-size:11px;color:#666;margin-top:2px;line-height:1.4;word-break:break-word}
+.nalbl{font-size:11px;color:var(--m);padding:6px 10px 10px;text-align:center;font-style:italic}
+.preorder-lbl{font-size:11px;color:#6A1B9A;font-weight:600;padding:4px 10px 10px;text-align:center}
+.pimg-clickable{cursor:pointer;transition:opacity .15s;touch-action:manipulation;-webkit-tap-highlight-color:rgba(106,27,154,.15)}
+.pimg-clickable:active{opacity:.75}
+
+/* INFO BAR */
+.infobar{background:#f0f7eb;border-bottom:1px solid #d4eac4;padding:8px 16px;font-size:12px;color:#4a7a2e;font-weight:600;text-align:center}
+
+/* WA CTA */
+.wa-cta{margin:24px 16px 8px;padding:14px 18px;background:#25D366;border-radius:14px;display:flex;align-items:center;gap:12px;text-decoration:none;box-shadow:0 2px 8px rgba(37,211,102,.25)}
+.wa-cta-txt{flex:1;color:#fff}
+.wa-cta-txt strong{display:block;font-size:14px;font-weight:800}
+.wa-cta-txt span{font-size:12px;opacity:.9}
+
+/* POPUP DETTAGLIO */
+#prod-detail-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center}
+#prod-detail-overlay.open{display:flex}
+#prod-detail-panel{background:var(--bg,#fff);width:100%;max-width:540px;max-height:88vh;border-radius:22px 22px 0 0;overflow-y:auto;padding-bottom:32px;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.pd-img{width:100%;height:260px;object-fit:cover;object-position:top center;display:block}
+.pd-img-emoji{width:100%;height:220px;display:flex;align-items:center;justify-content:center;font-size:80px;background:#f5f0ff}
+.pd-body{padding:20px}
+.pd-name{font-size:24px;font-weight:900;color:#6A1B9A;margin-bottom:4px}
+.pd-price{font-size:15px;font-weight:700;color:#4CAF50;margin-bottom:6px}
+.pd-desc{font-size:13px;color:#666;margin-bottom:14px;line-height:1.5;font-style:italic}
+.pd-section{font-size:11px;font-weight:900;letter-spacing:1.5px;color:#1a2e1a;text-transform:uppercase;margin:16px 0 8px;padding-bottom:4px;border-bottom:2px solid #e8f5e9}
+.pd-item{font-size:14px;color:#1a1a1a;padding:4px 0 4px 18px;position:relative;line-height:1.5}
+.pd-item::before{content:'·';position:absolute;left:4px;color:#4CAF50;font-weight:900;font-size:16px}
+.pd-empty{font-size:13px;color:#aaa;font-style:italic;text-align:center;padding:20px 0}
+.pd-hdr{display:flex;justify-content:flex-end;align-items:center;padding:12px 16px;position:absolute;top:0;right:0;z-index:10}
+.pd-close{background:none;border:none;font-size:24px;cursor:pointer;color:#888;line-height:1}
+
+/* WA nel popup */
+.pd-wa{display:flex;align-items:center;gap:10px;background:#25D366;color:#fff;text-decoration:none;border-radius:12px;padding:12px 16px;margin-top:20px}
+.pd-wa-txt{flex:1;font-size:13px}
+.pd-wa-txt strong{display:block;font-weight:800;font-size:14px}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+/* Loading */
+#loading{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#loading img{width:200px;height:auto;margin-bottom:28px;animation:pulse 1.5s ease-in-out infinite}
+.spin{width:18px;height:18px;border:2.5px solid #5c8a3c;border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <img src="https://faberrunner.github.io/MiniAgricola/imgs/logo.svg" alt="MiniAgricola">
+  <div style="display:flex;align-items:center;gap:10px;color:#5c8a3c;font-size:14px;font-weight:600">
+    <div class="spin"></div>
+    Caricamento catalogo...
+  </div>
+</div>
+
+<!-- APP (nascosta finché non carica) -->
+<div id="app" style="display:none">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <img src="https://faberrunner.github.io/MiniAgricola/imgs/logo.svg" alt="MiniAgricola" style="height:48px;width:auto;display:block">
+    <a href="https://wa.me/393757350178" target="_blank"
+      style="display:flex;align-items:center;gap:6px;background:#25D366;color:#fff;text-decoration:none;border-radius:99px;padding:7px 14px;font-size:12px;font-weight:700">
+      💬 Ordina
+    </a>
+  </div>
+
+  <!-- INFO BAR -->
+  <div class="infobar">🌱 Microgreens freschi per la tua cucina · Consegna ogni mercoledì</div>
+
+  <!-- SEARCH -->
+  <div class="searchbar">
+    <div style="position:relative;max-width:600px;margin:0 auto">
+      <input id="searchinp" type="text" placeholder="🔍 Cerca prodotto..." autocomplete="off"
+        style="width:100%;padding:10px 36px 10px 14px;border:1.5px solid var(--b);border-radius:10px;font-size:14px;outline:none;transition:border .2s"
+        onfocus="this.style.border='1.5px solid var(--g)'"
+        onblur="this.style.border='1.5px solid var(--b)'"
+        oninput="filterCat(this.value)">
+      <button onclick="clearSearch()" id="searchclear"
+        style="display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:16px;color:#aaa;cursor:pointer">✕</button>
+    </div>
+  </div>
+
+  <!-- CATALOGO -->
+  <div class="body" id="cat"></div>
+
+  <!-- WA CTA FONDO -->
+  <a href="https://wa.me/393757350178" target="_blank" class="wa-cta">
+    <span style="font-size:28px">💬</span>
+    <div class="wa-cta-txt">
+      <strong>Vuoi ordinare o saperne di più?</strong>
+      <span>Scrivici su WhatsApp — rispondiamo subito 🌱</span>
+    </div>
+    <span style="color:#fff;font-size:20px">→</span>
+  </a>
+
+</div>
+
+<!-- POPUP DETTAGLIO PRODOTTO -->
+<div id="prod-detail-overlay" onclick="if(event.target===this)closeProdDetail()">
+  <div id="prod-detail-panel" style="position:relative">
+    <div class="pd-hdr">
+      <button class="pd-close" onclick="closeProdDetail()"
+        style="background:rgba(255,255,255,.85);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2)">✕</button>
+    </div>
+    <div id="pd-content"></div>
+  </div>
+</div>
+
+<script>
+const API='https://script.google.com/macros/s/AKfycbz5jt_DB2DBRwrkEsY1efzb8J-t_aDH66HKfbl0Q0KVWqNQgN-4jy9tsFKydvu5-sXejQ/exec';
+
+const CATS=[
+  {name:'I più richiesti',emoji:'⭐',ids:['MG-0001','MG-0003']},
+  {name:'Le Ortive',emoji:'🌿',groups:[
+    {name:'Mix Basilico',ids:['MG-0007','MG-0008','MG-0010','MG-0009']},
+    {name:'Mix Ravanello',ids:['MG-0013','MG-0016','MG-0014','MG-0015']},
+    {name:'Mix Senape',ids:['MG-0005','MG-0002','MG-0003','MG-0004']},
+    {name:'Mix Cavolo',ids:['MG-0018','MG-0019','MG-0020','MG-0021']},
+    {name:'',ids:['MG-0030','MG-0029','MG-0027','MG-0031','MG-0028','MG-0006','MG-0011','MG-0012','MG-0001']},
+  ]},
+  {name:'Legumi',emoji:'🫘',ids:['MG-0017','MG-0032','MG-0033']},
+  {name:'Erbe di Campo',emoji:'🌸',ids:['MG-0022','MG-0025','MG-0023','MG-0024','MG-0026']},
+];
+
+const EMO={
+  'MG-0001':'🌿','MG-0002':'🌱','MG-0003':'🍁','MG-0004':'🍂',
+  'MG-0005':'🌿','MG-0006':'🥬','MG-0007':'🌿','MG-0008':'🍋',
+  'MG-0009':'🌸','MG-0010':'🌺','MG-0011':'🍒','MG-0012':'🌻',
+  'MG-0013':'🌸','MG-0014':'🌹','MG-0015':'🫒','MG-0016':'🍇',
+  'MG-0017':'🫛','MG-0018':'🫐','MG-0019':'🌸','MG-0020':'🍃',
+  'MG-0021':'🌷','MG-0022':'🫐','MG-0023':'🌺','MG-0024':'🍓',
+  'MG-0025':'🌷','MG-0026':'🌼','MG-0027':'🧅','MG-0028':'🧅',
+  'MG-0029':'🌿','MG-0030':'🥕','MG-0031':'🌿','MG-0032':'🌾',
+  'MG-0033':'🫘','MG-0034':'💧',
+};
+
+const BG={
+  'MG-0001':'#e8f5e9','MG-0002':'#f9fbe7','MG-0003':'#fce4ec','MG-0004':'#ffebee',
+  'MG-0005':'#f1f8e9','MG-0006':'#f1f8e9','MG-0007':'#e8f5e9','MG-0008':'#fffde7',
+  'MG-0009':'#fce4ec','MG-0010':'#f3e5f5','MG-0011':'#fbe9e7','MG-0012':'#fffde7',
+  'MG-0013':'#fce4ec','MG-0014':'#ffebee','MG-0015':'#fafafa','MG-0016':'#f3e5f5',
+  'MG-0017':'#f1f8e9','MG-0018':'#f3e5f5','MG-0019':'#fce4ec','MG-0020':'#efebe9',
+  'MG-0021':'#ede7f6','MG-0022':'#e8eaf6','MG-0023':'#fff3e0','MG-0024':'#fbe9e7',
+  'MG-0025':'#f3e5f5','MG-0026':'#fffde7','MG-0027':'#f1f8e9','MG-0028':'#e8f5e9',
+  'MG-0029':'#e8f5e9','MG-0030':'#fff3e0','MG-0031':'#e8f5e9','MG-0032':'#fff8e1',
+  'MG-0033':'#fce4ec','MG-0034':'#e0f7fa',
+};
+
+const IMGS={
+  'MG-0001':'https://faberrunner.github.io/MiniAgricola/imgs/Crescione-sito-1.png',
+  'MG-0002':'https://faberrunner.github.io/MiniAgricola/imgs/Senape-bianca-of.png',
+  'MG-0003':'https://faberrunner.github.io/MiniAgricola/imgs/senape-rossa-sito.png',
+  'MG-0004':'https://faberrunner.github.io/MiniAgricola/imgs/Senape-Rossa-Frastagliata.png',
+  'MG-0005':'https://faberrunner.github.io/MiniAgricola/imgs/Senape-Verde.png',
+  'MG-0006':'https://faberrunner.github.io/MiniAgricola/imgs/Rucola-sito.jpg',
+  'MG-0007':'https://faberrunner.github.io/MiniAgricola/imgs/Basilico-Verde.png',
+  'MG-0008':'https://faberrunner.github.io/MiniAgricola/imgs/basilico-limone-sito-1.png',
+  'MG-0009':'https://faberrunner.github.io/MiniAgricola/imgs/Basilico-Thailandese.png',
+  'MG-0010':'https://faberrunner.github.io/MiniAgricola/imgs/Basil-Dark-Opal.png',
+  'MG-0011':'https://faberrunner.github.io/MiniAgricola/imgs/Bieta-rossa-sito-3.png',
+  'MG-0012':'https://faberrunner.github.io/MiniAgricola/imgs/Germoglio-bieta-gialla-sito.jpg',
+  'MG-0013':'https://faberrunner.github.io/MiniAgricola/imgs/Ravanello-China-Rose.png',
+  'MG-0014':'https://faberrunner.github.io/MiniAgricola/imgs/Ravanello-Vulcano.png',
+  'MG-0015':'https://faberrunner.github.io/MiniAgricola/imgs/Ravanello-Nero.png',
+  'MG-0016':'https://faberrunner.github.io/MiniAgricola/imgs/Ravanello-Venom.jpg',
+  'MG-0017':'https://faberrunner.github.io/MiniAgricola/imgs/pisello-balboa-sito.png',
+  'MG-0018':'https://faberrunner.github.io/MiniAgricola/imgs/Cavolo-Rosso.png',
+  'MG-0019':'https://faberrunner.github.io/MiniAgricola/imgs/cavolo-rosa-sito-1.png',
+  'MG-0020':'https://faberrunner.github.io/MiniAgricola/imgs/cavolo-nero-sito-2.png',
+  'MG-0021':'https://faberrunner.github.io/MiniAgricola/imgs/cavolo-rapa-rosso-sito.png',
+  'MG-0022':'https://faberrunner.github.io/MiniAgricola/imgs/Borragine-sito-1-1.png',
+  'MG-0023':'https://faberrunner.github.io/MiniAgricola/imgs/Alaska-sito.png',
+  'MG-0024':'https://faberrunner.github.io/MiniAgricola/imgs/Acetosa-Rossa.png',
+  'MG-0025':'https://faberrunner.github.io/MiniAgricola/imgs/Malva.png',
+  'MG-0026':'https://faberrunner.github.io/MiniAgricola/imgs/Tarassaco.jpg',
+  'MG-0027':'https://faberrunner.github.io/MiniAgricola/imgs/Cipolla-sito.png',
+  'MG-0028':'https://faberrunner.github.io/MiniAgricola/imgs/Porro-sito.png',
+  'MG-0029':'https://faberrunner.github.io/MiniAgricola/imgs/Prezzemolo.png',
+  'MG-0030':'https://faberrunner.github.io/MiniAgricola/imgs/carota-sito-1.png',
+  'MG-0031':'https://faberrunner.github.io/MiniAgricola/imgs/sedano-sito-1.png',
+  'MG-0032':'https://faberrunner.github.io/MiniAgricola/imgs/Grano-Saraceno.jpg',
+  'MG-0033':'https://faberrunner.github.io/MiniAgricola/imgs/lenticchie-rosse-sito.png',
+};
+
+const CAT_IMGS={
+  'MG-0024':'https://faberrunner.github.io/MiniAgricola/cat/Acetosa.jpeg',
+  'MG-0009':'https://faberrunner.github.io/MiniAgricola/cat/Basilico%20Thailandese.jpeg',
+  'MG-0008':'https://faberrunner.github.io/MiniAgricola/cat/Basilico%20limone.jpeg',
+  'MG-0007':'https://faberrunner.github.io/MiniAgricola/cat/Basilico%20verde.jpeg',
+  'MG-0012':'https://faberrunner.github.io/MiniAgricola/cat/Bieta%20gialla.jpeg',
+  'MG-0022':'https://faberrunner.github.io/MiniAgricola/cat/Borragine.jpeg',
+  'MG-0019':'https://faberrunner.github.io/MiniAgricola/cat/Cavolo%20Rosa.jpeg',
+  'MG-0018':'https://faberrunner.github.io/MiniAgricola/cat/Cavolo%20Rosso.jpeg',
+  'MG-0020':'https://faberrunner.github.io/MiniAgricola/cat/Cavolo%20nero.jpeg',
+  'MG-0027':'https://faberrunner.github.io/MiniAgricola/cat/Cipolla.jpeg',
+  'MG-0032':'https://faberrunner.github.io/MiniAgricola/cat/Grano%20saraceno.jpeg',
+  'MG-0033':'https://faberrunner.github.io/MiniAgricola/cat/Lenticchia.jpeg',
+  'MG-0025':'https://faberrunner.github.io/MiniAgricola/cat/Malva.jpeg',
+  'MG-0023':'https://faberrunner.github.io/MiniAgricola/cat/Nasturzio.jpeg',
+  'MG-0017':'https://faberrunner.github.io/MiniAgricola/cat/Pisello%20verde.jpeg',
+  'MG-0028':'https://faberrunner.github.io/MiniAgricola/cat/Porro.jpeg',
+  'MG-0029':'https://faberrunner.github.io/MiniAgricola/cat/Prezzemolo.jpeg',
+  'MG-0013':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello%20china%20rose.jpeg',
+  'MG-0015':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello%20nero.jpeg',
+  'MG-0016':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello%20venom.jpeg',
+  'MG-0014':'https://faberrunner.github.io/MiniAgricola/cat/Ravanello%20vulcano.jpeg',
+  'MG-0006':'https://faberrunner.github.io/MiniAgricola/cat/Rucola.jpeg',
+  'MG-0002':'https://faberrunner.github.io/MiniAgricola/cat/Senape%20bianca.jpeg',
+  'MG-0004':'https://faberrunner.github.io/MiniAgricola/cat/Senape%20rossa%20frastagliata.jpeg',
+  'MG-0003':'https://faberrunner.github.io/MiniAgricola/cat/Senape%20rossa.jpeg',
+  'MG-0005':'https://faberrunner.github.io/MiniAgricola/cat/Senape%20verde.jpeg',
+  'MG-0010':'https://faberrunner.github.io/MiniAgricola/cat/basilico%20rosso%20dark%20opal.jpeg',
+  'MG-0011':'https://faberrunner.github.io/MiniAgricola/cat/bieta%20rossa.jpeg',
+};
+
+// ── SVG ICONS (identici a ORDINE.html) ──────────────────────
+function _ic(bg,body){return '<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg"><rect width="80" height="80" fill="'+bg+'"/>'+body+'</svg>';}
+function _fOv(bg,f,v){return _ic(bg,'<ellipse cx="40" cy="42" rx="20" ry="25" fill="'+f+'"/><line x1="40" y1="19" x2="40" y2="65" stroke="'+v+'" stroke-width="1.5"/><line x1="40" y1="38" x2="30" y2="48" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="38" x2="50" y2="48" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="32" y2="36" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="48" y2="36" stroke="'+v+'" stroke-width="1"/>');}
+function _fAp(bg,f,v){return _ic(bg,'<path d="M40 13 C52 20 63 35 59 52 C55 67 42 73 40 73 C38 73 25 67 21 52 C17 35 28 20 40 13Z" fill="'+f+'"/><line x1="40" y1="18" x2="40" y2="68" stroke="'+v+'" stroke-width="1.5"/><line x1="40" y1="40" x2="28" y2="52" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="40" x2="52" y2="52" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="30" y2="38" stroke="'+v+'" stroke-width="1"/><line x1="40" y1="28" x2="50" y2="38" stroke="'+v+'" stroke-width="1"/>');}
+function _rad(bg,r,f){return _ic(bg,'<ellipse cx="40" cy="54" rx="14" ry="18" fill="'+r+'"/><path d="M32 38 C28 28 32 18 40 15 C48 18 52 28 48 38 C46 44 34 44 32 38Z" fill="'+f+'"/><line x1="37" y1="30" x2="34" y2="22" stroke="'+f+'" stroke-width="1.2"/><line x1="43" y1="30" x2="46" y2="22" stroke="'+f+'" stroke-width="1.2"/><line x1="40" y1="70" x2="40" y2="76" stroke="'+r+'" stroke-width="1.5"/>');}
+function _cl(bg,c1,c2,c3){return _ic(bg,'<circle cx="28" cy="40" r="11" fill="'+c1+'"/><circle cx="52" cy="40" r="11" fill="'+c2+'"/><circle cx="40" cy="27" r="10" fill="'+c3+'"/><circle cx="40" cy="52" r="7" fill="'+c1+'"/><rect x="38" y="55" width="4" height="12" rx="2" fill="'+c1+'"/>');}
+function _fLu(bg,f,s){return _ic(bg,'<path d="M40 10 C46 14 50 30 48 48 C46 64 43 73 40 75 C37 73 34 64 32 48 C30 30 34 14 40 10Z" fill="'+f+'"/><rect x="38.5" y="10" width="3" height="65" rx="1.5" fill="'+s+'"/><line x1="40" y1="35" x2="32" y2="45" stroke="'+s+'" stroke-width="1"/><line x1="40" y1="35" x2="48" y2="45" stroke="'+s+'" stroke-width="1"/><line x1="40" y1="50" x2="33" y2="58" stroke="'+s+'" stroke-width="1"/><line x1="40" y1="50" x2="47" y2="58" stroke="'+s+'" stroke-width="1"/>');}
+function _bac(bg,f,s){return _ic(bg,'<path d="M16 42 C16 26 26 12 40 12 C54 12 64 26 64 42 C64 58 54 68 40 68 C26 68 16 58 16 42Z" fill="'+f+'"/><circle cx="29" cy="42" r="7" fill="'+s+'"/><circle cx="40" cy="36" r="7" fill="'+s+'"/><circle cx="51" cy="42" r="7" fill="'+s+'"/>');}
+function _cav(bg,c1,c2){return _ic(bg,'<ellipse cx="40" cy="44" rx="29" ry="24" fill="'+c2+'"/><ellipse cx="40" cy="44" rx="22" ry="18" fill="'+c1+'"/><ellipse cx="40" cy="44" rx="15" ry="12" fill="'+c2+'"/><ellipse cx="40" cy="44" rx="8" ry="7" fill="'+c1+'"/>');}
+function _fio(bg,p,c){return _ic(bg,'<ellipse cx="40" cy="20" rx="9" ry="13" fill="'+p+'"/><ellipse cx="60" cy="29" rx="13" ry="9" fill="'+p+'" transform="rotate(-30 60 29)"/><ellipse cx="56" cy="56" rx="9" ry="13" fill="'+p+'" transform="rotate(-60 56 56)"/><ellipse cx="24" cy="56" rx="9" ry="13" fill="'+p+'" transform="rotate(60 24 56)"/><ellipse cx="20" cy="29" rx="13" ry="9" fill="'+p+'" transform="rotate(30 20 29)"/><circle cx="40" cy="40" r="11" fill="'+c+'"/>');}
+function _maz(bg,c1,c2){return _ic(bg,'<path d="M28 65 C28 40 26 22 28 14 C29 8 31 8 32 14 L32 65" stroke="'+c1+'" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M40 65 C40 38 38 18 40 12 C41 6 43 6 44 12 L44 65" stroke="'+c2+'" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M52 65 C52 40 50 22 52 14 C53 8 55 8 56 14 L56 65" stroke="'+c1+'" stroke-width="4" stroke-linecap="round" fill="none"/><ellipse cx="40" cy="66" rx="17" ry="5" fill="'+c2+'" opacity="0.3"/>');}
+function _car(bg,f,s){return _ic(bg,'<path d="M35 18 C33 32 32 52 40 72 C48 52 47 32 45 18 C43 13 37 13 35 18Z" fill="'+f+'"/><path d="M36 16 C30 8 22 14 27 22 L36 16Z" fill="'+s+'"/><path d="M40 13 C40 5 45 6 44 13Z" fill="'+s+'"/><path d="M44 16 C50 8 58 14 53 22 L44 16Z" fill="'+s+'"/>');}
+function _gr(bg,c1,c2){return _ic(bg,'<ellipse cx="28" cy="47" rx="9" ry="15" fill="'+c1+'" transform="rotate(-12 28 47)"/><ellipse cx="40" cy="40" rx="9" ry="15" fill="'+c2+'"/><ellipse cx="52" cy="47" rx="9" ry="15" fill="'+c1+'" transform="rotate(12 52 47)"/><line x1="28" y1="33" x2="28" y2="25" stroke="'+c1+'" stroke-width="1.5"/><line x1="40" y1="26" x2="40" y2="18" stroke="'+c2+'" stroke-width="1.5"/><line x1="52" y1="33" x2="52" y2="25" stroke="'+c1+'" stroke-width="1.5"/>');}
+
+const ICONS={
+  'MG-0001':_cl('#e8f5e9','#66bb6a','#4caf50','#81c784'),
+  'MG-0002':_fAp('#f9fbe7','#cddc39','#827717'),
+  'MG-0003':_fAp('#fce4ec','#e57373','#b71c1c'),
+  'MG-0004':_fAp('#ffebee','#ef5350','#c62828'),
+  'MG-0005':_fAp('#f1f8e9','#9ccc65','#33691e'),
+  'MG-0006':_fAp('#f9fbe7','#dce775','#9e9d24'),
+  'MG-0007':_fOv('#e8f5e9','#388e3c','#1b5e20'),
+  'MG-0008':_fOv('#f9fbe7','#8bc34a','#33691e'),
+  'MG-0009':_fOv('#ede7f6','#7b1fa2','#4a148c'),
+  'MG-0010':_fOv('#fce4ec','#880e4f','#4a0072'),
+  'MG-0011':_fLu('#fbe9e7','#ef9a9a','#c62828'),
+  'MG-0012':_fLu('#fff9c4','#fff176','#f9a825'),
+  'MG-0013':_rad('#fce4ec','#e91e63','#81c784'),
+  'MG-0014':_rad('#ffebee','#c62828','#4caf50'),
+  'MG-0015':_rad('#f3e5f5','#212121','#66bb6a'),
+  'MG-0016':_rad('#fce4ec','#880e4f','#4caf50'),
+  'MG-0017':_bac('#f1f8e9','#558b2f','#c5e1a5'),
+  'MG-0018':_cav('#f3e5f5','#ce93d8','#7b1fa2'),
+  'MG-0019':_cav('#fce4ec','#f48fb1','#c2185b'),
+  'MG-0020':_cav('#e8f5e9','#37474f','#1b5e20'),
+  'MG-0021':_cav('#ede7f6','#9c27b0','#4a148c'),
+  'MG-0022':_fio('#e8eaf6','#5c6bc0','#fdd835'),
+  'MG-0023':_fio('#fff3e0','#ff7043','#fdd835'),
+  'MG-0024':_fOv('#fbe9e7','#e53935','#b71c1c'),
+  'MG-0025':_fio('#f3e5f5','#ab47bc','#fdd835'),
+  'MG-0026':_fio('#fff8e1','#fdd835','#f57f17'),
+  'MG-0027':_maz('#f1f8e9','#a5d6a7','#2e7d32'),
+  'MG-0028':_maz('#e8f5e9','#c5e1a5','#33691e'),
+  'MG-0029':_maz('#e8f5e9','#81c784','#1b5e20'),
+  'MG-0030':_car('#fff3e0','#ef6c00','#33691e'),
+  'MG-0031':_maz('#e8f5e9','#a5d6a7','#388e3c'),
+  'MG-0032':_gr('#fff8e1','#8d6e63','#5d4037'),
+  'MG-0033':_gr('#f3e5f5','#9e9e9e','#616161'),
+  'MG-0034':_cl('#e0f7fa','#4dd0e1','#00838f'),
+};
+
+let products=[];
+let _searchQuery='';
+
+function pp(v){return typeof v==='number'?v:parseFloat(String(v||0).replace(',','.'))||0;}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+async function init(){
+  try{
+    const r=await fetch(API+'?action=getProducts&t='+Date.now());
+    const data=await r.json();
+    if(data&&data.length>1){
+      const H=data[0].map(h=>String(h).trim());
+      products=data.slice(1).filter(r=>r[0]).map(row=>{
+        const o={};H.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});
+        return {
+          id:String(o.id),name:String(o.name),desc:String(o.desc||''),
+          price:pp(o.price),avail:String(o.avail).toLowerCase()==='true',
+          unit:String(o.unit||'vassoio'),qty:parseInt(o.qty)||0,
+          preorder:String(o.preorder).toLowerCase()==='true',
+          waitTime:String(o.waitTime||''),
+          caratteristiche:String(o.caratteristiche||''),
+          uso:String(o.uso||'')
+        };
+      });
+    }
+  }catch(e){console.error('Errore caricamento prodotti:',e);}
+  renderCat();
+  document.getElementById('loading').style.display='none';
+  document.getElementById('app').style.display='block';
+}
+
+function filterCat(q){
+  _searchQuery=(q||'').trim().toLowerCase();
+  document.getElementById('searchclear').style.display=_searchQuery?'block':'none';
+  renderCat();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function clearSearch(){
+  _searchQuery='';
+  document.getElementById('searchinp').value='';
+  document.getElementById('searchclear').style.display='none';
+  renderCat();
+}
+
+function pimgHtml(p){
+  const em=EMO[p.id]||'🌿';
+  const bg=BG[p.id]||'#f1f8e9';
+  const src=IMGS[p.id];
+  const pid='data-prodid="'+p.id+'"';
+  if(src) return '<div class="pimg pimg-real pimg-clickable" '+pid+'><img src="'+src+'" alt="'+esc(p.name)+'" style="width:100%;height:100%;object-fit:cover;display:block;pointer-events:none" loading="lazy"></div>';
+  return '<div class="pimg pimg-clickable" style="background:'+bg+';font-size:52px;pointer-events:none" '+pid+'>'+em+'</div>';
+}
+
+function renderProds(prods){
+  let h='';
+  prods.forEach(p=>{
+    if(p.avail&&(p.qty||0)>0){
+      h+=`<div class="pcard">
+        ${pimgHtml(p)}
+        <div class="pinfo">
+          <div class="pname">${esc(p.name)}</div>
+          <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
+          ${p.desc?`<div class="pdesc">${esc(p.desc)}</div>`:''}
+        </div>
+      </div>`;
+    }else if(p.avail&&p.preorder){
+      h+=`<div class="pcard">
+        ${pimgHtml(p)}
+        <div class="pinfo">
+          <div class="pname">${esc(p.name)}</div>
+          <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
+          ${p.desc?`<div class="pdesc">${esc(p.desc)}</div>`:''}
+        </div>
+        <div class="preorder-lbl">📋 Pre-ordine${p.waitTime?' · '+esc(p.waitTime):''}</div>
+      </div>`;
+    }else{
+      h+=`<div class="pcard na">
+        ${pimgHtml(p)}
+        <div class="pinfo">
+          <div class="pname">${esc(p.name)}</div>
+          <div><span class="pprice">€${p.price}</span> <span class="punit">/ ${esc(p.unit)}</span></div>
+          ${p.desc?`<div class="pdesc">${esc(p.desc)}</div>`:''}
+        </div>
+        <div class="nalbl">Non disponibile</div>
+      </div>`;
+    }
+  });
+  return h;
+}
+
+function renderCat(){
+  const pm={};products.forEach(p=>pm[p.id]=p);
+  const sq=_searchQuery;
+  let h='';
+
+  CATS.forEach(cat=>{
+    if(cat.groups){
+      const visGroups=cat.groups.map(g=>({
+        ...g,
+        prods:g.ids.map(id=>pm[id]).filter(p=>{
+          if(!p)return false;
+          if(!sq)return true;
+          return (p.name||'').toLowerCase().includes(sq)||(p.desc||'').toLowerCase().includes(sq);
+        })
+      })).filter(g=>g.prods.length>0);
+      if(!visGroups.length)return;
+      h+=`<div class="csec"><span class="cemi">${cat.emoji}</span><span class="cname">${esc(cat.name)}</span></div>`;
+      visGroups.forEach(g=>{
+        if(g.name) h+=`<div class="cgrp">${esc(g.name)}</div>`;
+        h+='<div class="pgrid">'+renderProds(g.prods)+'</div>';
+      });
+      return;
+    }
+    const cp=cat.ids.map(id=>pm[id]).filter(p=>{
+      if(!p)return false;
+      if(!sq)return true;
+      return (p.name||'').toLowerCase().includes(sq)||(p.desc||'').toLowerCase().includes(sq);
+    });
+    if(!cp.length)return;
+    h+=`<div class="catsec"><div class="cattl">${cat.emoji} ${cat.name}</div><div class="pgrid">`;
+    h+=renderProds(cp);
+    h+=`</div></div>`;
+  });
+
+  if(sq&&!h.includes('pcard')){
+    h='<div style="text-align:center;padding:60px 20px;color:var(--m)">'+
+      '<div style="font-size:40px;margin-bottom:12px">🔍</div>'+
+      '<div style="font-size:16px;font-weight:600">Nessun prodotto trovato</div>'+
+      '<div style="font-size:13px;margin-top:6px">per "<strong>'+sq+'</strong>"</div>'+
+      '</div>';
+  }
+
+  document.getElementById('cat').innerHTML=h;
+
+  // Event delegation per popup
+  const catEl=document.getElementById('cat');
+  if(catEl&&!catEl._pdListener){
+    catEl.addEventListener('click',function(e){
+      const el=e.target.closest('.pimg-clickable');
+      if(el)openProdDetail(el.dataset.prodid);
+    });
+    catEl._pdListener=true;
+  }
+}
+
+function openProdDetail(prodId){
+  const p=products.find(x=>x.id===prodId);
+  if(!p)return;
+  const catSrc=CAT_IMGS[p.id];
+  const imgSrc=catSrc||IMGS[p.id];
+  const em=EMO[p.id]||'🌿';
+  const imgHtml=imgSrc
+    ?'<img src="'+imgSrc+'" alt="'+esc(p.name)+'" class="pd-img" loading="eager">'
+    :'<div class="pd-img-emoji">'+em+'</div>';
+  const desc=(p.desc||'').trim();
+  const carat=(p.caratteristiche||'').trim();
+  const uso=(p.uso||'').trim();
+  const caratItems=carat?carat.replace(/\n/g,'·').split('·').map(s=>s.trim()).filter(Boolean):[];
+  const usoItems=uso?uso.replace(/\n/g,'·').split('·').map(s=>s.trim()).filter(Boolean):[];
+
+  let html=imgHtml+'<div class="pd-body">';
+  html+='<div class="pd-name">'+esc(p.name)+'</div>';
+  html+='<div class="pd-price">€'+p.price+' / '+esc(p.unit)+'</div>';
+  if(desc)html+='<div class="pd-desc">'+esc(desc)+'</div>';
+  if(caratItems.length){
+    html+='<div class="pd-section">Caratteristiche</div>';
+    caratItems.forEach(s=>{html+='<div class="pd-item">'+esc(s)+'</div>';});
+  }
+  if(usoItems.length){
+    html+='<div class="pd-section">Consigli d\'uso</div>';
+    usoItems.forEach(s=>{html+='<div class="pd-item">'+esc(s)+'</div>';});
+  }
+  if(!desc&&!carat&&!uso){
+    html+='<div class="pd-empty">🌱 Scheda in preparazione</div>';
+  }
+  // WA CTA nel popup
+  html+=`<a href="https://wa.me/393757350178?text=${encodeURIComponent('Ciao! Sono interessato a '+p.name+' — €'+p.price+'/'+p.unit)}" target="_blank" class="pd-wa">
+    <span style="font-size:22px">💬</span>
+    <div class="pd-wa-txt">
+      <strong>Vuoi ordinare ${esc(p.name)}?</strong>
+      <span style="font-size:12px;opacity:.9">Scrivici su WhatsApp →</span>
+    </div>
+  </a>`;
+  html+='</div>';
+
+  document.getElementById('pd-content').innerHTML=html;
+  document.getElementById('prod-detail-overlay').classList.add('open');
+}
+
+function closeProdDetail(){
+  document.getElementById('prod-detail-overlay').classList.remove('open');
+}
+
+init();
+</script>
+</body>
+</html>
