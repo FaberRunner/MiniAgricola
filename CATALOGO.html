@@ -154,7 +154,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 </div>
 
 <script>
-const API='https://script.google.com/macros/s/AKfycbz5jt_DB2DBRwrkEsY1efzb8J-t_aDH66HKfbl0Q0KVWqNQgN-4jy9tsFKydvu5-sXejQ/exec';
+const API='https://script.google.com/macros/s/AKfycbz5jt_DB2DBRwrkEsY1efzx8J-t_aDH66HKfbl0Q0KVWqNQgN-4jy9tsFKydvu5-sXejQ/exec';
 
 const CATS=[
   {name:'I più richiesti',emoji:'⭐',ids:['MG-0001','MG-0003']},
@@ -319,11 +319,11 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 async function init(){
   try{
-    const r=await fetch(API+'?action=getProducts&t='+Date.now());
-    const data=await r.json();
-    if(data&&data.length>1){
-      const H=data[0].map(h=>String(h).trim());
-      products=data.slice(1).filter(r=>r[0]).map(row=>{
+    const r=await fetch(API+'?action=getAllClient&t='+Date.now());
+    const all=await r.json();
+    if(all&&!all.error&&all.products&&all.products.length>1){
+      const H=all.products[0].map(h=>String(h).trim());
+      products=all.products.slice(1).filter(row=>row[0]).map(row=>{
         const o={};H.forEach((h,i)=>{o[h]=row[i]!==undefined?row[i]:'';});
         return {
           id:String(o.id),name:String(o.name),desc:String(o.desc||''),
