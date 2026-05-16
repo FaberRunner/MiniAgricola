@@ -76,12 +76,20 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 .cname{font-size:18px;font-weight:900;letter-spacing:1px;color:#1a2e1a;text-transform:uppercase}
 .cgrp{font-size:13px;font-weight:700;color:#5c8a3c;letter-spacing:0.5px;padding:10px 16px 4px;border-left:3px solid #5c8a3c;margin:8px 0 2px 8px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.cd-wrap{margin:10px 0 4px;padding:10px 12px;background:#f5f0ff;border-radius:10px}
+.cd-item{margin-bottom:8px}
+.cd-item:last-child{margin-bottom:0}
+.cd-name{font-size:12px;font-weight:700;color:#6A1B9A;margin-bottom:3px}
+.cd-bar-wrap{background:#e8e8e8;border-radius:99px;height:6px;overflow:hidden;margin-bottom:2px}
+.cd-bar{height:6px;border-radius:99px;background:linear-gradient(90deg,#4CAF50,#6A1B9A);transition:width .3s}
+.cd-label{font-size:11px;color:#666}
+.cd-ready{font-size:12px;font-weight:700;color:#4CAF50}
 /* Popup dettaglio prodotto */
 #prod-detail-overlay{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.55);display:none;align-items:flex-end;justify-content:center}
 #prod-detail-overlay.open{display:flex}
 #prod-detail-panel{background:var(--bg,#fff);width:100%;max-width:540px;max-height:88vh;border-radius:22px 22px 0 0;overflow-y:auto;padding-bottom:32px;animation:slideUp .25s ease}
 @keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
-.pd-img{width:100%;height:260px;object-fit:cover;object-position:top center;display:block}
+.pd-img{width:100%;height:220px;object-fit:cover;display:block;background:#f5f0ff}
 .pd-img-emoji{width:100%;height:220px;display:flex;align-items:center;justify-content:center;font-size:80px;background:#f5f0ff}
 .pd-body{padding:20px}
 .pd-name{font-size:24px;font-weight:900;color:#6A1B9A;margin-bottom:4px}
@@ -171,7 +179,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.12.01</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.13.00</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -1194,6 +1202,39 @@ function closeR(){
   const waF=document.getElementById('wa-fixed');
   if(waF&&client)waF.style.display='block';document.getElementById('rscr').classList.remove('open');}
 
+async function parseMaxDays(wt){
+  const nums=(wt||'').match(/\d+/g);
+  return nums?Math.max(...nums.map(Number)):0;
+}
+
+function buildCountdown(items,confirmedAt,products){
+  const pItems=items.filter(function(i){return i.preorder===true||i.preorder==='true';});
+  if(!pItems.length||!confirmedAt)return '';
+  const now=Date.now();
+  const confirmed=new Date(confirmedAt).getTime();
+  if(isNaN(confirmed))return '';
+  const daysPassed=Math.floor((now-confirmed)/86400000);
+  let h='<div class="cd-wrap">';
+  pItems.forEach(function(it){
+    const prod=products.find(function(p){return p.name===it.name;});
+    const maxDays=prod?parseMaxDays(prod.waitTime):0;
+    if(!maxDays)return;
+    const remaining=Math.max(0,maxDays-daysPassed);
+    const pct=Math.min(100,Math.round((daysPassed/maxDays)*100));
+    h+='<div class="cd-item">';
+    h+='<div class="cd-name">🌱 '+esc(it.name)+'</div>';
+    if(remaining>0){
+      h+='<div class="cd-bar-wrap"><div class="cd-bar" style="width:'+pct+'%"></div></div>';
+      h+='<div class="cd-label">'+remaining+' giorni rimanenti</div>';
+    }else{
+      h+='<div class="cd-ready">✅ Pronto per la consegna!</div>';
+    }
+    h+='</div>';
+  });
+  h+='</div>';
+  return h;
+}
+
 async function openHist(){
   const scr=document.getElementById('histscr');
   const body=document.getElementById('histbody');
@@ -1265,6 +1306,7 @@ async function openHist(){
             }).join('')+
           '</div>'+
           (note?'<div style="font-size:12px;color:var(--m);font-style:italic">📝 '+esc(note)+'</div>':'')+
+          ((status==='confirmed'||status==='preorder')&&iConf>=0?buildCountdown(items,String(o[iConf]||''),products):'')+
           '<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--b);padding-top:8px">'+
               '<button onclick="ripetiOrdineDaId('+_idx+')" style="background:var(--g);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer">↺ Ripeti ordine</button>'+
               '<div style="text-align:right"><div style="font-size:12px;color:var(--m)">Totale</div><strong style="font-size:15px;color:var(--g)">€'+total.toFixed(2)+'</strong></div>'+

@@ -81,7 +81,7 @@ body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
     <button id="themeBtn" onclick="toggleTheme()" title="Cambia tema" style="background:transparent;border:1px solid var(--ts);color:var(--ts);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer">🌙</button>
     <button onclick="doLogout()" title="Esci" style="background:transparent;border:1px solid #888;color:var(--ts);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:6px">⎋ Esci</button>
     <span class="badge">GESTIONALE</span>
-    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.12.01</span>
+    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.13.00</span>
   </div>
 </div>
 <div class="nav">
@@ -110,7 +110,7 @@ const API='https://script.google.com/macros/s/AKfycbz5jt_DB2DBRwrkEsY1efzx8J-t_a
 // Schema Sheet (deve corrispondere esattamente alle intestazioni su Google Sheet)
 const PROD_H=['id','name','desc','price','avail','unit','qty','preorder','waitTime','caratteristiche','uso'];
 const CLIE_H=['id','restaurant','contact','phone','email','address','token','createdAt'];
-const ORDI_H=['id','clientId','restaurant','itemsJson','total','note','status','createdAt'];
+const ORDI_H=['id','clientId','restaurant','itemsJson','total','note','status','createdAt','confirmedAt'];
 
 let products=[],clients=[],orders=[],ricette=[],materiePrime=[],editing=null,pfAvail=true;
 
