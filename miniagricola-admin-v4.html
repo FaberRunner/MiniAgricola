@@ -467,7 +467,8 @@ function cpL(tok,btn){try{navigator.clipboard.writeText(`https://faberrunner.git
 
 // ORDINI
 async function updS(id,status){
-  orders=orders.map(o=>o.id===id?{...o,status}:o);
+  const _now=new Date().toISOString();
+  orders=orders.map(o=>o.id===id?{...o,status,confirmedAt:status==='confirmed'&&!o.confirmedAt?_now:(o.confirmedAt||'')}:o);
   renderAll();await saveOrd();
   // Quando si conferma, invia email completa al cliente (con omaggi inclusi)
   if(status==='confirmed'){
