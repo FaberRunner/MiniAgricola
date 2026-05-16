@@ -179,7 +179,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.13.04</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.13.05</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -1216,7 +1216,7 @@ function closeR(){
   const waF=document.getElementById('wa-fixed');
   if(waF&&client)waF.style.display='block';document.getElementById('rscr').classList.remove('open');}
 
-async function parseMaxDays(wt){
+function parseMaxDays(wt){
   const nums=(wt||'').match(/\d+/g);
   return nums?Math.max(...nums.map(Number)):0;
 }
@@ -1228,12 +1228,10 @@ function buildCountdown(items,confirmedAt,products){
   const confirmed=new Date(confirmedAt).getTime();
   if(isNaN(confirmed))return '';
   const daysPassed=Math.floor((now-confirmed)/86400000);
-  console.log('[countdown] confirmedAt=',confirmedAt,'daysPassed=',daysPassed);
   let h='<div class="cd-wrap">';
   pItems.forEach(function(it){
     const prod=products.find(function(p){return p.name===it.name;});
     const maxDays=prod?parseMaxDays(prod.waitTime):0;
-    console.log('[countdown] item=',it.name,'prod found=',!!prod,'waitTime=',prod?.waitTime,'maxDays=',maxDays,'remaining=',Math.max(0,maxDays-daysPassed));
     if(!maxDays)return;
     const remaining=Math.max(0,maxDays-daysPassed);
     const pct=Math.min(100,Math.round((daysPassed/maxDays)*100));
