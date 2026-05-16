@@ -1249,7 +1249,7 @@ async function openHist(){
     const H=rows[0].map(h=>String(h).trim());
     const iId=H.indexOf('id'),iCli=H.indexOf('clientId'),iRest=H.indexOf('restaurant'),
           iItems=H.indexOf('itemsJson'),iTot=H.indexOf('total'),iNote=H.indexOf('note'),
-          iSt=H.indexOf('status'),iCr=H.indexOf('createdAt');
+          iSt=H.indexOf('status'),iCr=H.indexOf('createdAt'),iConf=H.indexOf('confirmedAt');
     // Filtra ordini per cliente — match per clientId se presente, altrimenti per restaurant
     const myId=(client?.id||'').trim();
     const myRest=(client?.restaurant||'').trim();
