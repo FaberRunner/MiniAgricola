@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MiniAgricola — Simulatore Ciclo Continuo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,9..144&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2EEE1;
+  --paper-2:#E7E0CC;
+  --surface:#FCFAF2;
+  --ink:#22201A;
+  --ink-soft:#6E6755;
+  --ink-faint:#9A9482;
+  --green-deep:#1E3A29;
+  --green:#4C7A3F;
+  --green-bright:#85B23A;
+  --soil:#3B362E;
+  --water:#5891AC;
+  --amber:#C8993B;
+  --clay:#BC5839;
+  --line:rgba(34,32,26,.13);
+  --line-strong:rgba(34,32,26,.24);
+  --shadow:0 1px 2px rgba(34,32,26,.06),0 8px 24px -12px rgba(34,32,26,.18);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Hanken Grotesk',sans-serif;
+  background:var(--paper);
+  background-image:radial-gradient(circle at 18% 0%,rgba(133,178,58,.10),transparent 42%),
+                   radial-gradient(circle at 96% 8%,rgba(88,145,172,.09),transparent 38%);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  line-height:1.45;
+}
+.wrap{max-width:1320px;margin:0 auto;padding:0 22px 64px}
+
+/* ---------- header ---------- */
+header{padding:30px 0 16px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px}
+.mark{
+  width:46px;height:46px;border-radius:13px;flex:none;
+  background:var(--green-deep);color:var(--paper);
+  display:grid;place-items:center;
+  font-family:'Fraunces',serif;font-weight:600;font-size:20px;
+  box-shadow:var(--shadow);
+}
+.brand h1{font-family:'Fraunces',serif;font-weight:500;font-size:27px;line-height:1.05;letter-spacing:-.01em}
+.brand h1 em{font-style:italic;color:var(--green)}
+.brand p{font-size:12.5px;color:var(--ink-soft);letter-spacing:.13em;text-transform:uppercase;margin-top:3px}
+.ver{
+  font-size:11px;color:var(--ink-soft);border:1px solid var(--line-strong);
+  padding:5px 10px;border-radius:999px;letter-spacing:.04em;white-space:nowrap;
+}
+
+/* ---------- control bar ---------- */
+.controls{
+  background:var(--surface);border:1px solid var(--line);border-radius:18px;
+  padding:14px 16px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:18px 22px;flex-wrap:wrap;
+}
+.day-block{display:flex;align-items:center;gap:13px}
+.day-num{font-family:'Fraunces',serif;font-size:34px;font-weight:500;line-height:.95;letter-spacing:-.02em}
+.day-num span{font-size:13px;color:var(--ink-soft);font-family:'Hanken Grotesk',sans-serif;letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:1px}
+.day-date{font-size:13px;color:var(--ink-soft);text-transform:capitalize}
+.stepper{display:flex;gap:6px}
+.ctl-sep{width:1px;align-self:stretch;background:var(--line);margin:2px 0}
+.field{display:flex;flex-direction:column;gap:3px}
+.field label{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+.field input[type=date]{
+  font-family:inherit;font-size:13px;color:var(--ink);
+  border:1px solid var(--line-strong);background:var(--paper);
+  border-radius:9px;padding:6px 9px;
+}
+.spacer{flex:1 1 40px}
+
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;justify-content:center;
+  font-size:13px;font-weight:600;border-radius:10px;padding:9px 14px;
+  border:1px solid var(--line-strong);background:var(--paper);color:var(--ink);
+  transition:transform .08s ease,background .15s ease,border-color .15s ease;
+}
+.btn:hover{background:#fff;border-color:var(--ink-soft)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--green-deep);color:var(--paper);border-color:var(--green-deep)}
+.btn.primary:hover{background:#26492f}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--ink-soft);padding:9px 8px}
+.btn.ghost:hover{color:var(--ink);background:var(--paper-2)}
+.btn.sm{padding:7px 10px;font-size:12px}
+.btn.step{width:36px;height:36px;padding:0;font-size:16px;font-weight:500}
+
+/* ---------- layout ---------- */
+.main{display:grid;grid-template-columns:1fr 322px;gap:22px;margin-top:22px}
+@media(max-width:940px){.main{grid-template-columns:1fr}}
+
+/* ---------- rack ---------- */
+.rack{display:flex;flex-direction:column;gap:18px}
+.shelf{
+  background:var(--paper-2);
+  border:1px solid var(--line);border-radius:16px;
+  padding:13px 14px 16px;position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5);
+}
+.shelf::after{
+  content:"";position:absolute;left:14px;right:14px;bottom:7px;height:4px;
+  background:linear-gradient(var(--soil),#2c2822);border-radius:3px;opacity:.55;
+}
+.shelf-head{display:flex;align-items:baseline;gap:10px;margin-bottom:11px;padding-left:2px}
+.shelf-head h3{font-family:'Fraunces',serif;font-weight:500;font-size:16px}
+.shelf-head .meta{font-size:11.5px;color:var(--ink-soft)}
+.slots{display:grid;gap:11px;grid-template-columns:repeat(var(--cols),1fr)}
+@media(max-width:680px){.slots{grid-template-columns:repeat(2,1fr)!important}}
+
+/* slot / tray */
+.slot{
+  border-radius:13px;min-height:118px;cursor:pointer;position:relative;
+  transition:transform .1s ease,box-shadow .15s ease;
+}
+.slot:active{transform:scale(.985)}
+.slot.empty{
+  border:1.5px dashed var(--line-strong);background:rgba(252,250,242,.5);
+  display:grid;place-items:center;
+}
+.slot.empty:hover{border-color:var(--green);background:#fff}
+.slot.empty .plus{
+  text-align:center;color:var(--ink-faint);font-size:12px;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+}
+.slot.empty .plus b{font-family:'Fraunces',serif;font-size:21px;font-weight:400;color:var(--ink-soft)}
+
+.tray{
+  background:var(--surface);border:1px solid var(--line);
+  overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow);
+}
+.tray:hover{box-shadow:0 2px 4px rgba(34,32,26,.08),0 14px 30px -14px rgba(34,32,26,.3)}
+.tray .band{height:5px;width:100%}
+.tray .body{padding:9px 10px 8px;display:flex;flex-direction:column;gap:6px;flex:1}
+.tray .top{display:flex;align-items:flex-start;gap:6px;justify-content:space-between}
+.tray .nm{font-size:12.5px;font-weight:600;line-height:1.18}
+.gdot{width:8px;height:8px;border-radius:50%;flex:none;margin-top:3px}
+.tray .phase{
+  font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.tray .phase .dot{width:6px;height:6px;border-radius:50%}
+.sprout{height:34px;display:flex;align-items:flex-end;justify-content:center;margin-top:1px}
+.tray .foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto}
+.age{font-family:'Fraunces',serif;font-size:13px;color:var(--ink-soft)}
+.age b{color:var(--ink);font-weight:600}
+.cd{
+  font-size:10px;font-weight:700;letter-spacing:.04em;
+  padding:3px 7px;border-radius:999px;white-space:nowrap;
+}
+.cd.go{background:var(--green-bright);color:#1c2e0c}
+.cd.wait{background:var(--paper-2);color:var(--ink-soft)}
+.cd.over{background:var(--clay);color:#fff}
+.bar{height:4px;border-radius:3px;background:var(--paper-2);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;transition:width .3s ease}
+.tray.ready{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(133,178,58,.0),var(--shadow)}50%{box-shadow:0 0 0 3px rgba(133,178,58,.28),var(--shadow)}}
+
+/* empty rack */
+.rack-empty{
+  text-align:center;padding:46px 24px;color:var(--ink-soft);
+  background:var(--surface);border:1px dashed var(--line-strong);border-radius:16px;
+}
+.rack-empty h3{font-family:'Fraunces',serif;font-size:19px;color:var(--ink);font-weight:500;margin-bottom:6px}
+.rack-empty p{font-size:13px;max-width:380px;margin:0 auto 16px}
+
+/* ---------- sidebar ---------- */
+.aside{display:flex;flex-direction:column;gap:18px;align-self:start;position:sticky;top:14px}
+@media(max-width:940px){.aside{position:static}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+.card h4{
+  font-size:11px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-faint);
+  margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;
+}
+.today-date{font-family:'Fraunces',serif;font-size:18px;font-weight:500;text-transform:capitalize;margin-bottom:12px}
+.stat-row{display:flex;gap:9px}
+.stat{flex:1;background:var(--paper);border:1px solid var(--line);border-radius:11px;padding:9px 10px;text-align:center}
+.stat .n{font-family:'Fraunces',serif;font-size:23px;font-weight:600;line-height:1}
+.stat .l{font-size:10px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.stat.go .n{color:var(--green)}
+.stat.over .n{color:var(--clay)}
+.harvest-list{margin-top:11px;display:flex;flex-direction:column;gap:5px;max-height:170px;overflow:auto}
+.hl-item{
+  display:flex;align-items:center;gap:8px;font-size:12px;
+  background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:6px 9px;
+}
+.hl-item .gdot{margin:0}
+.hl-item .pos{margin-left:auto;color:var(--ink-faint);font-size:11px;white-space:nowrap}
+.muted{font-size:12px;color:var(--ink-faint);font-style:italic}
+
+/* timeline */
+.timeline{display:flex;gap:3px;align-items:flex-end;height:78px;margin-top:4px}
+.tl-day{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.tl-bar{width:100%;border-radius:3px 3px 0 0;background:var(--green);min-height:3px;transition:height .25s ease}
+.tl-bar.gap{background:repeating-linear-gradient(45deg,rgba(188,88,57,.32),rgba(188,88,57,.32) 3px,transparent 3px,transparent 6px);min-height:5px;border:1px solid rgba(188,88,57,.4)}
+.tl-bar.proj{opacity:.5}
+.tl-bar.today-bar{outline:2px solid var(--ink);outline-offset:1px}
+.tl-lbl{font-size:8.5px;color:var(--ink-faint);white-space:nowrap}
+.tl-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:var(--ink-soft);margin-top:9px}
+.tl-legend span{display:flex;align-items:center;gap:5px}
+.swatch{width:11px;height:9px;border-radius:2px}
+
+/* legend phases */
+.legend{display:flex;flex-direction:column;gap:7px}
+.legend .row{display:flex;align-items:center;gap:9px;font-size:12px}
+.legend .row .ph{width:13px;height:13px;border-radius:4px;flex:none}
+.legend .row span{color:var(--ink-soft)}
+.legend .row b{margin-left:auto;font-weight:500;color:var(--ink);font-size:11px}
+
+/* ---------- modal ---------- */
+.overlay{
+  position:fixed;inset:0;background:rgba(28,26,20,.46);backdrop-filter:blur(2px);
+  display:none;align-items:flex-start;justify-content:center;padding:40px 16px;z-index:50;overflow:auto;
+}
+.overlay.show{display:flex}
+.modal{
+  background:var(--surface);border-radius:18px;width:100%;max-width:520px;
+  box-shadow:0 30px 70px -20px rgba(0,0,0,.5);border:1px solid var(--line);
+  animation:rise .2s ease;
+}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.modal-head{padding:18px 20px 14px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.modal-head h2{font-family:'Fraunces',serif;font-weight:500;font-size:20px}
+.modal-head p{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.x{font-size:20px;color:var(--ink-soft);line-height:1;padding:2px 6px;border-radius:7px}
+.x:hover{background:var(--paper-2);color:var(--ink)}
+.modal-body{padding:18px 20px}
+.modal-foot{padding:14px 20px 18px;display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}
+
+/* seed picker */
+.search{
+  width:100%;font-family:inherit;font-size:13px;padding:9px 11px;
+  border:1px solid var(--line-strong);border-radius:10px;background:var(--paper);margin-bottom:12px;
+}
+.search:focus{outline:2px solid var(--green);outline-offset:-1px}
+.grp-block{margin-bottom:14px}
+.grp-title{
+  font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);
+  margin-bottom:7px;display:flex;align-items:center;gap:7px;
+}
+.grp-title .gdot{margin:0}
+.var-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.var-pick{
+  text-align:left;border:1px solid var(--line);background:var(--paper);border-radius:10px;
+  padding:8px 10px;cursor:pointer;transition:border-color .12s,background .12s;
+}
+.var-pick:hover{border-color:var(--green);background:#fff}
+.var-pick .vn{font-size:12.5px;font-weight:600}
+.var-pick .vd{font-size:10.5px;color:var(--ink-soft);margin-top:1px}
+.var-pick .soak{color:var(--water);font-weight:600}
+
+/* detail rows */
+.drow{display:flex;justify-content:space-between;gap:14px;font-size:13px;padding:7px 0;border-bottom:1px dashed var(--line)}
+.drow:last-child{border-bottom:none}
+.drow .k{color:var(--ink-soft)}
+.drow .v{font-weight:600;text-align:right}
+.phase-pick{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.pp{
+  font-size:11px;font-weight:600;border:1px solid var(--line-strong);border-radius:8px;
+  padding:6px 9px;cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--paper);
+}
+.pp:hover{background:#fff}
+.pp.active{border-color:var(--ink);background:#fff}
+.pp .dot{width:9px;height:9px;border-radius:50%}
+.sub{font-size:11px;color:var(--ink-faint);margin-top:3px}
+.warn-note{
+  background:rgba(200,153,59,.13);border:1px solid rgba(200,153,59,.4);
+  border-radius:10px;padding:9px 11px;font-size:12px;color:#7a5b14;margin-top:12px;
+}
+
+/* config + rotation fields */
+.fld{margin-bottom:13px}
+.fld label{display:block;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px}
+.fld select,.fld input[type=number]{
+  width:100%;font-family:inherit;font-size:13px;padding:9px 10px;
+  border:1px solid var(--line-strong);border-radius:10px;background:var(--paper);
+}
+.range-out{font-family:'Fraunces',serif;font-size:15px;font-weight:600;color:var(--green)}
+
+/* toast */
+.toast-wrap{position:fixed;left:0;right:0;bottom:20px;display:flex;justify-content:center;z-index:80;pointer-events:none;padding:0 16px}
+.toast{
+  pointer-events:auto;background:var(--green-deep);color:var(--paper);
+  border-radius:13px;padding:12px 15px;font-size:13px;box-shadow:0 14px 34px -10px rgba(0,0,0,.5);
+  display:flex;align-items:center;gap:13px;max-width:440px;
+  animation:rise .22s ease;
+}
+.toast.err{background:var(--clay)}
+.toast b{font-weight:700}
+.toast button{
+  background:rgba(255,255,255,.16);color:var(--paper);font-size:12px;font-weight:600;
+  padding:6px 11px;border-radius:8px;white-space:nowrap;
+}
+.toast button:hover{background:rgba(255,255,255,.28)}
+.toast .tx{font-size:18px;padding:0 2px;opacity:.7}
+.toast .tx:hover{opacity:1}
+
+footer{margin-top:34px;text-align:center;font-size:11.5px;color:var(--ink-faint)}
+footer b{color:var(--ink-soft);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="mark">MG</div>
+      <div>
+        <h1>Mini<em>Agricola</em></h1>
+        <p>Simulatore · Ciclo Continuo</p>
+      </div>
+    </div>
+    <div class="ver" id="verTag">v1.0</div>
+  </header>
+
+  <!-- CONTROL BAR -->
+  <div class="controls">
+    <div class="day-block">
+      <div class="day-num"><span>Giorno</span><b id="dayNum">1</b></div>
+      <div>
+        <div class="day-date" id="dayDate">—</div>
+        <div class="stepper" style="margin-top:5px">
+          <button class="btn step" id="dayBack" title="Giorno precedente">‹</button>
+          <button class="btn step primary" id="dayFwd" title="Avanza un giorno">›</button>
+          <button class="btn sm" id="dayWeek" title="Avanza 7 giorni">+7 gg</button>
+        </div>
+      </div>
+    </div>
+    <div class="ctl-sep"></div>
+    <div class="field">
+      <label>Data d'inizio</label>
+      <input type="date" id="startDate">
+    </div>
+    <div class="spacer"></div>
+    <button class="btn primary" id="btnRotate">⟳ Rotazione automatica</button>
+    <button class="btn" id="btnConfig">Configura rack</button>
+    <button class="btn ghost" id="btnReset">Azzera</button>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="rack" id="rack"></div>
+
+    <aside class="aside">
+      <div class="card">
+        <h4>Oggi <span id="todayPos"></span></h4>
+        <div class="today-date" id="todayDate">—</div>
+        <div class="stat-row">
+          <div class="stat go"><div class="n" id="stReady">0</div><div class="l">Da raccogliere</div></div>
+          <div class="stat"><div class="n" id="stTom">0</div><div class="l">Pronti domani</div></div>
+          <div class="stat over"><div class="n" id="stOver">0</div><div class="l">Oltre raccolta</div></div>
+        </div>
+        <div class="harvest-list" id="harvestList"></div>
+      </div>
+
+      <div class="card">
+        <h4>Continuità raccolta</h4>
+        <div class="timeline" id="timeline"></div>
+        <div class="tl-legend">
+          <span><i class="swatch" style="background:var(--green)"></i>Raccolto</span>
+          <span><i class="swatch" style="background:var(--green);opacity:.5"></i>Previsto</span>
+          <span><i class="swatch tl-bar gap" style="height:9px"></i>Giorno vuoto</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h4>Fasi del vassoio</h4>
+        <div class="legend" id="legend"></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <b>Regola d'oro</b> — un vassoio raccolto = un vassoio seminato. Il ciclo continuo funziona solo a semine sfalsate.
+    <br>Dati varietà: Scheda Tecnica MP · Golinucci Organic — 34 varietà · 4 fasce di velocità.
+  </footer>
+</div>
+
+<!-- ===== MODAL: overlay shared ===== -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal"></div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+"use strict";
+
+/* ============ DATI VARIETÀ ============ */
+const GROUPS = {
+  1:{nome:"Rapido",      range:"7–12 gg",  freqTxt:"ogni 2 gg",  rot:"4–5 vassoi", color:"#85B23A"},
+  2:{nome:"Medio-breve", range:"8–14 gg",  freqTxt:"ogni 3 gg",  rot:"4–5 vassoi", color:"#4C7A3F"},
+  3:{nome:"Medio",       range:"12–20 gg", freqTxt:"ogni 4–5 gg",rot:"4–5 vassoi", color:"#5891AC"},
+  4:{nome:"Lento",       range:"18–35 gg", freqTxt:"ogni 7 gg",  rot:"3–5 vassoi", color:"#9B6BB0"}
+};
+
+// soak: {ore, temp}  |  noBuio: parte da germogliazione  |  nota: avviso pre-semina
+const VARIETIES = [
+  // --- Gruppo 1 (semina ogni 2 gg) ---
+  {id:"rucola",       nome:"Rucola",                    g:1, ciclo:9,  rMin:7,  rMax:12, freq:2},
+  {id:"rav-china",    nome:"Ravanello China Rose",      g:1, ciclo:8,  rMin:7,  rMax:10, freq:2},
+  {id:"rav-vulcano",  nome:"Ravanello Vulcano",         g:1, ciclo:8,  rMin:7,  rMax:10, freq:2},
+  {id:"rav-nero",     nome:"Ravanello Nero",            g:1, ciclo:8,  rMin:7,  rMax:10, freq:2},
+  {id:"rav-venom",    nome:"Ravanello Venom",           g:1, ciclo:8,  rMin:7,  rMax:10, freq:2},
+  {id:"grano-sar",    nome:"Grano Saraceno",            g:1, ciclo:10, rMin:8,  rMax:12, freq:2, soak:{ore:"4–8 ore",temp:"Ambiente"}, nota:"Sciacquare bene dopo l'ammollo."},
+  // --- Gruppo 2 (semina ogni 3 gg) ---
+  {id:"senape-b",     nome:"Senape Bianca",             g:2, ciclo:11, rMin:10, rMax:12, freq:3},
+  {id:"senape-r",     nome:"Senape Rossa",              g:2, ciclo:11, rMin:10, rMax:12, freq:3},
+  {id:"senape-rf",    nome:"Senape Rossa Frastagliata", g:2, ciclo:11, rMin:10, rMax:12, freq:3},
+  {id:"senape-v",     nome:"Senape Verde",              g:2, ciclo:11, rMin:10, rMax:12, freq:3},
+  {id:"cavolo-rosso", nome:"Cavolo Rosso",              g:2, ciclo:10, rMin:8,  rMax:12, freq:3},
+  {id:"cavolo-rosa",  nome:"Cavolo Rosa",               g:2, ciclo:10, rMin:8,  rMax:12, freq:3},
+  {id:"cavolo-rapa",  nome:"Cavolo Rapa Rosso",         g:2, ciclo:10, rMin:8,  rMax:10, freq:3},
+  {id:"crescione",    nome:"Crescione",                 g:2, ciclo:12, rMin:10, rMax:14, freq:3},
+  {id:"lenticchia",   nome:"Lenticchia",                g:2, ciclo:10, rMin:8,  rMax:12, freq:3, soak:{ore:"6–8 ore",temp:"Freddo"}, nota:"Ammollo in acqua fredda di frigorifero."},
+  {id:"cece",         nome:"Cece",                      g:2, ciclo:12, rMin:10, rMax:14, freq:3, soak:{ore:"8–12 ore",temp:"Ambiente"}, nota:"Consumare giovane — rischio muffa."},
+  {id:"pisello",      nome:"Pisello Verde",             g:2, ciclo:12, rMin:10, rMax:14, freq:3, soak:{ore:"6–8 ore",temp:"Freddo"}, nota:"Ammollo in acqua fredda di frigorifero."},
+  {id:"grano",        nome:"Grano",                     g:2, ciclo:12, rMin:10, rMax:14, freq:3, soak:{ore:"10–12 ore",temp:"Freddo"}, nota:"Ammollo in acqua fredda di frigorifero."},
+  {id:"cavolo-nero",  nome:"Cavolo Nero",               g:2, ciclo:12, rMin:10, rMax:14, freq:3},
+  // --- Gruppo 3 (semina ogni 4–6 gg) ---
+  {id:"cipolla",      nome:"Cipolla",                   g:3, ciclo:13, rMin:12, rMax:15, freq:4, noBuio:true, soak:{ore:"5–6 ore",temp:"Freddo"}, nota:"Dopo l'ammollo: 2–3 giorni in frigo prima di seminare."},
+  {id:"porro",        nome:"Porro",                     g:3, ciclo:13, rMin:12, rMax:15, freq:4, noBuio:true, soak:{ore:"5–6 ore",temp:"Freddo"}, nota:"Dopo l'ammollo: 2–3 giorni in frigo prima di seminare."},
+  {id:"nasturzio",    nome:"Nasturzio Verde Alaska",    g:3, ciclo:14, rMin:13, rMax:16, freq:4, soak:{ore:"6–8 ore",temp:"Ambiente"}},
+  {id:"bieta-rossa",  nome:"Bieta Rossa (Bull's Blood)",g:3, ciclo:16, rMin:15, rMax:18, freq:5, soak:{ore:"6–8 ore",temp:"Freddo"}, nota:"Migliora l'uniformità di germinazione."},
+  {id:"bieta-gialla", nome:"Bieta Gialla",              g:3, ciclo:16, rMin:15, rMax:18, freq:5, soak:{ore:"6–8 ore",temp:"Freddo"}, nota:"Migliora l'uniformità di germinazione."},
+  {id:"borragine",    nome:"Borragine",                 g:3, ciclo:17, rMin:15, rMax:20, freq:5},
+  {id:"carota",       nome:"Carota",                    g:3, ciclo:17, rMin:15, rMax:20, freq:5},
+  {id:"malva",        nome:"Malva",                     g:3, ciclo:19, rMin:18, rMax:20, freq:6, noBuio:true},
+  {id:"tarassaco",    nome:"Tarassaco",                 g:3, ciclo:19, rMin:18, rMax:20, freq:6, noBuio:true, nota:"Vernalizzazione: semi in frigo per i primi 10 giorni."},
+  // --- Gruppo 4 (semina ogni 7–10 gg) ---
+  {id:"basilico-v",   nome:"Basilico Verde",            g:4, ciclo:21, rMin:18, rMax:25, freq:7},
+  {id:"basilico-l",   nome:"Basilico Limone",           g:4, ciclo:21, rMin:18, rMax:25, freq:7},
+  {id:"basilico-t",   nome:"Basilico Thailandese",      g:4, ciclo:21, rMin:18, rMax:25, freq:7},
+  {id:"acetosa",      nome:"Acetosa Rossa",             g:4, ciclo:26, rMin:25, rMax:27, freq:7},
+  {id:"prezzemolo",   nome:"Prezzemolo",                g:4, ciclo:27, rMin:24, rMax:30, freq:7, soak:{ore:"5–6 ore",temp:"Freddo"}, nota:"Germinazione lenta — pazienza."},
+  {id:"sedano",       nome:"Sedano",                    g:4, ciclo:30, rMin:25, rMax:35, freq:10}
+];
+const VById = {}; VARIETIES.forEach(v=>VById[v.id]=v);
+
+/* ============ FASI ============ */
+const PHASES = {
+  ammollo:{lbl:"Ammollo",       color:"#5891AC", desc:"Semi a bagno (giorno prima della semina)"},
+  buio:   {lbl:"Buio",          color:"#3B362E", desc:"Vassoio coperto — radicalizzazione"},
+  germ:   {lbl:"Germogliazione",color:"#C8993B", desc:"Spunta dei cotiledoni"},
+  luce:   {lbl:"Luce / crescita",color:"#4C7A3F",desc:"Sotto luce — sviluppo foglie"},
+  pronto: {lbl:"Pronto",        color:"#85B23A", desc:"Nella finestra di raccolta"},
+  oltre:  {lbl:"Oltre raccolta",color:"#BC5839", desc:"Superata la finestra — qualità in calo"}
+};
+const PHASE_ORDER = ["ammollo","buio","germ","luce","pronto","oltre"];
+
+function phaseBounds(v){
+  const b1 = Math.max(1, Math.round(v.ciclo*0.38));
+  let b2 = Math.max(b1+1, Math.round(v.ciclo*0.58));
+  if(b2 >= v.rMin) b2 = Math.max(b1+1, v.rMin-1);
+  return {b1,b2};
+}
+// età in cui inizia ogni fase (per "cambia fase")
+function phaseStartAge(v, key){
+  const {b1,b2} = phaseBounds(v);
+  if(key==="ammollo") return -1;
+  if(key==="buio")    return 0;
+  if(key==="germ")    return v.noBuio?0:b1;
+  if(key==="luce")    return b2;
+  if(key==="pronto")  return v.rMin;
+  if(key==="oltre")   return v.rMax;
+  return 0;
+}
+function phaseOf(v, age){
+  if(age < 0) return "ammollo";
+  const {b1,b2} = phaseBounds(v);
+  if(age >= v.rMax) return "oltre";
+  if(age >= v.rMin) return "pronto";
+  if(v.noBuio){ return age < b2 ? "germ" : "luce"; }
+  if(age < b1) return "buio";
+  if(age < b2) return "germ";
+  return "luce";
+}
+
+/* ============ STATO ============ */
+const SKEY = "miniagricola_sim_v1";
+let state = null;
+
+function defaultState(){
+  const today = new Date(); today.setHours(0,0,0,0);
+  return {
+    v:1,
+    startDate: today.toISOString().slice(0,10),
+    day:1,
+    shelves:4, cols:6,
+    rack:[],            // rack[shelf][slot] = tray|null
+    log:{},             // log[simDay] = [ {id, nome, g} ]
+    counter:1
+  };
+}
+function buildRack(s){
+  s.rack = [];
+  for(let i=0;i<s.shelves;i++){
+    const row=[]; for(let j=0;j<s.cols;j++) row.push(null);
+    s.rack.push(row);
+  }
+}
+function save(){
+  try{ localStorage.setItem(SKEY, JSON.stringify(state)); }catch(e){/* preview senza storage */}
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(SKEY);
+    if(raw){ const p=JSON.parse(raw); if(p&&p.rack) return p; }
+  }catch(e){}
+  return null;
+}
+
+/* ============ DATE ============ */
+function simDateObj(d){
+  const base = new Date(state.startDate+"T00:00:00");
+  base.setDate(base.getDate() + (d-1));
+  return base;
+}
+function fmtDate(dateObj, withYear){
+  const o = {weekday:"short", day:"numeric", month:"short"};
+  if(withYear) o.year="numeric";
+  return dateObj.toLocaleDateString("it-IT", o);
+}
+
+/* ============ TRAY HELPERS ============ */
+function eachTray(fn){
+  state.rack.forEach((row,si)=>row.forEach((t,sj)=>{ if(t) fn(t,si,sj); }));
+}
+function ageOf(t){ return state.day - t.sownDay; }
+// finestra di raccolta (giorno simulato) per un vassoio
+function harvestDay(t){ return t.sownDay + VById[t.varietyId].rMin; }
+
+/* ============ AZIONI ============ */
+function advanceDay(n){
+  state.day = Math.max(1, state.day + n);
+  save(); render();
+}
+function seedTray(si, sj, varId){
+  const v = VById[varId];
+  // se serve ammollo, la semina effettiva è il giorno dopo (oggi = ammollo)
+  const sownDay = v.soak ? state.day+1 : state.day;
+  state.rack[si][sj] = { tid:state.counter++, varietyId:varId, sownDay:sownDay };
+  save();
+}
+function harvestTray(si, sj){
+  const t = state.rack[si][sj]; if(!t) return;
+  const v = VById[t.varietyId];
+  const d = state.day;
+  if(!state.log[d]) state.log[d]=[];
+  state.log[d].push({id:v.id, nome:v.nome, g:v.g});
+  state.rack[si][sj] = null;
+  save();
+  closeModal(); render();
+  toast(`Raccolto <b>${v.nome}</b>. Regola d'oro: rissemina lo slot.`, [
+    {label:"↻ Rissemina "+v.nome, fn:()=>{ seedTray(si,sj,v.id); render(); toast(`Riseminato <b>${v.nome}</b>.`); }}
+  ]);
+}
+function setPhase(si, sj, phaseKey){
+  const t = state.rack[si][sj]; if(!t) return;
+  const v = VById[t.varietyId];
+  t.sownDay = state.day - phaseStartAge(v, phaseKey);
+  save(); render(); openTrayModal(si,sj);
+}
+function clearTray(si, sj){
+  state.rack[si][sj] = null;
+  save(); closeModal(); render();
+}
+
+/* ============ ROTAZIONE AUTOMATICA ============ */
+function runRotation(varId, count){
+  const v = VById[varId];
+  // raccoglie slot liberi in ordine
+  const free = [];
+  state.rack.forEach((row,si)=>row.forEach((t,sj)=>{ if(!t) free.push([si,sj]); }));
+  if(free.length===0){ toast("Nessuno slot libero nel rack.", null, true); return; }
+  const n = Math.min(count, free.length);
+  // sfalsa all'indietro: vassoio 0 seminato oggi, gli altri indietro di freq giorni
+  for(let i=0;i<n;i++){
+    const [si,sj] = free[i];
+    state.rack[si][sj] = {
+      tid:state.counter++, varietyId:varId,
+      sownDay: state.day - i*v.freq
+    };
+  }
+  save(); closeModal(); render();
+  let msg = `Avviata rotazione: <b>${n} vassoi</b> di ${v.nome}, sfalsati ogni ${v.freq} gg.`;
+  if(n<count) msg += ` (slot liberi insufficienti per ${count})`;
+  toast(msg);
+}
+
+/* ============ RENDER ============ */
+function render(){
+  renderControls();
+  renderRack();
+  renderToday();
+  renderTimeline();
+  renderLegend();
+}
+
+function renderControls(){
+  document.getElementById("dayNum").textContent = state.day;
+  document.getElementById("dayDate").textContent = fmtDate(simDateObj(state.day));
+  document.getElementById("startDate").value = state.startDate;
+}
+
+function sproutSVG(phaseKey, growth){
+  // growth 0..1 — sprout semplice e affidabile (stelo + 2 foglie)
+  if(phaseKey==="ammollo"){
+    return '<svg width="22" height="30" viewBox="0 0 22 30"><ellipse cx="11" cy="24" rx="9" ry="4" fill="#5891AC" opacity="0.35"/><circle cx="7" cy="22" r="1.6" fill="#5891AC"/><circle cx="13" cy="25" r="1.3" fill="#5891AC"/><circle cx="11" cy="20" r="1.1" fill="#5891AC"/></svg>';
+  }
+  const g = Math.max(0.12, Math.min(1, growth));
+  const stem = 4 + g*20;          // altezza stelo
+  const topY = 27 - stem;
+  const leaf = 3 + g*6;           // dimensione foglie
+  const soil = phaseKey==="buio" ? "#3B362E" : "#5a4a36";
+  const stemCol = phaseKey==="buio" ? "#6f6a55" : (phaseKey==="oltre" ? "#9c8a3c" : "#4C7A3F");
+  const leafCol = phaseKey==="buio" ? "#8a8463"
+                 : phaseKey==="germ" ? "#9DBE52"
+                 : phaseKey==="oltre" ? "#a89640"
+                 : phaseKey==="pronto" ? "#85B23A" : "#5C9440";
+  return '<svg width="26" height="32" viewBox="0 0 26 32">'+
+    '<rect x="3" y="26" width="20" height="5" rx="2" fill="'+soil+'"/>'+
+    '<line x1="13" y1="27" x2="13" y2="'+topY+'" stroke="'+stemCol+'" stroke-width="1.8" stroke-linecap="round"/>'+
+    '<ellipse cx="'+(13-leaf*0.55)+'" cy="'+(topY+leaf*0.4)+'" rx="'+leaf+'" ry="'+(leaf*0.62)+'" fill="'+leafCol+'" transform="rotate(-32 '+(13-leaf*0.55)+' '+(topY+leaf*0.4)+')"/>'+
+    '<ellipse cx="'+(13+leaf*0.55)+'" cy="'+(topY+leaf*0.4)+'" rx="'+leaf+'" ry="'+(leaf*0.62)+'" fill="'+leafCol+'" transform="rotate(32 '+(13+leaf*0.55)+' '+(topY+leaf*0.4)+')"/>'+
+    '</svg>';
+}
+
+function renderRack(){
+  const rack = document.getElementById("rack");
+  rack.innerHTML = "";
+  let total=0, occ=0;
+  state.rack.forEach(r=>r.forEach(t=>{ total++; if(t)occ++; }));
+
+  if(occ===0){
+    rack.innerHTML =
+      '<div class="rack-empty">'+
+      '<h3>Rack vuoto</h3>'+
+      '<p>Clicca uno slot per seminare un vassoio, oppure usa la <b>Rotazione automatica</b> per riempire il rack con semine già sfalsate e vedere subito il ciclo in moto.</p>'+
+      '<button class="btn primary" onclick="openRotationModal()">⟳ Avvia una rotazione</button>'+
+      '</div>';
+    // mostra comunque gli scaffali vuoti sotto
+  }
+
+  state.rack.forEach((row,si)=>{
+    const shelf = document.createElement("div");
+    shelf.className = "shelf";
+    const label = String.fromCharCode(65+si);
+    let occH=0; row.forEach(t=>{ if(t)occH++; });
+    shelf.innerHTML = '<div class="shelf-head"><h3>Scaffale '+label+'</h3>'+
+      '<span class="meta">'+occH+'/'+row.length+' vassoi</span></div>';
+    const slots = document.createElement("div");
+    slots.className = "slots";
+    slots.style.setProperty("--cols", state.cols);
+
+    row.forEach((t,sj)=>{
+      const slot = document.createElement("div");
+      if(!t){
+        slot.className = "slot empty";
+        slot.innerHTML = '<div class="plus"><b>+</b>Semina</div>';
+        slot.onclick = ()=>openSeedModal(si,sj);
+      }else{
+        const v = VById[t.varietyId];
+        const age = ageOf(t);
+        const ph = phaseOf(v, age);
+        const pinfo = PHASES[ph];
+        const growth = Math.max(0, Math.min(1, age / v.rMin));
+        slot.className = "slot tray" + (ph==="pronto"?" ready":"");
+
+        // countdown
+        let cd;
+        if(ph==="oltre") cd = '<span class="cd over">oltre +'+(age-v.rMax)+'g</span>';
+        else if(ph==="pronto") cd = '<span class="cd go">★ raccogli</span>';
+        else { const to=v.rMin-age; cd = '<span class="cd wait">−'+to+'g a R</span>'; }
+
+        const ageTxt = age<0 ? "ammollo" : "g<b>"+age+"</b>";
+
+        slot.innerHTML =
+          '<div class="band" style="background:'+pinfo.color+'"></div>'+
+          '<div class="body">'+
+            '<div class="top">'+
+              '<div class="nm">'+v.nome+'</div>'+
+              '<div class="gdot" style="background:'+GROUPS[v.g].color+'" title="Gruppo '+v.g+'"></div>'+
+            '</div>'+
+            '<div class="phase" style="color:'+pinfo.color+'"><span class="dot" style="background:'+pinfo.color+'"></span>'+pinfo.lbl+'</div>'+
+            '<div class="sprout">'+sproutSVG(ph,growth)+'</div>'+
+            '<div class="bar"><i style="width:'+Math.round(growth*100)+'%;background:'+pinfo.color+'"></i></div>'+
+            '<div class="foot"><span class="age">'+ageTxt+'</span>'+cd+'</div>'+
+          '</div>';
+        slot.onclick = ()=>openTrayModal(si,sj);
+      }
+      slots.appendChild(slot);
+    });
+    shelf.appendChild(slots);
+    rack.appendChild(shelf);
+  });
+}
+
+function renderToday(){
+  const ready=[], over=[]; let tom=0;
+  eachTray((t,si,sj)=>{
+    const v=VById[t.varietyId], age=ageOf(t), ph=phaseOf(v,age);
+    if(ph==="pronto") ready.push({v,si,sj});
+    if(ph==="oltre")  over.push({v,si,sj});
+    // domani
+    const phT = phaseOf(v, age+1);
+    if(phT==="pronto" && ph!=="pronto") tom++;
+  });
+  document.getElementById("todayDate").textContent = fmtDate(simDateObj(state.day), true);
+  document.getElementById("todayPos").textContent = "Giorno "+state.day;
+  document.getElementById("stReady").textContent = ready.length;
+  document.getElementById("stTom").textContent = tom;
+  document.getElementById("stOver").textContent = over.length;
+
+  const list = document.getElementById("harvestList");
+  list.innerHTML = "";
+  const all = ready.concat(over);
+  if(all.length===0){
+    list.innerHTML = '<div class="muted">Nessun vassoio pronto oggi.</div>';
+  }else{
+    all.forEach(o=>{
+      const pos = "Scaff. "+String.fromCharCode(65+o.si)+"·"+(o.sj+1);
+      const isOver = phaseOf(o.v, state.day - 0) ; // not used
+      const div = document.createElement("div");
+      div.className="hl-item";
+      div.innerHTML = '<span class="gdot" style="background:'+GROUPS[o.v.g].color+'"></span>'+
+        '<span>'+o.v.nome+'</span><span class="pos">'+pos+'</span>';
+      div.onclick=()=>openTrayModal(o.si,o.sj);
+      div.style.cursor="pointer";
+      list.appendChild(div);
+    });
+  }
+}
+
+function renderTimeline(){
+  // finestra: 6 giorni passati .. 12 futuri
+  const from = Math.max(1, state.day-6);
+  const to = state.day+12;
+  // raccolti reali per giorno
+  const actual = {};
+  Object.keys(state.log).forEach(d=>{ actual[d]=state.log[d].length; });
+  // previsti: ogni vassoio matura il giorno harvestDay(t)
+  const proj = {};
+  eachTray(t=>{ const hd=harvestDay(t); proj[hd]=(proj[hd]||0)+1; });
+
+  let maxV=1;
+  for(let d=from; d<=to; d++){
+    const v = d<state.day ? (actual[d]||0) : (d===state.day ? Math.max(actual[d]||0, proj[d]||0) : (proj[d]||0));
+    if(v>maxV) maxV=v;
+  }
+  const tl = document.getElementById("timeline");
+  tl.innerHTML="";
+  for(let d=from; d<=to; d++){
+    const isPast = d<state.day, isToday = d===state.day;
+    const val = isPast ? (actual[d]||0) : (isToday ? Math.max(actual[d]||0, proj[d]||0) : (proj[d]||0));
+    const h = val>0 ? Math.round(12 + (val/maxV)*52) : 0;
+    const day = document.createElement("div");
+    day.className="tl-day";
+    const bar = document.createElement("div");
+    bar.className = "tl-bar"+(val===0?" gap":"")+(!isPast&&!isToday?" proj":"")+(isToday?" today-bar":"");
+    bar.style.height = (val>0?h:7)+"px";
+    bar.title = "Giorno "+d+" · "+fmtDate(simDateObj(d))+" — "+(val>0?(val+" vassoio/i"):"nessuna raccolta");
+    const lbl = document.createElement("div");
+    lbl.className="tl-lbl";
+    lbl.textContent = (d%2===0||isToday)? d : "";
+    day.appendChild(bar); day.appendChild(lbl);
+    tl.appendChild(day);
+  }
+}
+
+function renderLegend(){
+  const lg = document.getElementById("legend");
+  lg.innerHTML="";
+  PHASE_ORDER.forEach(k=>{
+    const p=PHASES[k];
+    const row=document.createElement("div");
+    row.className="row";
+    row.innerHTML='<i class="ph" style="background:'+p.color+'"></i><span>'+p.desc+'</span><b>'+p.lbl+'</b>';
+    lg.appendChild(row);
+  });
+}
+
+/* ============ MODALI ============ */
+const overlay = document.getElementById("overlay");
+const modalEl = document.getElementById("modal");
+function showModal(html){ modalEl.innerHTML=html; overlay.classList.add("show"); }
+function closeModal(){ overlay.classList.remove("show"); }
+overlay.addEventListener("click",e=>{ if(e.target===overlay) closeModal(); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+/* --- SEMINA --- */
+let seedTarget=null;
+function openSeedModal(si,sj){
+  seedTarget=[si,sj];
+  showModal(
+    '<div class="modal-head"><div><h2>Semina un vassoio</h2>'+
+    '<p>Scaffale '+String.fromCharCode(65+si)+' · slot '+(sj+1)+'</p></div>'+
+    '<button class="x" onclick="closeModal()">✕</button></div>'+
+    '<div class="modal-body">'+
+      '<input class="search" id="varSearch" placeholder="Cerca varietà…" autocomplete="off">'+
+      '<div id="varList"></div>'+
+    '</div>');
+  document.getElementById("varSearch").addEventListener("input",renderVarList);
+  renderVarList();
+  document.getElementById("varSearch").focus();
+}
+function renderVarList(){
+  const q = (document.getElementById("varSearch").value||"").toLowerCase().trim();
+  const box = document.getElementById("varList");
+  box.innerHTML="";
+  [1,2,3,4].forEach(g=>{
+    const vs = VARIETIES.filter(v=>v.g===g && v.nome.toLowerCase().includes(q));
+    if(!vs.length) return;
+    const block=document.createElement("div");
+    block.className="grp-block";
+    block.innerHTML='<div class="grp-title"><span class="gdot" style="background:'+GROUPS[g].color+'"></span>'+
+      'Gruppo '+g+' — '+GROUPS[g].nome+' · '+GROUPS[g].range+'</div>';
+    const grid=document.createElement("div");
+    grid.className="var-grid";
+    vs.forEach(v=>{
+      const b=document.createElement("button");
+      b.className="var-pick";
+      b.innerHTML='<div class="vn">'+v.nome+'</div>'+
+        '<div class="vd">ciclo ~'+v.ciclo+'g · R '+v.rMin+'–'+v.rMax+'g'+
+        (v.soak?' · <span class="soak">ammollo</span>':'')+'</div>';
+      b.onclick=()=>{ seedTray(seedTarget[0],seedTarget[1],v.id); closeModal(); render();
+        toast('Seminato <b>'+v.nome+'</b>'+(v.soak?' — oggi in ammollo, semina effettiva domani.':'.')); };
+      grid.appendChild(b);
+    });
+    block.appendChild(grid);
+    box.appendChild(block);
+  });
+  if(!box.innerHTML) box.innerHTML='<div class="muted">Nessuna varietà trovata.</div>';
+}
+
+/* --- DETTAGLIO VASSOIO --- */
+function openTrayModal(si,sj){
+  const t=state.rack[si][sj]; if(!t) return;
+  const v=VById[t.varietyId];
+  const age=ageOf(t), ph=phaseOf(v,age), pinfo=PHASES[ph];
+  const sownObj=simDateObj(t.sownDay);
+  const hMinObj=simDateObj(t.sownDay+v.rMin);
+  const hMaxObj=simDateObj(t.sownDay+v.rMax);
+  const canHarvest = ph==="pronto"||ph==="oltre";
+
+  let phasePicks="";
+  PHASE_ORDER.forEach(k=>{
+    if(k==="ammollo" && !v.soak) return;
+    const p=PHASES[k];
+    phasePicks+='<button class="pp'+(k===ph?' active':'')+'" onclick="setPhase('+si+','+sj+',\''+k+'\')">'+
+      '<span class="dot" style="background:'+p.color+'"></span>'+p.lbl+'</button>';
+  });
+
+  let soakRow = v.soak
+    ? '<div class="drow"><span class="k">Ammollo</span><span class="v">'+v.soak.ore+' · '+v.soak.temp+'</span></div>'
+    : '<div class="drow"><span class="k">Ammollo</span><span class="v">non previsto</span></div>';
+
+  showModal(
+    '<div class="modal-head"><div><h2>'+v.nome+'</h2>'+
+    '<p>Scaffale '+String.fromCharCode(65+si)+' · slot '+(sj+1)+' — Gruppo '+v.g+' ('+GROUPS[v.g].nome+')</p></div>'+
+    '<button class="x" onclick="closeModal()">✕</button></div>'+
+    '<div class="modal-body">'+
+      '<div class="drow"><span class="k">Fase attuale</span><span class="v" style="color:'+pinfo.color+'">'+pinfo.lbl+'</span></div>'+
+      '<div class="drow"><span class="k">Età del vassoio</span><span class="v">'+(age<0?"in ammollo":age+" giorni")+'</span></div>'+
+      '<div class="drow"><span class="k">Seminato</span><span class="v" style="text-transform:capitalize">'+fmtDate(sownObj,true)+'</span></div>'+
+      '<div class="drow"><span class="k">Finestra di raccolta</span><span class="v" style="text-transform:capitalize">'+fmtDate(hMinObj)+' → '+fmtDate(hMaxObj)+'</span></div>'+
+      '<div class="drow"><span class="k">Ciclo medio · range</span><span class="v">~'+v.ciclo+'g · R '+v.rMin+'–'+v.rMax+'g</span></div>'+
+      soakRow+
+      (v.nota?'<div class="warn-note">⚠ '+v.nota+'</div>':'')+
+      '<div class="sub" style="margin-top:16px;text-transform:uppercase;letter-spacing:.08em;font-weight:600;color:var(--ink-soft)">Cambia fase manualmente</div>'+
+      '<div class="phase-pick">'+phasePicks+'</div>'+
+      '<div class="sub">Ricalibra la data di semina così che il vassoio sia oggi all\'inizio della fase scelta.</div>'+
+    '</div>'+
+    '<div class="modal-foot">'+
+      '<button class="btn ghost" onclick="clearTray('+si+','+sj+')">Svuota slot</button>'+
+      '<button class="btn'+(canHarvest?' primary':'')+'" '+(canHarvest?'':'disabled style="opacity:.45;cursor:not-allowed"')+' onclick="harvestTray('+si+','+sj+')">✓ Raccogli</button>'+
+    '</div>');
+}
+
+/* --- ROTAZIONE --- */
+function openRotationModal(){
+  let opts="";
+  [1,2,3,4].forEach(g=>{
+    opts+='<optgroup label="Gruppo '+g+' — '+GROUPS[g].nome+'">';
+    VARIETIES.filter(v=>v.g===g).forEach(v=>{
+      opts+='<option value="'+v.id+'">'+v.nome+' (ciclo ~'+v.ciclo+'g, semina ogni '+v.freq+'g)</option>';
+    });
+    opts+='</optgroup>';
+  });
+  showModal(
+    '<div class="modal-head"><div><h2>Rotazione automatica</h2>'+
+    '<p>Riempie gli slot liberi con semine già sfalsate</p></div>'+
+    '<button class="x" onclick="closeModal()">✕</button></div>'+
+    '<div class="modal-body">'+
+      '<div class="fld"><label>Varietà</label><select id="rotVar">'+opts+'</select></div>'+
+      '<div class="fld"><label>Numero di vassoi in rotazione</label>'+
+        '<input type="number" id="rotN" min="1" max="40" value="5"></div>'+
+      '<div class="warn-note" id="rotInfo"></div>'+
+    '</div>'+
+    '<div class="modal-foot">'+
+      '<button class="btn ghost" onclick="closeModal()">Annulla</button>'+
+      '<button class="btn primary" onclick="confirmRotation()">⟳ Avvia rotazione</button>'+
+    '</div>');
+  const upd=()=>{
+    const v=VById[document.getElementById("rotVar").value];
+    const n=parseInt(document.getElementById("rotN").value)||0;
+    document.getElementById("rotInfo").innerHTML=
+      'I vassoi vengono sfalsati di <b>'+v.freq+' giorni</b> l\'uno dall\'altro (frequenza del Gruppo '+v.g+'). '+
+      'Il primo è seminato oggi, gli altri retrodatati: vedrai subito vassoi a fasi diverse e una raccolta scaglionata.';
+  };
+  document.getElementById("rotVar").addEventListener("change",upd);
+  document.getElementById("rotN").addEventListener("input",upd);
+  upd();
+}
+function confirmRotation(){
+  const id=document.getElementById("rotVar").value;
+  const n=Math.max(1,parseInt(document.getElementById("rotN").value)||1);
+  runRotation(id,n);
+}
+
+/* --- CONFIG RACK --- */
+function openConfigModal(){
+  showModal(
+    '<div class="modal-head"><div><h2>Configura il rack</h2>'+
+    '<p>Scaffali e slot per scaffale</p></div>'+
+    '<button class="x" onclick="closeModal()">✕</button></div>'+
+    '<div class="modal-body">'+
+      '<div class="fld"><label>Numero di scaffali</label>'+
+        '<input type="number" id="cfgShelves" min="1" max="8" value="'+state.shelves+'"></div>'+
+      '<div class="fld"><label>Slot per scaffale</label>'+
+        '<input type="number" id="cfgCols" min="2" max="10" value="'+state.cols+'"></div>'+
+      '<div class="warn-note">Se riduci le dimensioni, i vassoi che non trovano posto vengono rimossi.</div>'+
+    '</div>'+
+    '<div class="modal-foot">'+
+      '<button class="btn ghost" onclick="closeModal()">Annulla</button>'+
+      '<button class="btn primary" onclick="applyConfig()">Applica</button>'+
+    '</div>');
+}
+function applyConfig(){
+  const sh=Math.max(1,Math.min(8,parseInt(document.getElementById("cfgShelves").value)||4));
+  const co=Math.max(2,Math.min(10,parseInt(document.getElementById("cfgCols").value)||6));
+  // raccoglie vassoi esistenti
+  const trays=[]; eachTray(t=>trays.push(t));
+  state.shelves=sh; state.cols=co;
+  buildRack(state);
+  let dropped=0,k=0;
+  for(let i=0;i<sh && k<trays.length;i++){
+    for(let j=0;j<co && k<trays.length;j++){
+      state.rack[i][j]=trays[k++];
+    }
+  }
+  dropped=trays.length-k;
+  save(); closeModal(); render();
+  toast(dropped>0 ? 'Rack ridimensionato — <b>'+dropped+'</b> vassoi rimossi.' : 'Rack ridimensionato.');
+}
+
+/* ============ TOAST ============ */
+function toast(html, actions, isErr){
+  const wrap=document.getElementById("toastWrap");
+  const el=document.createElement("div");
+  el.className="toast"+(isErr?" err":"");
+  el.innerHTML='<span>'+html+'</span>';
+  if(actions){ actions.forEach(a=>{
+    const b=document.createElement("button"); b.innerHTML=a.label;
+    b.onclick=()=>{ a.fn(); el.remove(); };
+    el.appendChild(b);
+  });}
+  const x=document.createElement("button"); x.className="tx"; x.innerHTML="✕";
+  x.onclick=()=>el.remove();
+  el.appendChild(x);
+  wrap.appendChild(el);
+  setTimeout(()=>{ if(el.parentNode) el.remove(); }, actions?9000:4200);
+}
+
+/* ============ INIT ============ */
+function init(){
+  state = load() || (()=>{ const s=defaultState(); buildRack(s); return s; })();
+  if(!state.log) state.log={};
+  if(!state.counter) state.counter=1;
+
+  document.getElementById("dayBack").onclick=()=>advanceDay(-1);
+  document.getElementById("dayFwd").onclick =()=>advanceDay(1);
+  document.getElementById("dayWeek").onclick=()=>advanceDay(7);
+  document.getElementById("startDate").onchange=e=>{
+    if(e.target.value){ state.startDate=e.target.value; save(); render(); }
+  };
+  document.getElementById("btnRotate").onclick=openRotationModal;
+  document.getElementById("btnConfig").onclick=openConfigModal;
+  document.getElementById("btnReset").onclick=()=>{
+    if(confirm("Azzerare tutto? Vassoi, registro raccolte e giorno simulato verranno cancellati.")){
+      const sd=state.startDate;
+      state=defaultState(); state.startDate=sd; buildRack(state);
+      save(); render(); toast("Simulazione azzerata.");
+    }
+  };
+  render();
+}
+window.openRotationModal=openRotationModal;
+window.openSeedModal=openSeedModal;
+window.openTrayModal=openTrayModal;
+window.harvestTray=harvestTray;
+window.setPhase=setPhase;
+window.clearTray=clearTray;
+window.confirmRotation=confirmRotation;
+window.applyConfig=applyConfig;
+window.closeModal=closeModal;
+
+init();
+</script>
+</body>
+</html>
