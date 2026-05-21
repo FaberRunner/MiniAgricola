@@ -36,7 +36,7 @@ body{
   color:var(--ink);
   -webkit-font-smoothing:antialiased;line-height:1.45;
 }
-.wrap{max-width:1340px;margin:0 auto;padding:0 22px 64px}
+.wrap{width:100%;margin:0 auto;padding:0 30px 64px}
 
 /* ---------- header ---------- */
 header{padding:30px 0 16px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap}
@@ -270,6 +270,101 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 
 footer{margin-top:34px;text-align:center;font-size:11.5px;color:var(--ink-faint);line-height:1.7}
 footer b{color:var(--ink-soft);font-weight:600}
+
+/* ---------- segmented controls (view toggle + time mode) ---------- */
+.seg{display:inline-flex;background:var(--paper-2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:3px}
+.seg button{
+  font-size:12.5px;font-weight:600;border-radius:8px;padding:7px 13px;color:var(--ink-soft);
+  white-space:nowrap;transition:background .14s,color .14s;display:inline-flex;align-items:center;gap:6px;
+}
+.seg button:hover{color:var(--ink)}
+.seg button.on{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(34,32,26,.12)}
+.seg button.on.acc{background:var(--green-deep);color:var(--paper)}
+.seg .sdot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.55}
+.seg button.on .sdot{opacity:1}
+.head-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.time-tag{font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:5px}
+.time-tag .live{width:7px;height:7px;border-radius:50%;background:var(--clay);box-shadow:0 0 0 3px rgba(188,88,57,.18)}
+.time-tag.sim .live{background:var(--ink-faint);box-shadow:none}
+
+/* ---------- ripiano drag & drop ---------- */
+.rip-tag{cursor:grab;transition:background .14s}
+.rip-tag:hover{background:rgba(59,54,46,.2)}
+.rip-tag:active{cursor:grabbing}
+.rip-grip{font-size:9px;letter-spacing:-1px;color:var(--ink-faint);line-height:.7;margin-top:2px}
+.ripiano.dragging{opacity:.4}
+.ripiano.drop-ok{outline:2px dashed var(--green);outline-offset:2px;border-radius:11px;background:rgba(133,178,58,.08)}
+.ripiano{border-radius:11px;transition:background .12s}
+
+/* ---------- detailed analysis view ---------- */
+#analisi{margin-top:22px;display:none;flex-direction:column;gap:20px}
+.an-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.an-head h2{font-family:'Fraunces',serif;font-weight:500;font-size:22px}
+.an-head p{font-size:12.5px;color:var(--ink-soft)}
+.an-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+@media(max-width:880px){.an-stats{grid-template-columns:repeat(2,1fr)}}
+.an-stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;box-shadow:var(--shadow)}
+.an-stat .n{font-family:'Fraunces',serif;font-size:30px;font-weight:600;line-height:1}
+.an-stat .l{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em;margin-top:5px}
+.an-stat.go .n{color:var(--green)}
+.an-stat.over .n{color:var(--clay)}
+.an-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}
+.an-card > h3{font-family:'Fraunces',serif;font-weight:500;font-size:17px;margin-bottom:3px}
+.an-card > .csub{font-size:12px;color:var(--ink-soft);margin-bottom:16px}
+
+/* detailed continuity timeline */
+.an-tl{display:flex;gap:4px;align-items:flex-end;height:150px;margin-bottom:6px}
+.an-tld{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;height:100%;justify-content:flex-end}
+.an-tlbar{width:100%;border-radius:4px 4px 0 0;background:var(--green);min-height:4px;position:relative;transition:height .25s ease}
+.an-tlbar.gap{background:repeating-linear-gradient(45deg,rgba(188,88,57,.32),rgba(188,88,57,.32) 4px,transparent 4px,transparent 8px);border:1px solid rgba(188,88,57,.4);min-height:6px}
+.an-tlbar.proj{opacity:.55}
+.an-tlbar.today-bar{outline:2px solid var(--ink);outline-offset:1px}
+.an-tlbar .cnt{position:absolute;top:-17px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;color:var(--ink-soft)}
+.an-tllbl{font-size:9px;color:var(--ink-faint);text-align:center;line-height:1.25}
+.an-tllbl b{display:block;font-size:10px;color:var(--ink-soft)}
+.an-tllbl.today-l b{color:var(--ink)}
+
+/* day-by-day breakdown */
+.an-days{display:flex;flex-direction:column;gap:7px;margin-top:18px;max-height:380px;overflow:auto;padding-right:4px}
+.an-day{display:flex;gap:13px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:var(--paper)}
+.an-day.is-today{border-color:var(--ink);background:#fff}
+.an-day.is-gap{border-style:dashed;border-color:rgba(188,88,57,.4)}
+.an-day .dd{flex:none;width:96px}
+.an-day .dd .dn{font-family:'Fraunces',serif;font-size:15px;font-weight:600}
+.an-day .dd .dt{font-size:10.5px;color:var(--ink-soft);text-transform:capitalize}
+.an-day .dd .dtag{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--green);margin-top:2px}
+.an-day .dd .dtag.past{color:var(--ink-faint)}
+.an-day .dchips{flex:1;display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+.an-chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px 9px;cursor:pointer}
+.an-chip:hover{border-color:var(--ink-soft)}
+.an-chip .cdot{width:7px;height:7px;border-radius:50%;flex:none}
+.an-chip .cpos{color:var(--ink-faint);font-size:9.5px;font-variant-numeric:tabular-nums}
+.an-chip.over{background:rgba(188,88,57,.1);border-color:rgba(188,88,57,.32)}
+.an-day .dempty{font-size:11.5px;color:var(--ink-faint);font-style:italic;align-self:center}
+
+/* per-tray gantt */
+.gantt-axis{display:flex;margin-left:178px;border-bottom:1px solid var(--line-strong);padding-bottom:5px;margin-bottom:9px;position:relative}
+.gantt-tick{flex:1;font-size:9.5px;color:var(--ink-faint);text-align:center;min-width:0}
+.gantt-tick.today-tick{color:var(--ink);font-weight:700}
+.gantt-grp{margin-bottom:14px}
+.gantt-grp:last-child{margin-bottom:0}
+.gantt-gh{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:6px;display:flex;align-items:center;gap:7px}
+.gantt-gh .gd{width:9px;height:9px;border-radius:50%}
+.gantt-row{display:flex;align-items:center;gap:0;height:30px;margin-bottom:4px}
+.gantt-lbl{flex:none;width:178px;padding-right:14px;display:flex;align-items:baseline;gap:7px;overflow:hidden}
+.gantt-lbl .gn{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gantt-lbl .gp{font-size:9.5px;color:var(--ink-faint);white-space:nowrap;font-variant-numeric:tabular-nums}
+.gantt-track{flex:1;position:relative;height:22px;background:var(--paper);border-radius:6px;cursor:pointer;overflow:hidden;border:1px solid var(--line)}
+.gantt-track:hover{border-color:var(--ink-soft)}
+.gantt-seg{position:absolute;top:0;bottom:0;border-right:1px solid rgba(252,250,242,.6)}
+.gantt-today{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink);z-index:3}
+.gantt-today::after{content:"";position:absolute;top:-3px;left:-3px;width:8px;height:8px;border-radius:50%;background:var(--ink)}
+.gantt-now{position:absolute;top:50%;transform:translate(-50%,-50%);width:13px;height:13px;border-radius:50%;border:2.5px solid var(--surface);z-index:4;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.gantt-legend{display:flex;gap:15px;flex-wrap:wrap;font-size:11px;color:var(--ink-soft);margin-top:14px;padding-top:13px;border-top:1px solid var(--line)}
+.gantt-legend span{display:flex;align-items:center;gap:6px}
+.gantt-legend i{width:13px;height:11px;border-radius:3px}
+.an-empty{text-align:center;padding:40px 24px;color:var(--ink-soft)}
+.an-empty h3{font-family:'Fraunces',serif;font-size:18px;color:var(--ink);font-weight:500;margin-bottom:5px}
 </style>
 </head>
 <body>
@@ -283,7 +378,13 @@ footer b{color:var(--ink-soft);font-weight:600}
         <p>Simulatore · Ciclo Continuo</p>
       </div>
     </div>
-    <div class="ver" id="verTag">v1.01.00</div>
+    <div class="head-right">
+      <div class="seg" id="viewSeg">
+        <button id="viewOp" class="on">Vista operativa</button>
+        <button id="viewAn">Analisi dettagliata</button>
+      </div>
+      <div class="ver" id="verTag">v1.02.00</div>
+    </div>
   </header>
 
   <div class="controls">
@@ -301,6 +402,14 @@ footer b{color:var(--ink-soft);font-weight:600}
     </div>
     <div class="ctl-sep"></div>
     <div class="field">
+      <label>Modalità tempo</label>
+      <div class="seg" id="timeSeg" style="margin-top:1px">
+        <button id="tmSim" class="on"><span class="sdot"></span>Simulazione</button>
+        <button id="tmReal"><span class="sdot"></span>Reale</button>
+      </div>
+    </div>
+    <div class="ctl-sep"></div>
+    <div class="field">
       <label>Data d'inizio</label>
       <input type="date" id="startDate">
     </div>
@@ -311,7 +420,7 @@ footer b{color:var(--ink-soft);font-weight:600}
     <button class="btn ghost" id="btnReset">Azzera</button>
   </div>
 
-  <div class="main">
+  <div class="main" id="mainOp">
     <div class="rack" id="rack"></div>
 
     <aside class="aside">
@@ -343,6 +452,8 @@ footer b{color:var(--ink-soft);font-weight:600}
     </aside>
   </div>
 
+  <div id="analisi"></div>
+
   <footer>
     <b>Regola d'oro</b> — un vassoio raccolto = un vassoio seminato. Il ciclo continuo funziona solo a semine sfalsate.
     <br>Dati varietà: <b>Scheda Tecnica MP</b> · Golinucci Organic — 35 varietà · 4 fasce di velocità.
@@ -354,7 +465,7 @@ footer b{color:var(--ink-soft);font-weight:600}
 
 <script>
 "use strict";
-const VERSION = "1.01.01";
+const VERSION = "1.02.00";
 
 /* ============ GRUPPI ============ */
 const GROUPS = {
@@ -494,6 +605,14 @@ function fmtDate(o, withYear){
   if(withYear) opt.year="numeric";
   return o.toLocaleDateString("it-IT",opt);
 }
+// giorno reale = giorni trascorsi dalla data d'inizio (1-based)
+function realDay(){
+  const base=new Date(state.startDate+"T00:00:00");
+  const today=new Date(); today.setHours(0,0,0,0);
+  return Math.max(1, Math.floor((today-base)/86400000)+1);
+}
+// giorno effettivo: reale se modalità "real", altrimenti il giorno simulato
+function currentDay(){ return state.timeMode==="real" ? realDay() : state.day; }
 
 /* ============ HELPERS RACK ============ */
 function eachTray(fn){
@@ -504,20 +623,23 @@ function freeSlots(){
   state.rack.forEach((sc,a)=>sc.forEach((rip,r)=>rip.forEach((t,v)=>{ if(!t) out.push([a,r,v]); })));
   return out;
 }
-function ageOf(t){ return state.day - t.sownDay; }
+function ageOf(t){ return currentDay() - t.sownDay; }
 function harvestDay(t){ return t.sownDay + VById[t.varietyId].r[0]; }
 function posLabel(a,r,v){ return String.fromCharCode(65+a)+"·R"+(r+1)+"·v"+(v+1); }
 
 /* ============ AZIONI ============ */
-function advanceDay(n){ state.day=Math.max(1,state.day+n); save(); render(); }
+function advanceDay(n){
+  if(state.timeMode==="real") return;        // in modalità reale il tempo non si muove a mano
+  state.day=Math.max(1,state.day+n); save(); render();
+}
 function seedTray(a,r,v,varId){
   const vv=VById[varId];
-  state.rack[a][r][v]={ tid:state.counter++, varietyId:varId, sownDay: vv.soak ? state.day+1 : state.day };
+  state.rack[a][r][v]={ tid:state.counter++, varietyId:varId, sownDay: vv.soak ? currentDay()+1 : currentDay() };
   save();
 }
 function harvestTray(a,r,v){
   const t=state.rack[a][r][v]; if(!t) return;
-  const vv=VById[t.varietyId], d=state.day;
+  const vv=VById[t.varietyId], d=currentDay();
   if(!state.log[d]) state.log[d]=[];
   state.log[d].push({id:vv.id,nome:vv.nome,g:vv.g});
   state.rack[a][r][v]=null;
@@ -528,21 +650,32 @@ function harvestTray(a,r,v){
 }
 function setPhase(a,r,v,key){
   const t=state.rack[a][r][v]; if(!t) return;
-  t.sownDay = state.day - phaseStartAge(VById[t.varietyId], key);
+  t.sownDay = currentDay() - phaseStartAge(VById[t.varietyId], key);
   save(); render(); openTrayModal(a,r,v);
 }
 function clearTray(a,r,v){ state.rack[a][r][v]=null; save(); closeModal(); render(); }
+
+// scambio di due ripiani (col loro contenuto) — drag & drop
+function swapRipiani(a1,r1,a2,r2){
+  if(a1===a2 && r1===r2) return;
+  const tmp=state.rack[a1][r1];
+  state.rack[a1][r1]=state.rack[a2][r2];
+  state.rack[a2][r2]=tmp;
+  save(); render();
+  toast("Ripiano "+String.fromCharCode(65+a1)+"·R"+(r1+1)+" ⇄ "+String.fromCharCode(65+a2)+"·R"+(r2+1)+" scambiati.");
+}
 
 function runRotation(varId, count, mode){
   const vv=VById[varId], free=freeSlots();
   if(free.length===0){ toast("Nessuno slot libero nel rack.", null, true); return; }
   const n=Math.min(count, free.length);
   const fwd = mode==="avanti";
+  const today=currentDay();
   for(let i=0;i<n;i++){
     const [a,r,v]=free[i];
     // a regime: retrodata (oggi - i*freq) → rack già pieno, raccolta subito
     // da vuoto: post-data (oggi + i*freq) → semina scaglionata nei giorni futuri
-    const sownDay = fwd ? state.day + i*vv.freq : state.day - i*vv.freq;
+    const sownDay = fwd ? today + i*vv.freq : today - i*vv.freq;
     state.rack[a][r][v]={ tid:state.counter++, varietyId:varId, sownDay:sownDay };
   }
   save(); closeModal(); render();
@@ -555,12 +688,39 @@ function runRotation(varId, count, mode){
 
 /* ============ RENDER ============ */
 const collapsed = new Set();
-function render(){ renderControls(); renderRack(); renderToday(); renderTimeline(); renderLegend(); }
+let viewMode = "operativa";   // "operativa" | "analisi"
+let dragSrc = null;           // ripiano in fase di trascinamento
+
+function render(){
+  renderControls();
+  const opEl=document.getElementById("mainOp"), anEl=document.getElementById("analisi");
+  if(viewMode==="analisi"){
+    opEl.style.display="none";
+    anEl.style.display="flex";
+    renderAnalisi();
+  }else{
+    opEl.style.display="grid";
+    anEl.style.display="none";
+    renderRack(); renderToday(); renderTimeline(); renderLegend();
+  }
+}
 
 function renderControls(){
-  document.getElementById("dayNum").textContent=state.day;
-  document.getElementById("dayDate").textContent=fmtDate(simDateObj(state.day));
+  const d=currentDay(), real=state.timeMode==="real";
+  document.getElementById("dayNum").textContent=d;
+  document.getElementById("dayDate").textContent=fmtDate(simDateObj(d));
   document.getElementById("startDate").value=state.startDate;
+  // steppers disattivati in modalità reale
+  ["dayBack","dayFwd","dayWeek","dayWeekBack"].forEach(id=>{
+    document.getElementById(id).disabled=real;
+  });
+  // stato segmenti
+  document.getElementById("tmSim").classList.toggle("on",!real);
+  document.getElementById("tmReal").classList.toggle("on",real);
+  document.getElementById("tmReal").classList.toggle("acc",real);
+  document.getElementById("viewOp").classList.toggle("on",viewMode==="operativa");
+  document.getElementById("viewAn").classList.toggle("on",viewMode==="analisi");
+  document.getElementById("viewAn").classList.toggle("acc",viewMode==="analisi");
 }
 
 function sproutSVG(phaseKey, growth, big){
@@ -622,9 +782,34 @@ function renderRack(){
     sc.forEach((rip,r)=>{
       const row=document.createElement("div");
       row.className="ripiano";
+      row.dataset.a=a; row.dataset.r=r;
       const tag=document.createElement("div");
       tag.className="rip-tag";
-      tag.innerHTML='RIP<b>'+(r+1)+'</b>';
+      tag.setAttribute("draggable","true");
+      tag.title="Trascina per spostare il ripiano (con le sue vaschette)";
+      tag.innerHTML='RIP<b>'+(r+1)+'</b><span class="rip-grip">⠿</span>';
+      tag.addEventListener("dragstart",e=>{
+        dragSrc={a:a,r:r};
+        row.classList.add("dragging");
+        e.dataTransfer.effectAllowed="move";
+        try{ e.dataTransfer.setData("text/plain","rip"); }catch(_){}
+      });
+      tag.addEventListener("dragend",()=>{
+        row.classList.remove("dragging");
+        document.querySelectorAll(".ripiano.drop-ok").forEach(el=>el.classList.remove("drop-ok"));
+        dragSrc=null;
+      });
+      row.addEventListener("dragover",e=>{
+        if(!dragSrc) return;
+        e.preventDefault(); e.dataTransfer.dropEffect="move";
+        if(!(dragSrc.a===a && dragSrc.r===r)) row.classList.add("drop-ok");
+      });
+      row.addEventListener("dragleave",()=>row.classList.remove("drop-ok"));
+      row.addEventListener("drop",e=>{
+        e.preventDefault();
+        row.classList.remove("drop-ok");
+        if(dragSrc) swapRipiani(dragSrc.a,dragSrc.r,a,r);
+      });
       const strip=document.createElement("div");
       strip.className="vaschette";
       rip.forEach((t,v)=>{
@@ -678,8 +863,8 @@ function renderToday(){
     if(ph==="oltre")  over.push({vv,a,r,v,over:true});
     if(phaseOf(vv,age+1)==="pronto" && ph!=="pronto") tom++;
   });
-  document.getElementById("todayDate").textContent=fmtDate(simDateObj(state.day),true);
-  document.getElementById("todayPos").textContent="Giorno "+state.day;
+  document.getElementById("todayDate").textContent=fmtDate(simDateObj(currentDay()),true);
+  document.getElementById("todayPos").textContent="Giorno "+currentDay();
   document.getElementById("stReady").textContent=ready.length;
   document.getElementById("stTom").textContent=tom;
   document.getElementById("stOver").textContent=over.length;
@@ -699,17 +884,18 @@ function renderToday(){
 }
 
 function renderTimeline(){
-  const from=Math.max(1,state.day-6), to=state.day+12;
+  const today=currentDay();
+  const from=Math.max(1,today-6), to=today+12;
   const actual={}; Object.keys(state.log).forEach(d=>{ actual[d]=state.log[d].length; });
   const proj={}; eachTray(t=>{ const h=harvestDay(t); proj[h]=(proj[h]||0)+1; });
   let maxV=1;
   for(let d=from;d<=to;d++){
-    const val=d<state.day?(actual[d]||0):(d===state.day?Math.max(actual[d]||0,proj[d]||0):(proj[d]||0));
+    const val=d<today?(actual[d]||0):(d===today?Math.max(actual[d]||0,proj[d]||0):(proj[d]||0));
     if(val>maxV) maxV=val;
   }
   const tl=document.getElementById("timeline"); tl.innerHTML="";
   for(let d=from;d<=to;d++){
-    const isPast=d<state.day, isToday=d===state.day;
+    const isPast=d<today, isToday=d===today;
     const val=isPast?(actual[d]||0):(isToday?Math.max(actual[d]||0,proj[d]||0):(proj[d]||0));
     const h=val>0?Math.round(12+(val/maxV)*52):7;
     const day=document.createElement("div"); day.className="tl-day";
@@ -736,6 +922,183 @@ function renderLegend(){
       '</span>';
     lg.appendChild(row);
   });
+}
+
+/* ============ VISTA ANALISI DETTAGLIATA ============ */
+function trayPhaseSegments(vv, sownDay){
+  // segmenti [start,end,phaseKey] in giorni assoluti
+  const eb=earlyBound(vv), segs=[];
+  if(vv.soak) segs.push([sownDay-1, sownDay, "ammollo"]);
+  segs.push([sownDay, sownDay+eb, earlyPhaseKey(vv)]);
+  segs.push([sownDay+eb, sownDay+vv.r[0], "luce"]);
+  segs.push([sownDay+vv.r[0], sownDay+vv.r[1], "pronto"]);
+  segs.push([sownDay+vv.r[1], sownDay+vv.r[1]+3, "oltre"]); // coda visiva
+  return segs;
+}
+
+function renderAnalisi(){
+  const root=document.getElementById("analisi");
+  const today=currentDay();
+  const trays=[];
+  eachTray((t,a,r,v)=>{
+    const vv=VById[t.varietyId], age=today-t.sownDay;
+    trays.push({t,vv,a,r,v,age,ph:phaseOf(vv,age)});
+  });
+
+  if(trays.length===0){
+    root.innerHTML='<div class="an-card an-empty"><h3>Nessun vassoio nel rack</h3>'+
+      '<p>Torna alla vista operativa e semina qualche vaschetta o avvia una rotazione: l\'analisi dettagliata si popolerà da sola.</p></div>';
+    return;
+  }
+
+  // --- statistiche ---
+  let ready=0,over=0,tom=0,nextIn=null;
+  trays.forEach(o=>{
+    if(o.ph==="pronto") ready++;
+    if(o.ph==="oltre")  over++;
+    if(phaseOf(o.vv,o.age+1)==="pronto" && o.ph!=="pronto") tom++;
+    const toR=harvestDay(o.t)-today;
+    if(toR>0 && (nextIn===null||toR<nextIn)) nextIn=toR;
+  });
+
+  // --- dati continuità ---
+  const actual={}; Object.keys(state.log).forEach(d=>{ actual[+d]=state.log[d].length; });
+  const proj={};   trays.forEach(o=>{ const h=harvestDay(o.t); proj[h]=(proj[h]||0)+1; });
+  let maxHD=today+14;
+  trays.forEach(o=>{ const h=harvestDay(o.t); if(h>maxHD) maxHD=h; });
+  maxHD=Math.min(maxHD,today+45);
+
+  // grafico a barre: da today-7 a maxHD
+  const cFrom=Math.max(1,today-7), cTo=maxHD;
+  let cMax=1;
+  for(let d=cFrom;d<=cTo;d++){
+    const val=d<today?(actual[d]||0):(d===today?Math.max(actual[d]||0,proj[d]||0):(proj[d]||0));
+    if(val>cMax) cMax=val;
+  }
+  let barsHtml="";
+  for(let d=cFrom;d<=cTo;d++){
+    const isPast=d<today, isToday=d===today;
+    const val=isPast?(actual[d]||0):(isToday?Math.max(actual[d]||0,proj[d]||0):(proj[d]||0));
+    const h=val>0?Math.round(14+(val/cMax)*108):6;
+    const cls="an-tlbar"+(val===0?" gap":"")+(!isPast&&!isToday?" proj":"")+(isToday?" today-bar":"");
+    const dobj=simDateObj(d);
+    barsHtml+='<div class="an-tld" title="Giorno '+d+' · '+fmtDate(dobj)+' — '+(val>0?val+' vassoio/i':'nessuna raccolta')+'">'+
+      '<div class="'+cls+'" style="height:'+h+'px">'+(val>0?'<span class="cnt">'+val+'</span>':'')+'</div>'+
+      '<div class="an-tllbl'+(isToday?' today-l':'')+'"><b>'+(isToday?'oggi':d)+'</b>'+
+        dobj.toLocaleDateString("it-IT",{day:"numeric",month:"short"})+'</div></div>';
+  }
+
+  // breakdown giorno per giorno (da oggi a maxHD)
+  let daysHtml="";
+  for(let d=today;d<=maxHD;d++){
+    let items;
+    if(d===today){
+      items=trays.filter(o=>o.ph==="pronto"||o.ph==="oltre");
+    }else{
+      items=trays.filter(o=>harvestDay(o.t)===d);
+    }
+    const dobj=simDateObj(d), isToday=d===today, isGap=items.length===0;
+    let chips="";
+    if(isGap){
+      chips='<span class="dempty">— nessun vassoio pronto —</span>';
+    }else{
+      items.sort((x,y)=>x.vv.g-y.vv.g||x.vv.nome.localeCompare(y.vv.nome));
+      items.forEach(o=>{
+        const isOver=o.ph==="oltre";
+        chips+='<span class="an-chip'+(isOver?' over':'')+'" onclick="goToTray('+o.a+','+o.r+','+o.v+')">'+
+          '<span class="cdot" style="background:'+GROUPS[o.vv.g].color+'"></span>'+
+          o.vv.short+(isOver?' ⚠':'')+
+          '<span class="cpos">'+posLabel(o.a,o.r,o.v)+'</span></span>';
+      });
+    }
+    const tag=isToday?(items.length+' raccoglibili ora'):(isGap?'':items.length+' in maturazione');
+    daysHtml+='<div class="an-day'+(isToday?' is-today':'')+(isGap?' is-gap':'')+'">'+
+      '<div class="dd"><div class="dn">'+(isToday?'Oggi':'Giorno '+d)+'</div>'+
+        '<div class="dt">'+fmtDate(dobj)+'</div>'+
+        '<div class="dtag">'+tag+'</div></div>'+
+      '<div class="dchips">'+chips+'</div></div>';
+  }
+
+  // --- gantt per vassoio ---
+  let gMin=Infinity,gMax=-Infinity;
+  trays.forEach(o=>{
+    const s=o.t.sownDay-(o.vv.soak?1:0), e=o.t.sownDay+o.vv.r[1]+3;
+    if(s<gMin)gMin=s; if(e>gMax)gMax=e;
+  });
+  gMin=Math.min(gMin,today); gMax=Math.max(gMax,today+1);
+  const gSpan=Math.max(1,gMax-gMin);
+  const step=gSpan>60?10:gSpan>30?5:3;
+  let axisHtml="";
+  for(let d=Math.ceil(gMin/step)*step; d<=gMax; d+=step){
+    const left=(d-gMin)/gSpan*100;
+    axisHtml+='<div class="gantt-tick'+(Math.abs(d-today)<step/2?' today-tick':'')+'" style="position:absolute;left:'+left+'%;transform:translateX(-50%)">g'+d+'</div>';
+  }
+  const byVar={};
+  trays.forEach(o=>{ (byVar[o.vv.id]=byVar[o.vv.id]||[]).push(o); });
+  const varIds=Object.keys(byVar).sort((x,y)=>VById[x].g-VById[y].g||VById[x].nome.localeCompare(VById[y].nome));
+  const todayPct=(today-gMin)/gSpan*100;
+  let ganttHtml="";
+  varIds.forEach(vid=>{
+    const vv=VById[vid], list=byVar[vid].sort((x,y)=>x.t.sownDay-y.t.sownDay);
+    ganttHtml+='<div class="gantt-grp"><div class="gantt-gh">'+
+      '<span class="gd" style="background:'+GROUPS[vv.g].color+'"></span>'+vv.nome+
+      ' · '+list.length+' vassoi · raccolta '+vv.r[0]+'–'+vv.r[1]+'g</div>';
+    list.forEach(o=>{
+      const segs=trayPhaseSegments(vv,o.t.sownDay);
+      let segHtml="";
+      segs.forEach(seg=>{
+        const left=(seg[0]-gMin)/gSpan*100, w=(seg[1]-seg[0])/gSpan*100;
+        segHtml+='<div class="gantt-seg" style="left:'+left+'%;width:'+w+'%;background:'+PHASES[seg[2]].color+'"></div>';
+      });
+      const nowClamp=Math.max(gMin,Math.min(gMax,today));
+      const nowPct=(nowClamp-gMin)/gSpan*100;
+      const pi=PHASES[o.ph];
+      ganttHtml+='<div class="gantt-row">'+
+        '<div class="gantt-lbl"><span class="gn">'+vv.short+'</span><span class="gp">'+posLabel(o.a,o.r,o.v)+'</span></div>'+
+        '<div class="gantt-track" onclick="goToTray('+o.a+','+o.r+','+o.v+')" title="'+vv.nome+' — '+pi.lbl+' (g'+o.age+')">'+
+          segHtml+
+          '<div class="gantt-today" style="left:'+todayPct+'%"></div>'+
+          '<div class="gantt-now" style="left:'+nowPct+'%;background:'+pi.color+'"></div>'+
+        '</div></div>';
+    });
+    ganttHtml+='</div>';
+  });
+  let gLegend="";
+  ["ammollo","buio","germ","luce","pronto","oltre"].forEach(k=>{
+    gLegend+='<span><i style="background:'+PHASES[k].color+'"></i>'+PHASES[k].lbl+'</span>';
+  });
+
+  root.innerHTML=
+    '<div class="an-head"><h2>Analisi dettagliata</h2>'+
+      '<p>Sincronizzata con la simulazione · giorno '+today+' ('+(state.timeMode==="real"?"tempo reale":"simulato")+')</p></div>'+
+    '<div class="an-stats">'+
+      '<div class="an-stat"><div class="n">'+trays.length+'</div><div class="l">Vassoi attivi</div></div>'+
+      '<div class="an-stat go"><div class="n">'+ready+'</div><div class="l">Da raccogliere ora</div></div>'+
+      '<div class="an-stat"><div class="n">'+tom+'</div><div class="l">Pronti domani</div></div>'+
+      '<div class="an-stat over"><div class="n">'+over+'</div><div class="l">Oltre raccolta</div></div>'+
+      '<div class="an-stat"><div class="n">'+(nextIn===null?"—":"+"+nextIn+"g")+'</div><div class="l">Prossima raccolta</div></div>'+
+    '</div>'+
+    '<div class="an-card">'+
+      '<h3>Continuità raccolta</h3>'+
+      '<div class="csub">Vassoi pronti per giorno. Le barre a righe rosse sono giorni vuoti: lì la rotazione ha un buco.</div>'+
+      '<div class="an-tl">'+barsHtml+'</div>'+
+      '<div class="an-days">'+daysHtml+'</div>'+
+    '</div>'+
+    '<div class="an-card">'+
+      '<h3>Finestra temporale per vassoio</h3>'+
+      '<div class="csub">Ogni barra è il ciclo di vita di un vassoio: dalla semina alla fine della finestra di raccolta. La linea verticale è oggi.</div>'+
+      '<div style="overflow-x:auto"><div style="min-width:680px">'+
+        '<div class="gantt-axis">'+axisHtml+'</div>'+
+        ganttHtml+
+        '<div class="gantt-legend">'+gLegend+'</div>'+
+      '</div></div>'+
+    '</div>';
+}
+
+function goToTray(a,r,v){
+  viewMode="operativa";
+  render();
+  openTrayModal(a,r,v);
 }
 
 /* ============ MODALI ============ */
@@ -930,6 +1293,7 @@ function init(){
   state = load() || (()=>{ const s=defaultState(); buildRack(s); return s; })();
   if(!state.log) state.log={};
   if(!state.counter) state.counter=1;
+  if(!state.timeMode) state.timeMode="sim";
 
   document.getElementById("dayBack").onclick=()=>advanceDay(-1);
   document.getElementById("dayFwd").onclick =()=>advanceDay(1);
@@ -939,10 +1303,27 @@ function init(){
   document.getElementById("btnRotRegime").onclick=()=>openRotationModal("regime");
   document.getElementById("btnRotAvanti").onclick=()=>openRotationModal("avanti");
   document.getElementById("btnConfig").onclick=openConfigModal;
+
+  // selettore vista
+  document.getElementById("viewOp").onclick=()=>{ viewMode="operativa"; render(); };
+  document.getElementById("viewAn").onclick=()=>{ viewMode="analisi"; render(); };
+
+  // switch modalità tempo
+  document.getElementById("tmSim").onclick=()=>{
+    if(state.timeMode==="sim") return;
+    state.timeMode="sim"; save(); render();
+    toast("Modalità <b>Simulazione</b> — il giorno si controlla a mano.");
+  };
+  document.getElementById("tmReal").onclick=()=>{
+    if(state.timeMode==="real") return;
+    state.timeMode="real"; save(); render();
+    toast("Modalità <b>Reale</b> — il giorno segue il calendario (dalla data d'inizio).");
+  };
+
   document.getElementById("btnReset").onclick=()=>{
     if(confirm("Azzerare tutto? Vassoi, registro raccolte e giorno simulato verranno cancellati.")){
-      const sd=state.startDate, sc=state.scaffali;
-      state=defaultState(); state.startDate=sd; state.scaffali=sc; buildRack(state);
+      const sd=state.startDate, sc=state.scaffali, tm=state.timeMode;
+      state=defaultState(); state.startDate=sd; state.scaffali=sc; state.timeMode=tm; buildRack(state);
       collapsed.clear(); save(); render(); toast("Simulazione azzerata.");
     }
   };
@@ -957,6 +1338,7 @@ window.clearTray=clearTray;
 window.confirmRotation=confirmRotation;
 window.applyConfig=applyConfig;
 window.closeModal=closeModal;
+window.goToTray=goToTray;
 init();
 </script>
 </body>
