@@ -89,7 +89,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 #prod-detail-overlay.open{display:flex}
 #prod-detail-panel{background:var(--bg,#fff);width:100%;max-width:540px;max-height:88vh;border-radius:22px 22px 0 0;overflow-y:auto;padding-bottom:32px;animation:slideUp .25s ease}
 @keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
-.pd-img{width:100%;height:265px;object-fit:cover;object-position:top center;display:block;background:#f5f0ff}
+.pd-img{width:100%;height:220px;object-fit:cover;display:block;background:#f5f0ff}
 .pd-img-emoji{width:100%;height:220px;display:flex;align-items:center;justify-content:center;font-size:80px;background:#f5f0ff}
 .pd-body{padding:20px}
 .pd-name{font-size:24px;font-weight:900;color:#6A1B9A;margin-bottom:4px}
@@ -103,24 +103,6 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 .pd-close{background:none;border:none;font-size:24px;cursor:pointer;color:var(--ts,#888);line-height:1}
 .pimg-clickable{cursor:pointer;transition:opacity .15s;touch-action:manipulation;-webkit-tap-highlight-color:rgba(106,27,154,.15)}
 .pimg-clickable:active{opacity:.75}
-/* Pannello Catalogo */
-#catscr{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:none;align-items:flex-end}
-#catscr.open{display:flex}
-#catpanel{background:var(--bg,#fff);width:100%;max-height:92vh;border-radius:20px 20px 0 0;overflow-y:auto;padding-bottom:32px}
-.cat-hdr{position:sticky;top:0;background:var(--bg,#fff);border-bottom:1px solid var(--bl,#eee);padding:16px 20px 12px;display:flex;justify-content:space-between;align-items:center;z-index:10}
-.cat-hdr h2{font-size:18px;font-weight:900;color:#6A1B9A;letter-spacing:.5px;margin:0}
-.cat-hdr button{background:none;border:none;font-size:22px;cursor:pointer;color:var(--ts,#888)}
-.cat-section{padding:16px 20px 4px;font-size:13px;font-weight:800;letter-spacing:1.5px;color:#6A1B9A;text-transform:uppercase;border-bottom:2px solid #f0e6ff}
-.cat-card{margin:12px 16px;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);background:var(--card,#fff)}
-.cat-card-img{width:100%;height:180px;object-fit:cover;display:block;background:#f5f5f5}
-.cat-card-img-emoji{width:100%;height:180px;display:flex;align-items:center;justify-content:center;font-size:72px;background:#f5f0ff}
-.cat-card-body{padding:16px}
-.cat-card-name{font-size:20px;font-weight:900;color:#6A1B9A;margin-bottom:4px}
-.cat-card-price{font-size:14px;font-weight:600;color:#4CAF50;margin-bottom:12px}
-.cat-card-section{font-size:12px;font-weight:800;color:#1a2e1a;letter-spacing:1px;text-transform:uppercase;margin:12px 0 6px;padding-bottom:4px;border-bottom:1.5px solid #e8f5e9}
-.cat-card-item{font-size:13px;color:var(--text,#1a1a1a);padding:3px 0;padding-left:16px;position:relative}
-.cat-card-item::before{content:'·';position:absolute;left:4px;color:#4CAF50;font-weight:900}
-.cat-card-empty{text-align:center;padding:40px;color:var(--ts,#888);font-size:14px}
 #wa-fixed{
   position:fixed;bottom:64px;left:0;right:0;z-index:90;
   display:none;
@@ -179,7 +161,7 @@ body{background:var(--bg);color:var(--d);font-size:14px;min-height:100vh;padding
 <div id="app" style="display:none">
 
   <div class="gbar" id="gbar"></div>
-  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.13.11</div>
+  <div id="ver" style="display:none;font-size:10px;color:#aaa;text-align:right;padding:2px 12px">v2.14.00</div>
   <div style="background:#fff8e6;border-bottom:1px solid #f0d080;padding:7px 16px;font-size:12px;color:#8a6800;text-align:center;font-weight:600">
     ⚠️ Ordine minimo 6 vaschette · anche di varietà diverse
   </div>
@@ -632,12 +614,6 @@ const CAT_IMGS={
 // Coordinate origine MiniAgricola: via Varcaturiello 43, 80014 Lago Patria
 const ORIGIN_LAT=40.9317, ORIGIN_LON=14.0486;
 
-function haversineKm(lat1,lon1,lat2,lon2){
-  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLon=(lon2-lon1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
 // Tabella CAP → coordinate centroide (provincia Napoli + zone limitrofe)
 const CAP_COORDS={
   '80014':[40.9317,14.0486],'80010':[40.9600,14.0800],'80011':[40.9483,14.1433],
@@ -709,7 +685,6 @@ async function calcolaConsegna(clientAddress){
     if(data.code!=='Ok'||!data.routes||!data.routes.length)throw new Error('no route');
     const km=data.routes[0].distance/1000;
     const cost=Math.round(km*DELIVERY_RATE*2*100)/100;
-    console.log('OSRM: '+km.toFixed(1)+'km → €'+cost+' A/R');
     return cost;
   }catch(e){
     console.warn('Consegna fallback:',e.message);
@@ -1267,17 +1242,13 @@ async function openHist(){
     // Filtra ordini per cliente — match per clientId se presente, altrimenti per restaurant
     const myId=(client?.id||'').trim();
     const myRest=(client?.restaurant||'').trim();
-    console.log('[storico] client=',JSON.stringify({id:myId,restaurant:myRest}));
-    console.log('[storico] rows totali=',rows.length-1);
     const myOrders=rows.slice(1).filter(r=>{
       const rcId=String(r[iCli]||'').trim();
       const rcRest=String(r[iRest]||'').trim();
-      console.log('[storico] confronto rcId='+rcId+' rcRest='+rcRest);
       if(myId&&rcId===myId)return true;
       if(myRest&&rcRest===myRest)return true;
       return false;
     });
-    console.log('[storico] ordini trovati=',myOrders.length);
     if(myOrders.length===0){
       body.innerHTML='<div style="text-align:center;padding:40px;color:var(--m)">Non hai ancora effettuato ordini.</div>';
       return;
