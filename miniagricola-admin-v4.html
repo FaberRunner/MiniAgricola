@@ -81,7 +81,7 @@ body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
     <button id="themeBtn" onclick="toggleTheme()" title="Cambia tema" style="background:transparent;border:1px solid var(--ts);color:var(--ts);border-radius:6px;padding:4px 8px;font-size:13px;cursor:pointer">🌙</button>
     <button onclick="doLogout()" title="Esci" style="background:transparent;border:1px solid #888;color:var(--ts);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-right:6px">⎋ Esci</button>
     <span class="badge">GESTIONALE</span>
-    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.13.00</span>
+    <span style="font-size:10px;color:var(--tm);margin-left:6px">v2.14.00</span>
   </div>
 </div>
 <div class="nav">
@@ -257,8 +257,10 @@ function renderC(){
         <span style="font-size:10px;font-family:monospace;background:#eee;padding:2px 7px;border-radius:99px;color:#555;white-space:nowrap">${esc(p.id)}</span>
         <button class="btn btn-s" onclick="editP('${esc(p.id)}')" style="padding:6px 10px">✏️</button>
         <button class="btn btn-d" onclick="delP('${esc(p.id)}')" style="padding:6px 10px">🗑</button>
-      </div>`).join('')}`;
-  // Aggiorna label toggle catalogo
+      </div>`).join('')}``;
+  // Ripristina focus e cursore nella barra di ricerca
+  const cs=document.getElementById('cs');
+  if(cs&&document.activeElement!==cs){const v=cs.value;cs.focus();cs.setSelectionRange(v.length,v.length);}  // Aggiorna label toggle catalogo
   {const v=localStorage.getItem('ma_cat_visible')==='1';const l=document.getElementById('cat-toggle-lbl');if(l)l.textContent=v?'Catalogo ON':'Catalogo OFF';}
 }
 
