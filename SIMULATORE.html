@@ -292,6 +292,7 @@ footer b{color:var(--ink-soft);font-weight:600}
       <div>
         <div class="day-date" id="dayDate">—</div>
         <div class="stepper" style="margin-top:5px">
+          <button class="btn sm" id="dayWeekBack" title="Indietro di 7 giorni">−7 gg</button>
           <button class="btn step" id="dayBack" title="Giorno precedente">‹</button>
           <button class="btn step primary" id="dayFwd" title="Avanza un giorno">›</button>
           <button class="btn sm" id="dayWeek" title="Avanza 7 giorni">+7 gg</button>
@@ -304,7 +305,8 @@ footer b{color:var(--ink-soft);font-weight:600}
       <input type="date" id="startDate">
     </div>
     <div class="spacer"></div>
-    <button class="btn primary" id="btnRotate">⟳ Rotazione automatica</button>
+    <button class="btn primary" id="btnRotRegime" title="Riempie il rack con vassoi a fasi diverse — raccolta subito attiva">⟳ Rotazione a regime</button>
+    <button class="btn" id="btnRotAvanti" title="Semina scaglionata nei giorni futuri — simula l'avvio da serra vuota">↗ Rotazione da vuoto</button>
     <button class="btn" id="btnConfig">Configura rack</button>
     <button class="btn ghost" id="btnReset">Azzera</button>
   </div>
@@ -352,7 +354,7 @@ footer b{color:var(--ink-soft);font-weight:600}
 
 <script>
 "use strict";
-const VERSION = "1.01.00";
+const VERSION = "1.01.01";
 
 /* ============ GRUPPI ============ */
 const GROUPS = {
@@ -531,16 +533,22 @@ function setPhase(a,r,v,key){
 }
 function clearTray(a,r,v){ state.rack[a][r][v]=null; save(); closeModal(); render(); }
 
-function runRotation(varId, count){
+function runRotation(varId, count, mode){
   const vv=VById[varId], free=freeSlots();
   if(free.length===0){ toast("Nessuno slot libero nel rack.", null, true); return; }
   const n=Math.min(count, free.length);
+  const fwd = mode==="avanti";
   for(let i=0;i<n;i++){
     const [a,r,v]=free[i];
-    state.rack[a][r][v]={ tid:state.counter++, varietyId:varId, sownDay: state.day - i*vv.freq };
+    // a regime: retrodata (oggi - i*freq) → rack già pieno, raccolta subito
+    // da vuoto: post-data (oggi + i*freq) → semina scaglionata nei giorni futuri
+    const sownDay = fwd ? state.day + i*vv.freq : state.day - i*vv.freq;
+    state.rack[a][r][v]={ tid:state.counter++, varietyId:varId, sownDay:sownDay };
   }
   save(); closeModal(); render();
-  let msg="Avviata rotazione: <b>"+n+" vassoi</b> di "+vv.nome+", sfalsati ogni "+vv.freq+" gg.";
+  let msg = fwd
+    ? "Rotazione da vuoto: <b>"+n+" vassoi</b> di "+vv.nome+" seminati ogni "+vv.freq+" gg. Avanza i giorni per vederli crescere."
+    : "Rotazione a regime: <b>"+n+" vassoi</b> di "+vv.nome+" a fasi diverse, sfalsati ogni "+vv.freq+" gg.";
   if(n<count) msg+=" (slot liberi insufficienti per "+count+")";
   toast(msg);
 }
@@ -585,8 +593,11 @@ function renderRack(){
     const banner=document.createElement("div");
     banner.className="rack-empty";
     banner.innerHTML='<h3>Rack vuoto — '+state.scaffali+' scaffali · '+total+' vaschette</h3>'+
-      '<p>Clicca una vaschetta per seminarla, oppure usa la <b>Rotazione automatica</b> per riempire il rack con semine già sfalsate e vedere subito il ciclo in moto.</p>'+
-      '<button class="btn primary" onclick="openRotationModal()">⟳ Avvia una rotazione</button>';
+      '<p>Clicca una vaschetta per seminarla, oppure usa una <b>rotazione automatica</b>: "a regime" riempie subito il rack con vassoi a fasi diverse, "da vuoto" semina scaglionato nei giorni futuri.</p>'+
+      '<div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">'+
+        '<button class="btn primary" onclick="openRotationModal(\'regime\')">⟳ Rotazione a regime</button>'+
+        '<button class="btn" onclick="openRotationModal(\'avanti\')">↗ Rotazione da vuoto</button>'+
+      '</div>';
     rack.appendChild(banner);
   }
 
@@ -825,7 +836,10 @@ function openTrayModal(a,r,v){
     '</div>');
 }
 
-function openRotationModal(){
+let rotMode = "regime";
+function openRotationModal(mode){
+  rotMode = mode==="avanti" ? "avanti" : "regime";
+  const isFwd = rotMode==="avanti";
   let opts="";
   [1,2,3,4].forEach(g=>{
     opts+='<optgroup label="Gruppo '+g+' — '+GROUPS[g].nome+'">';
@@ -835,8 +849,8 @@ function openRotationModal(){
     opts+='</optgroup>';
   });
   showModal(
-    '<div class="modal-head"><div><h2>Rotazione automatica</h2>'+
-    '<p>Riempie gli slot liberi con semine già sfalsate</p></div>'+
+    '<div class="modal-head"><div><h2>'+(isFwd?'↗ Rotazione da vuoto':'⟳ Rotazione a regime')+'</h2>'+
+    '<p>'+(isFwd?'Semina scaglionata nei giorni futuri — avvio da serra vuota':'Riempie il rack con vassoi già a fasi diverse')+'</p></div>'+
     '<button class="x" onclick="closeModal()">✕</button></div>'+
     '<div class="modal-body">'+
       '<div class="fld"><label>Varietà</label><select id="rotVar">'+opts+'</select></div>'+
@@ -845,20 +859,19 @@ function openRotationModal(){
       '<div class="warn-note" id="rotInfo"></div></div>'+
     '<div class="modal-foot">'+
       '<button class="btn ghost" onclick="closeModal()">Annulla</button>'+
-      '<button class="btn primary" onclick="confirmRotation()">⟳ Avvia rotazione</button></div>');
+      '<button class="btn primary" onclick="confirmRotation()">'+(isFwd?'↗ Avvia da vuoto':'⟳ Avvia a regime')+'</button></div>');
   const upd=()=>{
     const v=VById[document.getElementById("rotVar").value];
-    document.getElementById("rotInfo").innerHTML=
-      'I vassoi vengono sfalsati di <b>'+v.freq+' giorni</b> l\'uno dall\'altro. '+
-      'Il primo è seminato oggi, gli altri retrodatati: vedrai subito vassoi a fasi diverse e una raccolta scaglionata. '+
-      'Slot liberi disponibili: <b>'+freeSlots().length+'</b>.';
+    document.getElementById("rotInfo").innerHTML = isFwd
+      ? 'I vassoi vengono seminati a partire da oggi, uno ogni <b>'+v.freq+' giorni</b>. Il rack parte vuoto e si riempie nel tempo: avanza i giorni per vedere crescita e prime raccolte. Slot liberi disponibili: <b>'+freeSlots().length+'</b>.'
+      : 'I vassoi vengono sfalsati di <b>'+v.freq+' giorni</b> l\'uno dall\'altro e retrodatati: il rack nasce già pieno di vassoi a fasi diverse, con raccolta subito attiva. Slot liberi disponibili: <b>'+freeSlots().length+'</b>.';
   };
   document.getElementById("rotVar").addEventListener("change",upd);
   document.getElementById("rotN").addEventListener("input",upd);
   upd();
 }
 function confirmRotation(){
-  runRotation(document.getElementById("rotVar").value, Math.max(1,parseInt(document.getElementById("rotN").value)||1));
+  runRotation(document.getElementById("rotVar").value, Math.max(1,parseInt(document.getElementById("rotN").value)||1), rotMode);
 }
 
 function openConfigModal(){
@@ -921,8 +934,10 @@ function init(){
   document.getElementById("dayBack").onclick=()=>advanceDay(-1);
   document.getElementById("dayFwd").onclick =()=>advanceDay(1);
   document.getElementById("dayWeek").onclick=()=>advanceDay(7);
+  document.getElementById("dayWeekBack").onclick=()=>advanceDay(-7);
   document.getElementById("startDate").onchange=e=>{ if(e.target.value){ state.startDate=e.target.value; save(); render(); } };
-  document.getElementById("btnRotate").onclick=openRotationModal;
+  document.getElementById("btnRotRegime").onclick=()=>openRotationModal("regime");
+  document.getElementById("btnRotAvanti").onclick=()=>openRotationModal("avanti");
   document.getElementById("btnConfig").onclick=openConfigModal;
   document.getElementById("btnReset").onclick=()=>{
     if(confirm("Azzerare tutto? Vassoi, registro raccolte e giorno simulato verranno cancellati.")){
