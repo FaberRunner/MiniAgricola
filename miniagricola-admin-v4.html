@@ -257,7 +257,7 @@ function renderC(){
         <span style="font-size:10px;font-family:monospace;background:#eee;padding:2px 7px;border-radius:99px;color:#555;white-space:nowrap">${esc(p.id)}</span>
         <button class="btn btn-s" onclick="editP('${esc(p.id)}')" style="padding:6px 10px">✏️</button>
         <button class="btn btn-d" onclick="delP('${esc(p.id)}')" style="padding:6px 10px">🗑</button>
-      </div>`).join('')}``;
+      </div>`).join('')}`;
   // Ripristina focus e cursore nella barra di ricerca
   const cs=document.getElementById('cs');
   if(cs&&document.activeElement!==cs){const v=cs.value;cs.focus();cs.setSelectionRange(v.length,v.length);}  // Aggiorna label toggle catalogo
