@@ -58,7 +58,7 @@ body{background:var(--bg-l);color:var(--text);font-size:14px;min-height:100vh}
 <body>
 
 <!-- ── SCHERMATA LOGIN ADMIN ──────────────────────────────── -->
-<div id="auth-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a2e1a 0%,#2d4a2d 100%);z-index:9999;display:flex;align-items:center;justify-content:center">
+<div id="auth-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(135deg,#1a2e1a 0%,#2d4a2d 100%);z-index:9999;align-items:center;justify-content:center">
   <div style="background:var(--bg);border-radius:20px;padding:40px 48px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.4);text-align:center">
     <div style="font-size:40px;margin-bottom:8px">🌱</div>
     <div style="font-size:22px;font-weight:800;color:var(--hdr);margin-bottom:4px">MiniAgricola</div>
@@ -785,6 +785,7 @@ function checkAuth(){
     showAuth();
     return false;
   }
+  hideAuth();
   return true;
 }
 
